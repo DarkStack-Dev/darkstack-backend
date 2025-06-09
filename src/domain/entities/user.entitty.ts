@@ -1,0 +1,47 @@
+import { Utils } from "src/shared/utils/utils";
+import { Entity } from "../shared/entity";
+
+export type UserCreateDto = {
+  email: string;
+  password: string;
+  name: string;
+}
+
+export class User extends Entity {
+  private name: string;
+  private email: string;
+  private password: string;
+
+  constructor(id: string, name: string, email: string, password: string, createdAt: Date, updatedAt: Date) {
+    super(id, createdAt, updatedAt);
+    this.name = name;
+    this.email = email;
+    this.password = password;
+    this.validate();
+  }
+
+  public static create({email, password, name}: UserCreateDto): User {
+    const id = Utils.GenerateUUID(); // Assuming crypto is available in the environment
+    const createdAt = new Date();
+    const updatedAt = new Date();
+    return new User(id, name, email, password, createdAt, updatedAt);
+  }
+
+  protected validate(): void {
+    if (!this.name || !this.email || !this.password) {
+      throw new Error('Invalid user data');
+    }
+  }
+
+  public getName(): string {
+    return this.name;
+  }
+
+  public getEmail(): string {
+    return this.email;
+  }
+
+  public getPassword(): string {
+    return this.password;
+  }
+}
