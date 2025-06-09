@@ -1,3 +1,3 @@
 export interface Validator<input> {
-  validarw (input: input): void;
+  validate (input: input): void;
 }

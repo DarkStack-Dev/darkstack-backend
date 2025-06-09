@@ -1,5 +1,6 @@
 import { Utils } from "src/shared/utils/utils";
-import { Entity } from "../shared/entity";
+import { Entity } from "../shared/entities/entity";
+import { UserValidatorFactory } from "../factories/user-validator.factory";
 
 export type UserCreateDto = {
   email: string;
@@ -29,9 +30,7 @@ export class User extends Entity {
   }
 
   protected validate(): void {
-    if (!this.name || !this.email || !this.password) {
-      throw new Error('Invalid user data');
-    }
+    UserValidatorFactory.create().validate(this);
   }
 
   public getName(): string {
