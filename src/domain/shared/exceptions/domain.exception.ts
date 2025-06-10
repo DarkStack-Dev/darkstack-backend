@@ -1,4 +1,4 @@
-import { Exception } from "src/shared/exceptions/exception";
+import { Exception } from "../../../shared/exceptions/exception";
 
 export class DomainException extends Exception{
   public constructor(internalMessage: string, externalMessage?: string, context?: string) {

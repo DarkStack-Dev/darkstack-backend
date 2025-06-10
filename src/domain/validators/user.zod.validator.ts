@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { User } from "../entities/user.entitty";
 import { Validator } from "../shared/validators/validator";
-import { ZodUtils } from "src/shared/utils/zod-utils";
+import { ZodUtils } from "../../shared/utils/zod-utils";
 import { ValidatorDomainException } from "../shared/exceptions/validator-domain.exception";
 
 export class UserZodValidator implements Validator<User>{

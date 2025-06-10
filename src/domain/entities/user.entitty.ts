@@ -1,4 +1,4 @@
-import { Utils } from "src/shared/utils/utils";
+import { Utils } from "../../shared/utils/utils";
 import { Entity } from "../shared/entities/entity";
 import { UserValidatorFactory } from "../factories/user-validator.factory";
 

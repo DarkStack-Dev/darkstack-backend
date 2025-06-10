@@ -1,4 +1,4 @@
-import { compareSync, genSaltSync, hashSync } from "bcrypt";
+import { compareSync, genSaltSync, hashSync } from "bcryptjs";
 
 export class Utils{
   public static GenerateUUID(): string {
