@@ -13,8 +13,8 @@ export type JwtRefreshPayload = {
 };
 
 export abstract class JwtService{
-  public abstract generateAuthToken(userId: string): Promise<string>;
-  public abstract generateRefreshToken(userId: string): Promise<string>;
+  public abstract generateAuthToken(userId: string): string;
+  public abstract generateRefreshToken(userId: string): string;
   public abstract generateAuthTokenWithRefreshToken(
     refreshToken: string,
   ): GenerateAuthTokenWithResfreshTokenOutput;
