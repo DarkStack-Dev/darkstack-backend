@@ -22,7 +22,7 @@ export class User extends Entity {
     this.validate();
   }
 
-  public static create({email, password, name}: UserCreateDto): User {
+  public static create({name, email, password}: UserCreateDto): User {
     const id = Utils.GenerateUUID();
 
     UserPasswordValidatorFactory.create().validate(password);
