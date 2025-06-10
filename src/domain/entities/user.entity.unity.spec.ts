@@ -1,3 +1,4 @@
+import { ValidatorDomainException } from "../shared/exceptions/validator-domain.exception";
 import { User } from "./user.entitty"
 
 describe('Domain - User Entity', () => {
@@ -20,6 +21,25 @@ describe('Domain - User Entity', () => {
       expect(anUser.getCreatedAt()).toBeInstanceOf(Date);
       expect(anUser.getUpdatedAt()).toBeInstanceOf(Date);
 
+    });
+
+    it('should throw an error when passing invalid email', () => {
+      const anEmail = "invalid-email";
+      const aName = "Jo";
+      const aPassword = '12344593';
+      expect(() => {
+        User.create({ email: anEmail, password: aPassword, name: aName });
+      }).toThrow(ValidatorDomainException);
+    });
+
+    it('should throw an error when passing invalid password', () => {
+      const anEmail = "john@doe.com"
+      const aName = "John Doe";
+      const aPassword = "1234"; // less than 8 characters
+      expect(() => {
+        User.create({ email: anEmail, password: aPassword, name: aName });
+      }).toThrow(ValidatorDomainException);
+    });
 
   })
-})})
+})
