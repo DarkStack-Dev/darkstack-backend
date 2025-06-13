@@ -1,0 +1,43 @@
+version: '4.40'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: nestjs_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: myapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Opcional: script de inicialização
+    networks:
+      - app-network
+
+  # Opcional: pgAdmin para gerenciar o banco visualmente
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nestjs_pgadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  app-network:
+    driver: bridge

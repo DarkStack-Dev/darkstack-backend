@@ -26,8 +26,7 @@ export class RefreshAuthTokenUserUsecase
   public async execute({
     refreshToken,
   }: RefreshAuthTokenUserUsecaseInput): Promise<RefreshAuthTokenUserUsecaseOutput> {
-    const { authToken, userId } =
-      this.jwtService.generateAuthTokenWithRefreshToken(refreshToken);
+    const { authToken, userId } = this.jwtService.generateAuthTokenWithRefreshToken(refreshToken);
 
     const anUser = await this.userGateway.findById(userId);
 

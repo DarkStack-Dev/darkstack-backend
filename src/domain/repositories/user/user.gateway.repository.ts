@@ -1,7 +1,7 @@
 import { User } from "src/domain/entities/user.entitty";
 
-export interface UserGatewayRepository {
-  findByEmail(email: string): Promise<User | null>;
-  findById(id: string): Promise<User | null>;
-  create(user: User): Promise<void>;
+export abstract class UserGatewayRepository {
+  abstract findByEmail(email: string): Promise<User | null>;
+  abstract findById(id: string): Promise<User | null>;
+  abstract create(user: User): Promise<void>;
 }
