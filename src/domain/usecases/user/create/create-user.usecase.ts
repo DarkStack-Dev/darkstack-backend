@@ -2,6 +2,7 @@ import { UserGatewayRepository } from "src/domain/repositories/user/user.gateway
 import { UseCase } from "../../usecase";
 import { EmailAlreadyExistsUsecaseException } from "../../exceptions/email/email-already-exists.usecase.exception";
 import { User } from "src/domain/entities/user.entitty";
+import { Injectable } from "@nestjs/common";
 
 export type CreateUserInput = {
   email: string;
@@ -13,6 +14,7 @@ export type CreateUserOutput = {
   id: string;
 }
 
+@Injectable()
 export class CreateUserUseCase implements UseCase<CreateUserInput, CreateUserOutput> {
   public constructor(private readonly userGatewayRepository: UserGatewayRepository) {}
 

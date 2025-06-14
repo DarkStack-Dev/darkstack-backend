@@ -3,6 +3,7 @@ import { JwtService } from "src/infra/services/jwt/jwt.service";
 import { UseCase } from "../../usecase";
 import { UserNotFoundUsecaseException } from "../../exceptions/user/user-not-found.usecase.exception";
 import { CredentialsNotValidUsecaseException } from "../../exceptions/user/credentials-not-valid.usecase.exception";
+import { Injectable } from "@nestjs/common";
 
 export type LoginUserInput = {
   email: string;
@@ -14,6 +15,7 @@ export type LoginUserOutput = {
   refreshToken: string;
 }
 
+@Injectable()
 export class SigninUserUseCase implements UseCase<LoginUserInput, LoginUserOutput> {
   
   public constructor(

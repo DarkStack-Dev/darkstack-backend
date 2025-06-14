@@ -1,5 +1,6 @@
 import { UserGatewayRepository } from "src/domain/repositories/user/user.gateway.repository";
 import { UserNotFoundUsecaseException } from "../../exceptions/user/user-not-found.usecase.exception";
+import { Injectable } from "@nestjs/common";
 
 export type FindUserInput = {
   id: string;
@@ -13,6 +14,7 @@ export type FindUserOutput = {
   createdAt: Date;
 }
 
+@Injectable()
 export class FindUserUseCase {
   public constructor(private readonly userGateway: UserGatewayRepository){
     
