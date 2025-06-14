@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { Validator } from "../shared/validators/validator";
-import { UserZodValidator } from "./user.zod.validator";
-import { ZodUtils } from "../../../src/shared/utils/zod-utils";
+import { ZodUtils } from "src/shared/utils/zod-utils";
 import { ValidatorDomainException } from "../shared/exceptions/validator-domain.exception";
 import { DomainException } from "../shared/exceptions/domain.exception";
 
