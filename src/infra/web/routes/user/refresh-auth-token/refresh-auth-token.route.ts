@@ -10,14 +10,14 @@ import {
 import { RefreshAuthTokenPresenter } from './refresh-auth-token.presenter';
 import { IsPublic } from 'src/infra/web/auth/decorators/is-public.decorator';
 
-@Controller('users')
+@Controller('/users')
 export class RefreshAuthTokenRoute {
   public constructor(
     private readonly refreshAuthTokenUsecase: RefreshAuthTokenUserUsecase,
   ) {}
 
   @IsPublic()
-  @Post('refresh')
+  @Post('/refresh')
   public async handle(
     @Body() request: RefreshAuthTokenRequest,
   ): Promise<RefreshAuthTokenResponse> {

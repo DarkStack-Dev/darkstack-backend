@@ -6,7 +6,7 @@ import {
 import { FindByIdUserResponse } from './find-by-id-user.dto';
 import { FindByIdUserPresenter } from './find-by-id-user.presenter';
 
-@Controller('users')
+@Controller('/users')
 export class FindByIdUserRoute {
   public constructor(private readonly findUserUsecase: FindUserUsecase) {}
 
