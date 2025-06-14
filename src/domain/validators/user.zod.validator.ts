@@ -23,15 +23,17 @@ export class UserZodValidator implements Validator<User>{
           `Os dados informados não são válidos para o usuário ${input.getId()}: ${message}`,
           UserZodValidator.name
         )
-      } 
-      
-      const err = error as Error;
+      }else{
+        const err = error as Error;
 
-      throw new DomainException(
-        `Error while validating User ${input.getId()}: ${err.message}`,
-        `Erro inesperado para validar os dados doo usuário ${input.getId()}: ${err.message}`,
-        UserZodValidator.name
+        throw new DomainException(
+          `Error while validating User ${input.getId()}: ${err.message}`,
+          `Erro inesperado para validar os dados doo usuário ${input.getId()}: ${err.message}`,
+          UserZodValidator.name
       )
+      }
+      
+      
     }
   }
 

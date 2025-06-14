@@ -23,15 +23,15 @@ export class UserPasswordZodValidator implements Validator<string>{
               `Senha inválida ${message}`,
               UserPasswordZodValidator.name
             )
-          } 
-          
-          const err = error as Error;
+          }else{
+            const err = error as Error;
     
-          throw new DomainException(
-            `Error while validating user password: ${err.message}`,
-            `Houve um erro inesperado ao validar a senha do usuário: ${err.message}`,
-            UserPasswordZodValidator.name
-          )
+            throw new DomainException(
+              `Error while validating user password: ${err.message}`,
+              `Houve um erro inesperado ao validar a senha do usuário: ${err.message}`,
+              UserPasswordZodValidator.name
+            )
+          }
         }
     }
 
