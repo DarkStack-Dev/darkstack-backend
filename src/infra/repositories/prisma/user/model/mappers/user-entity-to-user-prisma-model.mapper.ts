@@ -8,6 +8,7 @@ export class UserEntityToUserPrismaModelMapper {
       name: user.getName(),
       email: user.getEmail(),
       password: user.getPassword(),
+      roles: user.getRoles(),
       createdAt: user.getCreatedAt(),
       updatedAt: user.getUpdatedAt(),
     };

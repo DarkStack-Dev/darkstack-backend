@@ -5,12 +5,14 @@ import {
 } from 'src/usecases/user/find-by-id/find-user.usecase';
 import { FindByIdUserResponse } from './find-by-id-user.dto';
 import { FindByIdUserPresenter } from './find-by-id-user.presenter';
+import { Roles } from 'src/infra/web/auth/decorators/roles.decorator';
 
 @Controller('/users')
 export class FindByIdUserRoute {
   public constructor(private readonly findUserUsecase: FindUserUsecase) {}
 
   @Get(':id')
+  @Roles('ADMIN')
   public async handle(
     @Param('id') userId: string,
   ): Promise<FindByIdUserResponse> {

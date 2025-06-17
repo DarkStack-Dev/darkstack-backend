@@ -23,6 +23,7 @@ export class CreateUserRoute {
       name: request.name,
       email: request.email,
       password: request.password,
+      roles: request.roles,
     };
 
     const result = await this.createUserUsecase.execute(input);

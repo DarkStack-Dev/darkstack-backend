@@ -6,6 +6,7 @@ export class FindByIdUserPresenter {
     const response: FindByIdUserResponse = {
       id: input.id,
       email: input.email,
+      roles: input.roles,
       createdAt: input.createdAt,
       updatedAt: input.updatedAt,
     };

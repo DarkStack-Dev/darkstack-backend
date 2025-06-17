@@ -45,8 +45,8 @@ export class SigninUserUseCase implements UseCase<LoginUserInput, LoginUserOutpu
       );
     }
 
-    const accessToken =  this.jwtService.generateAuthToken(anUser.getId());
-    const refreshToken =  this.jwtService.generateRefreshToken(anUser.getId());
+    const accessToken =  this.jwtService.generateAuthToken(anUser.getId(), anUser.getRoles());
+    const refreshToken =  this.jwtService.generateRefreshToken(anUser.getId(), anUser.getRoles());
 
     const output: LoginUserOutput = {
       accessToken,

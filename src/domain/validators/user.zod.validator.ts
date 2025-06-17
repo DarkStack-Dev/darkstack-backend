@@ -4,6 +4,7 @@ import { Validator } from "../shared/validators/validator";
 import { ZodUtils } from "../../shared/utils/zod-utils";
 import { ValidatorDomainException } from "../shared/exceptions/validator-domain.exception";
 import { DomainException } from "../shared/exceptions/domain.exception";
+import { UserRole } from "generated/prisma";
 
 export class UserZodValidator implements Validator<User>{
   private constructor() {}
@@ -43,6 +44,7 @@ export class UserZodValidator implements Validator<User>{
       name: z.string().min(1, "Name is required"),
       email: z.string().email("Invalid email format"),
       password: z.string(),
+      roles: z.array(z.nativeEnum(UserRole)).nonempty("At least one role is required"),
       createdAt: z.date(),
       updatedAt: z.date()
     })

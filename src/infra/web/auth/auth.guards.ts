@@ -8,6 +8,8 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { JwtService } from 'src/infra/services/jwt/jwt.service';
 import { IS_PUBLIC } from './decorators/is-public.decorator';
+import { User, UserRole } from 'generated/prisma';
+import { ROLES_KEY } from './decorators/roles.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -26,6 +28,15 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    )
+
+
+    
+    
+
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.exctractTokenFromRequest(request);
 
@@ -34,12 +45,22 @@ export class AuthGuard implements CanActivate {
     }
 
     const payload = this.jwtService.verifyAuthToken(token);
+    const userRoles = payload.roles || [];
+    const hasRole = () => userRoles.some((role) => requiredRoles?.includes(role));
 
     if (!payload) {
       throw new UnauthorizedException('User not authenticated');
     }
 
     request['userId'] = payload.userId;
+
+    if (!hasRole()) {
+      throw new UnauthorizedException('User does not have the required roles');
+    }
+
+    if (!requiredRoles) {
+      return true;
+    }
 
     return true;
   }

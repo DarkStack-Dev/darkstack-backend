@@ -3,11 +3,13 @@ import { UseCase } from "../../usecase";
 import { EmailAlreadyExistsUsecaseException } from "../../exceptions/email/email-already-exists.usecase.exception";
 import { User } from "src/domain/entities/user.entitty";
 import { Injectable } from "@nestjs/common";
+import { UserRole } from "generated/prisma";
 
 export type CreateUserInput = {
   email: string;
   password: string;
   name: string;
+  roles: UserRole[];
 }
 
 export type CreateUserOutput = {
@@ -18,7 +20,7 @@ export type CreateUserOutput = {
 export class CreateUserUseCase implements UseCase<CreateUserInput, CreateUserOutput> {
   public constructor(private readonly userGatewayRepository: UserGatewayRepository) {}
 
-  public async execute({email, password, name}: CreateUserInput): Promise<CreateUserOutput>{
+  public async execute({email, password, name, roles}: CreateUserInput): Promise<CreateUserOutput>{
     const existentUser = await this.userGatewayRepository.findByEmail(email);
     if (existentUser) {
       throw new EmailAlreadyExistsUsecaseException(
@@ -28,7 +30,7 @@ export class CreateUserUseCase implements UseCase<CreateUserInput, CreateUserOut
       )
     }
 
-    const anUser = User.create({name, email, password});
+    const anUser = User.create({name, email, password, roles});
 
     await this.userGatewayRepository.create(anUser);
 

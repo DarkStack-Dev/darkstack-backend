@@ -1,6 +1,7 @@
 import { UserGatewayRepository } from "src/domain/repositories/user/user.gateway.repository";
 import { UserNotFoundUsecaseException } from "../../exceptions/user/user-not-found.usecase.exception";
 import { Injectable } from "@nestjs/common";
+import { UserRole } from "generated/prisma";
 
 export type FindUserInput = {
   id: string;
@@ -10,6 +11,7 @@ export type FindUserOutput = {
   id: string;
   name: string;
   email: string;
+  roles: UserRole[];
   updatedAt: Date;
   createdAt: Date;
 }
@@ -34,6 +36,7 @@ export class FindUserUseCase {
       id: user.getId(),
       name: user.getName(),
       email: user.getEmail(),
+      roles: user.getRoles(),
       updatedAt: user.getUpdatedAt(),
       createdAt: user.getCreatedAt(),
     };

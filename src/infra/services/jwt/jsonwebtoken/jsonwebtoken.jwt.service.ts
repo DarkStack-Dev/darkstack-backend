@@ -9,6 +9,7 @@ import {
 import { RefreshTokenNotValidServiceException } from '../../exceptions/jsonwebtoken/refresh-token-not-valid.service.exception';
 import { Injectable } from '@nestjs/common';
 import { AuthTokenNotValidServiceException } from '../../exceptions/jsonwebtoken/auth-token-not-valid.service.exception';
+import { UserRole } from 'generated/prisma';
 
 @Injectable()
 export class JasonWebTokenService extends JwtService {
@@ -30,8 +31,8 @@ export class JasonWebTokenService extends JwtService {
     this.refreshSecret = process.env.JWT_REFRESH_SECRET;
   }
 
-  public generateAuthToken(userId: string): string {
-    const payload = this.generateAuthTokenPayload(userId);
+  public generateAuthToken(userId: string, roles: UserRole[]): string {
+    const payload = this.generateAuthTokenPayload(userId, roles);
 
     const token = jsonwebtoken.sign(payload, this.authSecret, {
       expiresIn: '1h',
@@ -40,16 +41,17 @@ export class JasonWebTokenService extends JwtService {
     return token;
   }
 
-  private generateAuthTokenPayload(userId: string): JwtAuthPayload {
+  private generateAuthTokenPayload(userId: string, roles: UserRole[]): JwtAuthPayload {
     const payload: JwtAuthPayload = {
       userId,
+      roles
     };
 
     return payload;
   }
 
-  public generateRefreshToken(userId: string): string {
-    const payload = this.generateRefreshTokenPayload(userId);
+  public generateRefreshToken(userId: string, roles: UserRole[]): string {
+    const payload = this.generateRefreshTokenPayload(userId, roles);
 
     const token = jsonwebtoken.sign(payload, this.refreshSecret, {
       expiresIn: '7d',
@@ -58,9 +60,10 @@ export class JasonWebTokenService extends JwtService {
     return token;
   }
 
-  private generateRefreshTokenPayload(userId: string): JwtRefreshPayload {
+  private generateRefreshTokenPayload(userId: string, roles: UserRole[]): JwtRefreshPayload {
     const payload: JwtRefreshPayload = {
       userId,
+      roles
     };
 
     return payload;
@@ -76,12 +79,14 @@ export class JasonWebTokenService extends JwtService {
       ) as JwtRefreshPayload;
 
       const userId = payload.userId;
+      const roles = payload.roles || []; // roles might not be present in refresh token
 
-      const authToken = this.generateAuthToken(userId);
+      const authToken = this.generateAuthToken(userId, roles);
 
       const output: GenerateAuthTokenWithResfreshTokenOutput = {
         authToken,
         userId,
+        roles
       };
 
       return output;

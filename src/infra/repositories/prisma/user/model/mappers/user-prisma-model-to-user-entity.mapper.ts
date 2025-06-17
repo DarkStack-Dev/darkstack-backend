@@ -8,6 +8,7 @@ export class UserPrismaModelToUserEntityMapper {
       name: user.name,
       email: user.email,      
       password: user.password,
+      roles: user.roles,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });

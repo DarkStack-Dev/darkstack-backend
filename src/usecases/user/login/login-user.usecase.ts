@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { UserRole } from 'generated/prisma';
 import { UserGatewayRepository } from 'src/domain/repositories/user/user.gateway.repository';
 import { JwtService } from 'src/infra/services/jwt/jwt.service';
 import { CredentialsNotValidUsecaseException } from 'src/usecases/exceptions/credentials-not-valid.usecase.exception';
@@ -12,6 +13,7 @@ export type LoginUserInput = {
 export type LoginUserOutput = {
   authToken: string;
   refreshToken: string;
+  roles: UserRole[];
 };
 
 @Injectable()
@@ -47,12 +49,14 @@ export class LoginUserUsecase
       );
     }
 
-    const authToken = this.jwtService.generateAuthToken(anUser.getId());
-    const refreshToken = this.jwtService.generateRefreshToken(anUser.getId());
+    const authToken = this.jwtService.generateAuthToken(anUser.getId(), anUser.getRoles());
+    const refreshToken = this.jwtService.generateRefreshToken(anUser.getId(), anUser.getRoles());
+    const roles = anUser.getRoles();
 
     const output: LoginUserOutput = {
       authToken,
       refreshToken,
+      roles
     };
 
     return output;
