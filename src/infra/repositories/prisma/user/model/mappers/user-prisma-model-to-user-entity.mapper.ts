@@ -1,19 +1,18 @@
+// src/infra/repositories/prisma/user/model/mappers/user-prisma-model-to-user-entity.mapper.ts
+
 import { User } from '@/domain/entities/user/user.entitty';
-import UserPrismaModel from '../user.prisma.model';
 
 export class UserPrismaModelToUserEntityMapper {
-  public static map(user: UserPrismaModel): User {
-    const anUser = User.with({
-      id: user.id,
-      name: user.name,
-      email: user.email,      
-      password: user.password,
-      roles: user.roles,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      isActive: user.isActive,
+  public static map(model: any): User {
+    return User.with({
+      id: model.id,
+      name: model.name,
+      email: model.email,
+      password: model.emailAuth?.password || '', // ✅ Senha vem do emailAuth ou vazia (OAuth)
+      roles: model.roles as any,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+      isActive: model.isActive,
     });
-
-    return anUser;
   }
 }

@@ -1,3 +1,4 @@
+// Atualizar: src/infra/web/web.module.ts
 import { Module } from '@nestjs/common';
 import { UsecaseModule } from 'src/usecases/usecase.module';
 import { DomainExceptionFilterProvider } from './filters/domain/domain-exception.filter';
@@ -16,14 +17,27 @@ import { AuthGuardProvider } from './auth/auth.guards';
 import { ServiceModule } from '../services/service.module';
 import { MeUserRoute } from './routes/user/me/me-user.route';
 
+// GitHub Auth Routes
+import { StartGitHubAuthRoute } from './routes/github-auth/start/start-github-auth.route';
+import { GitHubCallbackRoute } from './routes/github-auth/callback/github-callback.route';
+import { LinkGitHubAccountRoute } from './routes/github-auth/link/link-github-account.route';
+import { UnlinkGitHubAccountRoute } from './routes/github-auth/unlink/unlink-github-account.route';
+
 @Module({
   imports: [ServiceModule, UsecaseModule],
   controllers: [
+    // User routes
     CreateUserRoute,
     LoginUserRoute,
     RefreshAuthTokenRoute,
     FindByIdUserRoute,
-    MeUserRoute
+    MeUserRoute,
+    
+    // GitHub auth routes
+    StartGitHubAuthRoute,
+    GitHubCallbackRoute,
+    LinkGitHubAccountRoute,
+    UnlinkGitHubAccountRoute,
   ],
   providers: [
     AuthGuardProvider,
