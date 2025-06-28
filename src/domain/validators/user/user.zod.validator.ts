@@ -1,3 +1,5 @@
+// src/domain/validators/user/user.zod.validator.ts - Versão corrigida
+
 import { z } from "zod";
 import { User } from "../../entities/user/user.entitty";
 import { Validator } from "../../shared/validators/validator";
@@ -29,7 +31,7 @@ export class UserZodValidator implements Validator<User>{
 
         throw new DomainException(
           `Error while validating User ${input.getId()}: ${err.message}`,
-          `Erro inesperado para validar os dados doo usuário ${input.getId()}: ${err.message}`,
+          `Erro inesperado para validar os dados do usuário ${input.getId()}: ${err.message}`,
           UserZodValidator.name
         )
       }
@@ -41,7 +43,7 @@ export class UserZodValidator implements Validator<User>{
       id: z.string().uuid(),
       name: z.string().min(1, "Name is required"),
       email: z.string().email("Invalid email format"),
-      password: z.string(),
+      password: z.string(), // ✅ Permitir string vazia para OAuth
       roles: z.array(z.nativeEnum(UserRole)).nonempty("At least one role is required"),
       createdAt: z.date(),
       updatedAt: z.date()

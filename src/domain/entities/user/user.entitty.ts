@@ -1,4 +1,5 @@
-// import { Utils } from "../../../shared/utils/utils";
+// src/domain/entities/user/user.entitty.ts - Versão corrigida
+
 import {Utils} from "@/shared/utils/utils";
 import { Entity } from "../../shared/entities/entity";
 import { UserValidatorFactory } from "../../factories/user/user.validator.factory";
@@ -7,9 +8,10 @@ import { UserRole } from "generated/prisma";
 
 export type UserCreateDto = {
   email: string;
-  password: string;
+  password?: string; // ✅ Tornar opcional
   name: string;
   roles: UserRole[];
+  isOAuthUser?: boolean; // ✅ Adicionar flag para OAuth
 }
 
 export type UserWithDto = {
@@ -38,13 +40,18 @@ export class User extends Entity {
     this.validate();
   }
 
-  public static create({name, email, password, roles}: UserCreateDto): User {
+  public static create({name, email, password = '', roles, isOAuthUser = false}: UserCreateDto): User {
     const id = Utils.GenerateUUID();
     const isActive = true;
 
-    UserPasswordValidatorFactory.create().validate(password);
+    // ✅ Só validar senha se não for OAuth e se tiver senha
+    if (!isOAuthUser && password) {
+      UserPasswordValidatorFactory.create().validate(password);
+    }
 
-    const hashedPassword = Utils.encryptPassword(password);
+    // ✅ Hash da senha apenas se tiver senha
+    const hashedPassword = password ? Utils.encryptPassword(password) : '';
+    
     const createdAt = new Date();
     const updatedAt = new Date();
     return new User(id, name, email, hashedPassword, roles, createdAt, updatedAt, isActive);
@@ -84,6 +91,15 @@ export class User extends Entity {
   }
 
   public comparePassword(password: string): boolean {
+    // ✅ Se não tem senha (OAuth), retornar false
+    if (!this.password) {
+      return false;
+    }
     return Utils.comparePassword(password, this.password);
+  }
+
+  // ✅ Verificar se é usuário OAuth
+  public isOAuthUser(): boolean {
+    return !this.password || this.password === '';
   }
 }

@@ -1,9 +1,11 @@
+// src/infra/repositories/prisma/user/user.prisma.repository.ts
+
+import { Injectable } from '@nestjs/common';
 import { UserGatewayRepository } from 'src/domain/repositories/user/user.gateway.repository';
 import { prismaClient } from '../client.prisma';
 import { User } from '@/domain/entities/user/user.entitty';
 import { UserPrismaModelToUserEntityMapper } from './model/mappers/user-prisma-model-to-user-entity.mapper';
 import { UserEntityToUserPrismaModelMapper } from './model/mappers/user-entity-to-user-prisma-model.mapper';
-import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UserPrismaRepository extends UserGatewayRepository {
@@ -12,41 +14,55 @@ export class UserPrismaRepository extends UserGatewayRepository {
   }
 
   public async findByEmail(email: string): Promise<User | null> {
-    const aModel = await prismaClient.user.findUnique({
-      where: {
-        email: email,
+    const model = await prismaClient.user.findUnique({
+      where: { email },
+      include: {
+        emailAuth: true, // ✅ Incluir senha se existir
       },
     });
 
-    if (!aModel) {
+    if (!model) {
       return null;
     }
 
-    const anUser = UserPrismaModelToUserEntityMapper.map(aModel);
-
-    return anUser;
+    return UserPrismaModelToUserEntityMapper.map(model);
   }
 
   public async findById(id: string): Promise<User | null> {
-    const aModel = await prismaClient.user.findUnique({
-      where: {
-        id: id,
+    const model = await prismaClient.user.findUnique({
+      where: { id },
+      include: {
+        emailAuth: true, // ✅ Incluir senha se existir
       },
     });
 
-    if (!aModel) {
+    if (!model) {
       return null;
     }
 
-    const anUser = UserPrismaModelToUserEntityMapper.map(aModel);
-
-    return anUser;
+    return UserPrismaModelToUserEntityMapper.map(model);
   }
 
   public async create(user: User): Promise<void> {
-    const aModel = UserEntityToUserPrismaModelMapper.map(user);
-    await prismaClient.user.create({
-      data: aModel,
+    const userData = UserEntityToUserPrismaModelMapper.map(user);
+    const hasPassword = user.getPassword() && user.getPassword() !== '';
+
+    // ✅ Usar transaction para criar User + EmailAuth se tiver senha
+    await prismaClient.$transaction(async (tx) => {
+      // Criar o usuário
+      await tx.user.create({
+        data: userData,
+      });
+
+      // ✅ Se tem senha, criar EmailAuth
+      if (hasPassword) {
+        await tx.emailAuth.create({
+          data: {
+            userId: user.getId(),
+            password: user.getPassword(),
+          },
+        });
+      }
     });
   }
 }
