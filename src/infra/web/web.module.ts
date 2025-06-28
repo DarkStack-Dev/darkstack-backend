@@ -14,6 +14,7 @@ import { RefreshAuthTokenRoute } from './routes/user/refresh-auth-token/refresh-
 import { FindByIdUserRoute } from './routes/user/find-by-id/find-by-id-user.route';
 import { AuthGuardProvider } from './auth/auth.guards';
 import { ServiceModule } from '../services/service.module';
+import { MeUserRoute } from './routes/user/me/me-user.route';
 
 @Module({
   imports: [ServiceModule, UsecaseModule],
@@ -22,6 +23,7 @@ import { ServiceModule } from '../services/service.module';
     LoginUserRoute,
     RefreshAuthTokenRoute,
     FindByIdUserRoute,
+    MeUserRoute
   ],
   providers: [
     AuthGuardProvider,

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { User } from "../entities/user.entitty";
-import { Validator } from "../shared/validators/validator";
-import { ZodUtils } from "../../shared/utils/zod-utils";
-import { ValidatorDomainException } from "../shared/exceptions/validator-domain.exception";
-import { DomainException } from "../shared/exceptions/domain.exception";
+import { User } from "../../entities/user/user.entitty";
+import { Validator } from "../../shared/validators/validator";
+import { ZodUtils } from "../../../shared/utils/zod-utils";
+import { ValidatorDomainException } from "../../shared/exceptions/validator-domain.exception";
+import { DomainException } from "../../shared/exceptions/domain.exception";
 import { UserRole } from "generated/prisma";
 
 export class UserZodValidator implements Validator<User>{
@@ -31,10 +31,8 @@ export class UserZodValidator implements Validator<User>{
           `Error while validating User ${input.getId()}: ${err.message}`,
           `Erro inesperado para validar os dados doo usuário ${input.getId()}: ${err.message}`,
           UserZodValidator.name
-      )
+        )
       }
-      
-      
     }
   }
 

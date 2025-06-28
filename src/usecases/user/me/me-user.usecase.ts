@@ -10,12 +10,10 @@ export type FindUserInput = {
 
 export type FindUserOutput = {
   id: string;
-  name: string
   email: string;
   roles: UserRole[];
   createdAt: Date;
   updatedAt: Date;
-  isActive: boolean; // Optional field, can be added later if needed
 };
 
 @Injectable()
@@ -35,12 +33,10 @@ export class FindUserUsecase implements Usecase<FindUserInput, FindUserOutput> {
 
     const output: FindUserOutput = {
       id: anUser.getId(),
-      name: anUser.getName(),
       email: anUser.getEmail(),
       roles: anUser.getRoles(),
       createdAt: anUser.getCreatedAt(),
       updatedAt: anUser.getUpdatedAt(),
-      isActive: anUser.getIsActivate() // Assuming the User entity has an isActive method
     };
 
     return output;

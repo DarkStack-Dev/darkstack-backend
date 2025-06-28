@@ -1,7 +1,7 @@
 import { UserGatewayRepository } from "src/domain/repositories/user/user.gateway.repository";
 import { UseCase } from "../../usecase";
 import { EmailAlreadyExistsUsecaseException } from "../../exceptions/email/email-already-exists.usecase.exception";
-import { User } from "src/domain/entities/user.entitty";
+import { User } from "@/domain/entities/user/user.entitty";
 import { Injectable } from "@nestjs/common";
 import { UserRole } from "generated/prisma";
 

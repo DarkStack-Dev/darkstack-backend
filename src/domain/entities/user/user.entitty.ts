@@ -1,15 +1,9 @@
-import { Utils } from "../../shared/utils/utils";
-import { Entity } from "../shared/entities/entity";
-import { UserValidatorFactory } from "../factories/user.validator.factory";
-import { UserPasswordValidatorFactory } from "../factories/user-password.validator.factory";
+// import { Utils } from "../../../shared/utils/utils";
+import {Utils} from "@/shared/utils/utils";
+import { Entity } from "../../shared/entities/entity";
+import { UserValidatorFactory } from "../../factories/user/user.validator.factory";
+import { UserPasswordValidatorFactory } from "../../factories/user/user-password.validator.factory";
 import { UserRole } from "generated/prisma";
-
-// export enum UserRole {
-//   ADMIN = 'admin',
-//   USER = 'user',
-//   MODERATOR = 'moderator',
-//   GUEST = 'guest'
-// }
 
 export type UserCreateDto = {
   email: string;
@@ -26,8 +20,8 @@ export type UserWithDto = {
   roles: UserRole[];
   createdAt: Date;
   updatedAt: Date;
+  isActive: boolean;
 };
-
 
 export class User extends Entity {
   private name: string;
@@ -35,8 +29,8 @@ export class User extends Entity {
   private password: string;
   private roles: UserRole[];  
 
-  constructor(id: string, name: string, email: string, password: string, roles: UserRole[], createdAt: Date, updatedAt: Date) {
-    super(id, createdAt, updatedAt);
+  constructor(id: string, name: string, email: string, password: string, roles: UserRole[], createdAt: Date, updatedAt: Date, isActive: boolean) {
+    super(id, createdAt, updatedAt, isActive);
     this.name = name;
     this.email = email;
     this.password = password;
@@ -46,13 +40,14 @@ export class User extends Entity {
 
   public static create({name, email, password, roles}: UserCreateDto): User {
     const id = Utils.GenerateUUID();
+    const isActive = true;
 
     UserPasswordValidatorFactory.create().validate(password);
 
     const hashedPassword = Utils.encryptPassword(password);
     const createdAt = new Date();
     const updatedAt = new Date();
-    return new User(id, name, email, hashedPassword, roles, createdAt, updatedAt);
+    return new User(id, name, email, hashedPassword, roles, createdAt, updatedAt, isActive);
   }
 
   public static with({
@@ -63,8 +58,9 @@ export class User extends Entity {
     roles,
     createdAt,
     updatedAt,
+    isActive = true
   }: UserWithDto): User {
-    return new User(id, name, email,  password, roles, createdAt, updatedAt);
+    return new User(id, name, email,  password, roles, createdAt, updatedAt, isActive);
   }
 
   protected validate(): void {

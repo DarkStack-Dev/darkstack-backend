@@ -19,55 +19,71 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   public canActivate(context: ExecutionContext): boolean {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+  const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
+    context.getHandler(),
+    context.getClass(),
+  ]);
 
-    if (isPublic) {
-      return true;
-    }
-
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    )
-
-
-    
-    
-
-    const request = context.switchToHttp().getRequest<Request>();
-    const token = this.exctractTokenFromRequest(request);
-
-    if (!token) {
-      throw new UnauthorizedException('User not authenticated');
-    }
-
-    const payload = this.jwtService.verifyAuthToken(token);
-    const userRoles = payload.roles || [];
-    const hasRole = () => userRoles.some((role) => requiredRoles?.includes(role));
-
-    if (!payload) {
-      throw new UnauthorizedException('User not authenticated');
-    }
-
-    request['userId'] = payload.userId;
-
-    if (!hasRole()) {
-      throw new UnauthorizedException('User does not have the required roles');
-    }
-
-    if (!requiredRoles) {
-      return true;
-    }
-
+  if (isPublic) {
     return true;
   }
 
+  const request = context.switchToHttp().getRequest<Request>();
+  const token = this.extractTokenFromRequest(request);
+
+  if (!token) {
+    throw new UnauthorizedException('Access token is required');
+  }
+
+  let payload;
+  try {
+    payload = this.jwtService.verifyAuthToken(token);
+  } catch (error) {
+    throw new UnauthorizedException('Invalid or expired token');
+  }
+
+  if (!payload || !payload.userId) {
+    throw new UnauthorizedException('Invalid token payload');
+  }
+
+  // Verificar se usuário está ativo (se aplicável)
+  if (payload.isActive === false) {
+    throw new UnauthorizedException('Account is suspended');
+  }
+
+  request['userId'] = payload.userId;
+  request['user'] = payload;
+
+  const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
+    ROLES_KEY,
+    [context.getHandler(), context.getClass()],
+  );
+
+  if (!requiredRoles || requiredRoles.length === 0) {
+    return true; // Usuário autenticado, sem roles específicas necessárias
+  }
+
+  const userRoles = payload.roles || [];
+  
+  if (userRoles.length === 0) {
+    throw new UnauthorizedException('User has no assigned roles');
+  }
+
+  const hasRequiredRole = userRoles.some((role) => requiredRoles.includes(role));
+
+  if (!hasRequiredRole) {
+    throw new UnauthorizedException(
+      `Access denied. Required roles: ${requiredRoles.join(', ')}`
+    );
+  }
+
+  return true;
+}
+
   // authorization: Bearer <token>
 
-  private exctractTokenFromRequest(request: Request): string | undefined {
+  // ✅ Corrigido typo no nome do método
+  private extractTokenFromRequest(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }

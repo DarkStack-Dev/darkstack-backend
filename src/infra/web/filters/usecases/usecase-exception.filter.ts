@@ -18,7 +18,7 @@ export class UsecaseExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    const status = HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = exception.getStatus();
 
     const aResponseData = ExceptionUtils.buildErrorResponse(exception, status);
 

@@ -20,7 +20,7 @@ export class LoginUserRoute {
       email: request.email,
       password: request.password,
     };
-
+    console.log("oii");
     const result = await this.loginUserUsecase.execute(input);
 
     const response = LoginUserPresenter.toHttp(result);
