@@ -23,7 +23,7 @@ export class EmailAlreadyExistsUsecaseExceptionFilter
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    const status = HttpStatus.BAD_REQUEST;
+    const status = exception.getStatus(); // Vai retornar 409
 
     const aResponseData = ExceptionUtils.buildErrorResponse(exception, status);
 

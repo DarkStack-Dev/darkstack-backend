@@ -1,4 +1,4 @@
-import { User } from "src/domain/entities/user.entitty";
+import { User } from "@/domain/entities/user/user.entitty";
 
 export abstract class UserGatewayRepository {
   abstract findByEmail(email: string): Promise<User | null>;

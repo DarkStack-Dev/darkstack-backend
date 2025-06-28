@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { Validator } from "../shared/validators/validator";
+import { Validator } from "../../shared/validators/validator";
 import { ZodUtils } from "src/shared/utils/zod-utils";
-import { ValidatorDomainException } from "../shared/exceptions/validator-domain.exception";
-import { DomainException } from "../shared/exceptions/domain.exception";
+import { ValidatorDomainException } from "../../shared/exceptions/validator-domain.exception";
+import { DomainException } from "../../shared/exceptions/domain.exception";
 
 export class UserPasswordZodValidator implements Validator<string>{
 

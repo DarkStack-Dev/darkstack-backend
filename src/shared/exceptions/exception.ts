@@ -1,11 +1,17 @@
+import { HttpException, HttpStatus } from "@nestjs/common";
 
-export class Exception extends Error{
+export class Exception extends HttpException{
   private readonly internalMessage: string;
   private readonly externalMessage: string;
   private readonly context: string;
 
-  public constructor(internalMessage: string, externalMessage?: string, context?: string) {
-    super(externalMessage);
+  public constructor(
+    internalMessage: string, 
+    externalMessage?: string, 
+    context?: string,
+    statusCode: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+  ) {
+    super(externalMessage || "Internal server error", statusCode);
     this.internalMessage = internalMessage;
     this.externalMessage = externalMessage || "Internal server error";
     this.context = context || "Unknown context";

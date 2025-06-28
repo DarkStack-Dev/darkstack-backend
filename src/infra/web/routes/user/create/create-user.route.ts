@@ -10,12 +10,12 @@ import {
 import { CreateUserPresenter } from './create-user.presenter';
 import { IsPublic } from 'src/infra/web/auth/decorators/is-public.decorator';
 
-@Controller('users')
+@Controller('/users')
 export class CreateUserRoute {
   public constructor(private readonly createUserUsecase: CreateUserUsecase) {}
 
   @IsPublic()
-  @Post()
+  @Post("/signup")
   public async handle(
     @Body() request: CreateUserRouteRequest,
   ): Promise<CreateUserRouteResponse> {
@@ -23,7 +23,7 @@ export class CreateUserRoute {
       name: request.name,
       email: request.email,
       password: request.password,
-      roles: request.roles,
+      roles: request.roles  || ['USER'],
     };
 
     const result = await this.createUserUsecase.execute(input);

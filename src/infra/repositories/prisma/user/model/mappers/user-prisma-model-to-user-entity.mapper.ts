@@ -1,4 +1,4 @@
-import { User } from 'src/domain/entities/user.entitty';
+import { User } from '@/domain/entities/user/user.entitty';
 import UserPrismaModel from '../user.prisma.model';
 
 export class UserPrismaModelToUserEntityMapper {
@@ -11,6 +11,7 @@ export class UserPrismaModelToUserEntityMapper {
       roles: user.roles,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      isActive: user.isActive,
     });
 
     return anUser;

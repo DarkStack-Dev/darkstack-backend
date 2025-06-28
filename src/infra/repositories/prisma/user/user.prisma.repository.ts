@@ -1,6 +1,6 @@
 import { UserGatewayRepository } from 'src/domain/repositories/user/user.gateway.repository';
 import { prismaClient } from '../client.prisma';
-import { User } from 'src/domain/entities/user.entitty';
+import { User } from '@/domain/entities/user/user.entitty';
 import { UserPrismaModelToUserEntityMapper } from './model/mappers/user-prisma-model-to-user-entity.mapper';
 import { UserEntityToUserPrismaModelMapper } from './model/mappers/user-entity-to-user-prisma-model.mapper';
 import { Injectable } from '@nestjs/common';

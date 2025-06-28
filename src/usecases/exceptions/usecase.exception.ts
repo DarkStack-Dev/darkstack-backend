@@ -1,3 +1,4 @@
+import { HttpStatus } from '@nestjs/common';
 import { Exception } from 'src/shared/exceptions/exception';
 
 export class UsecaseException extends Exception {
@@ -5,8 +6,9 @@ export class UsecaseException extends Exception {
     internalMessage: string,
     externalMessage: string,
     context: string,
+    statusCode: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR // Tornar opcional
   ) {
-    super(internalMessage, externalMessage, context);
+    super(internalMessage, externalMessage, context, statusCode);
     this.name = UsecaseException.name;
   }
 }

@@ -7,6 +7,7 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -21,13 +22,107 @@ enum UserRole {
   GUEST
 }
 
-model User {
-  id        String   @id
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime
-  updatedAt DateTime
-  roles     UserRole[]
+enum AuthProvider {
+  EMAIL
+  GITHUB
+  GOOGLE
 }
 
+model User {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  avatar       String?      // URL do avatar
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  roles        UserRole[]   @default([USER])
+  isActive     Boolean      @default(true)
+  emailVerified Boolean     @default(false)
+  
+  // Relacionamentos com diferentes provedores de autenticação
+  emailAuth     EmailAuth?
+  githubAccount GitHubAccount?
+  googleAccount GoogleAccount?
+
+  @@map("users")
+}
+
+// Autenticação por email/senha
+model EmailAuth {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  password  String   // Hash da senha
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamento com User
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_auth")
+}
+
+// Autenticação GitHub
+model GitHubAccount {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  githubId             String    @unique // ID do usuário no GitHub
+  username             String    // Login do GitHub
+  bio                  String?   // Biografia
+  publicRepos          Int       @default(0)
+  followers            Int       @default(0)
+  following            Int       @default(0)
+  githubAccessToken    String?   // Token para API calls
+  githubRefreshToken   String?   // Se disponível
+  tokenExpiresAt       DateTime?
+  lastSyncAt           DateTime  @default(now())
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relacionamento com User
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("github_accounts")
+  @@index([githubId])
+  @@index([userId])
+}
+
+// Autenticação Google
+model GoogleAccount {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  googleId             String    @unique // ID do usuário no Google
+  googleEmail          String    // Email do Google (pode ser diferente do email principal)
+  googleAccessToken    String?   // Token para API calls
+  googleRefreshToken   String?   // Refresh token
+  tokenExpiresAt       DateTime?
+  picture              String?   // URL da foto do perfil do Google
+  locale               String?   // Localização
+  lastSyncAt           DateTime  @default(now())
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relacionamento com User
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("google_accounts")
+  @@index([googleId])
+  @@index([userId])
+}
+
+// Tabela opcional para rastrear tentativas de login
+model LoginAttempt {
+  id            String      @id @default(cuid())
+  userId        String?     // Nullable para tentativas com usuários inexistentes
+  email         String
+  provider      AuthProvider
+  success       Boolean
+  ipAddress     String?
+  userAgent     String?
+  failureReason String?     // Razão da falha (senha errada, usuário não encontrado, etc.)
+  createdAt     DateTime    @default(now())
+
+  @@map("login_attempts")
+  @@index([email])
+  @@index([userId])
+  @@index([createdAt])
+}
