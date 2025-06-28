@@ -1,8 +1,8 @@
-// src/domain/usecases/auth/github-callback/github-callback.usecase.ts - CORRIGIDO v2
+// src/domain/usecases/github-auth/github-callback/github-callback.usecase.ts - CORRIGIDO v3
 
 import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
-import { GitHubApiService } from '@/infra/services/github/github-api/github-api.service';
+import { GitHubService } from '@/infra/services/github/github.service';
 import { UserGatewayRepository } from '@/domain/repositories/user/user.gateway.repository';
 import { GitHubAccountGatewayRepository } from '@/domain/repositories/github-account/github-account.gateway.repository';
 import { JwtService } from '@/infra/services/jwt/jwt.service';
@@ -31,124 +31,149 @@ export type GitHubCallbackOutput = {
 @Injectable()
 export class GitHubCallbackUseCase implements UseCase<GitHubCallbackInput, GitHubCallbackOutput> {
   constructor(
-    private readonly githubApiService: GitHubApiService,
+    private readonly githubService: GitHubService,
     private readonly userRepository: UserGatewayRepository,
     private readonly githubAccountRepository: GitHubAccountGatewayRepository,
     private readonly jwtService: JwtService,
   ) {}
 
   async execute({ code }: GitHubCallbackInput): Promise<GitHubCallbackOutput> {
-    // 1. Trocar código por token (APENAS UMA VEZ!)
-    const tokenData = await this.githubApiService.exchangeCodeForToken(code);
-    
-    // 2. Buscar dados do usuário usando o token obtido
-    const githubUserData = await this.githubApiService.getGitHubUserData(tokenData.accessToken);
-    
-    // 3. Buscar emails do usuário
-    const githubEmails = await this.githubApiService.getGitHubUserEmails(tokenData.accessToken);
-    const primaryEmail = githubEmails.find(email => email.primary);
-    
-    if (!primaryEmail) {
-      throw new Error('No primary email found for GitHub user');
-    }
-
-    let user: User | null;
-    let isNewUser = false;
-
-    // 4. Verificar se já existe uma conta GitHub vinculada
-    let existingGitHubAccount = await this.githubAccountRepository.findByGithubId(githubUserData.id.toString());
-    
-    if (existingGitHubAccount) {
-      // Conta GitHub já existe, buscar o usuário
-      user = await this.userRepository.findById(existingGitHubAccount.getUserId());
-      if (!user) {
-        throw new Error('User not found for existing GitHub account');
+    try {
+      // 1. Trocar código por token
+      console.log('🔄 Step 1: Exchanging code for token...');
+      const tokenData = await this.githubService.exchangeCodeForToken(code);
+      
+      // 2. Buscar dados do usuário
+      console.log('👤 Step 2: Getting user data...');
+      const githubUserData = await this.githubService.getUserData(tokenData.access_token);
+      
+      // 3. Buscar email (público ou privado)
+      console.log('📧 Step 3: Getting user email...');
+      let email = githubUserData.email;
+      
+      if (!email) {
+        console.log('📧 No public email, fetching private emails...');
+        const emails = await this.githubService.getUserEmails(tokenData.access_token);
+        const primaryEmail = emails.find(e => e.primary && e.verified);
+        
+        if (!primaryEmail) {
+          throw new Error('No verified primary email found for GitHub user');
+        }
+        
+        email = primaryEmail.email;
+        console.log('📧 Found primary email:', email);
       }
+
+      let user: User | null;
+      let isNewUser = false;
+
+      // 4. Verificar se já existe uma conta GitHub vinculada
+      console.log('🔍 Step 4: Checking existing GitHub account...');
+      let existingGitHubAccount = await this.githubAccountRepository.findByGithubId(githubUserData.id.toString());
       
-      // Atualizar tokens da conta GitHub (método correto: updateTokens)
-      existingGitHubAccount.updateTokens(
-        tokenData.accessToken,
-        undefined, // GitHub OAuth não retorna refresh token
-        undefined  // GitHub OAuth não retorna expiração
-      );
-      
-      // Atualizar perfil da conta GitHub (parâmetros individuais)
-      existingGitHubAccount.updateProfile(
-        githubUserData.bio || undefined,       // Converter null para undefined
-        githubUserData.publicRepos,
-        githubUserData.followers,
-        githubUserData.following
-      );
-      
-      await this.githubAccountRepository.update(existingGitHubAccount);
-    } else {
-      // Verificar se já existe um usuário com este email
-      const existingUser = await this.userRepository.findByEmail(primaryEmail.email);
-      
-      if (existingUser) {
-        // Usuário já existe, vincular conta GitHub
-        user = existingUser;
+      if (existingGitHubAccount) {
+        console.log('✅ Existing GitHub account found, updating...');
+        // Conta GitHub já existe, buscar o usuário
+        user = await this.userRepository.findById(existingGitHubAccount.getUserId());
+        if (!user) {
+          throw new Error('User not found for existing GitHub account');
+        }
         
-        const githubAccount = GitHubAccount.create({
-          userId: user.getId(),
-          githubId: githubUserData.id.toString(),
-          username: githubUserData.login,
-          bio: githubUserData.bio || undefined,  // Converter null para undefined
-          publicRepos: githubUserData.publicRepos,
-          followers: githubUserData.followers,
-          following: githubUserData.following,
-          githubAccessToken: tokenData.accessToken,
-          githubRefreshToken: undefined,  // GitHub OAuth não retorna refresh token
-          tokenExpiresAt: undefined,      // GitHub OAuth não retorna expiração
-        });
+        // Atualizar tokens da conta GitHub
+        existingGitHubAccount.updateTokens(
+          tokenData.access_token,
+          tokenData.refresh_token,
+          tokenData.expires_in ? new Date(Date.now() + tokenData.expires_in * 1000) : undefined
+        );
         
-        await this.githubAccountRepository.create(githubAccount);
+        // Atualizar perfil da conta GitHub
+        existingGitHubAccount.updateProfile(
+          githubUserData.bio || undefined,
+          githubUserData.public_repos,
+          githubUserData.followers,
+          githubUserData.following
+        );
+        
+        await this.githubAccountRepository.update(existingGitHubAccount);
       } else {
-        // Criar novo usuário
-        isNewUser = true;
+        // Verificar se já existe um usuário com este email
+        console.log('🔍 Step 5: Checking existing user by email...');
+        const existingUser = await this.userRepository.findByEmail(email);
         
-        user = User.create({
-          name: githubUserData.name || githubUserData.login,
-          email: primaryEmail.email,
-          password: '', // Usuários GitHub não têm senha
-          roles: [UserRole.USER],
-        });
-        
-        await this.userRepository.create(user);
-        
-        // Criar conta GitHub vinculada
-        const githubAccount = GitHubAccount.create({
-          userId: user.getId(),
-          githubId: githubUserData.id.toString(),
-          username: githubUserData.login,
-          bio: githubUserData.bio || undefined,  // Converter null para undefined
-          publicRepos: githubUserData.publicRepos,
-          followers: githubUserData.followers,
-          following: githubUserData.following,
-          githubAccessToken: tokenData.accessToken,
-          githubRefreshToken: undefined,  // GitHub OAuth não retorna refresh token
-          tokenExpiresAt: undefined,      // GitHub OAuth não retorna expiração
-        });
-        
-        await this.githubAccountRepository.create(githubAccount);
+        if (existingUser) {
+          console.log('✅ Existing user found, linking GitHub account...');
+          // Usuário já existe, vincular conta GitHub
+          user = existingUser;
+          
+          const githubAccount = GitHubAccount.create({
+            userId: user.getId(),
+            githubId: githubUserData.id.toString(),
+            username: githubUserData.login,
+            bio: githubUserData.bio || undefined,
+            publicRepos: githubUserData.public_repos,
+            followers: githubUserData.followers,
+            following: githubUserData.following,
+            githubAccessToken: tokenData.access_token,
+            githubRefreshToken: tokenData.refresh_token,
+            tokenExpiresAt: tokenData.expires_in ? new Date(Date.now() + tokenData.expires_in * 1000) : undefined,
+          });
+          
+          await this.githubAccountRepository.create(githubAccount);
+        } else {
+          console.log('🆕 Creating new user...');
+          // Criar novo usuário
+          isNewUser = true;
+          
+          user = User.create({
+            name: githubUserData.name || githubUserData.login,
+            email: email,
+            password: '', // Usuários GitHub não têm senha
+            roles: [UserRole.USER],
+            isOAuthUser: true,
+          });
+          
+          await this.userRepository.create(user);
+          
+          // Criar conta GitHub vinculada
+          const githubAccount = GitHubAccount.create({
+            userId: user.getId(),
+            githubId: githubUserData.id.toString(),
+            username: githubUserData.login,
+            bio: githubUserData.bio || undefined,
+            publicRepos: githubUserData.public_repos,
+            followers: githubUserData.followers,
+            following: githubUserData.following,
+            githubAccessToken: tokenData.access_token,
+            githubRefreshToken: tokenData.refresh_token,
+            tokenExpiresAt: tokenData.expires_in ? new Date(Date.now() + tokenData.expires_in * 1000) : undefined,
+          });
+          
+          await this.githubAccountRepository.create(githubAccount);
+        }
       }
+
+      // 5. Gerar tokens JWT
+      console.log('🔑 Step 6: Generating JWT tokens...');
+      const authToken = this.jwtService.generateAuthToken(user.getId(), user.getRoles());
+      const refreshToken = this.jwtService.generateRefreshToken(user.getId(), user.getRoles());
+
+      console.log('✅ GitHub authentication completed successfully!');
+      
+      return {
+        authToken,
+        refreshToken,
+        user: {
+          id: user.getId(),
+          name: user.getName(),
+          email: user.getEmail(),
+          roles: user.getRoles(),
+          isActive: user.getIsActivate(),
+        },
+        isNewUser,
+      };
+    } catch (error) {
+      console.log('❌ GitHub callback error:', error);
+      throw error;
     }
-
-    // 5. Gerar tokens JWT
-    const authToken = this.jwtService.generateAuthToken(user.getId(), user.getRoles());
-    const refreshToken = this.jwtService.generateRefreshToken(user.getId(), user.getRoles());
-
-    return {
-      authToken,
-      refreshToken,
-      user: {
-        id: user.getId(),
-        name: user.getName(),
-        email: user.getEmail(),
-        roles: user.getRoles(),
-        isActive: user.getIsActivate(),
-      },
-      isNewUser, // isNewUser está no nível raiz, não dentro de user
-    };
   }
 }

@@ -1,38 +1,16 @@
-// src/infra/services/github/github-api/github-api.service.ts - CORRIGIDO
-
+// src/infra/services/github/github-api/github-api.service.ts - ATUALIZADO
 import { Injectable } from '@nestjs/common';
+import { GitHubService, GitHubEmailData } from '../github.service';
+import { GitHubUserData, GitHubTokenResponse } from '../types';
 import { ServiceException } from '../../exceptions/service.exception';
 
-export type GitHubTokenData = {
-  accessToken: string;
-  tokenType: string;
-  scope: string;
-};
-
-export type GitHubUserData = {
-  id: number;
-  login: string;
-  name: string | null;
-  email: string | null;
-  bio: string | null;
-  publicRepos: number;
-  followers: number;
-  following: number;
-};
-
-export type GitHubEmailData = {
-  email: string;
-  primary: boolean;
-  verified: boolean;
-  visibility: string | null;
-};
-
 @Injectable()
-export class GitHubApiService {
+export class GitHubApiService extends GitHubService {
   private readonly clientId: string;
   private readonly clientSecret: string;
 
   constructor() {
+    super();
     this.clientId = process.env.GITHUB_CLIENT_ID!;
     this.clientSecret = process.env.GITHUB_CLIENT_SECRET!;
 
@@ -45,14 +23,11 @@ export class GitHubApiService {
     }
   }
 
-  /**
-   * Troca o código OAuth por um token de acesso
-   */
-  async exchangeCodeForToken(code: string): Promise<GitHubTokenData> {
+  async exchangeCodeForToken(code: string): Promise<GitHubTokenResponse> {
     const tokenRequest = {
       client_id: this.clientId,
       code,
-      redirect_uri: 'http://localhost:3000/auth/github/callback',
+      redirect_uri: process.env.GITHUB_REDIRECT_URI || 'http://localhost:3000/auth/github/callback',
       client_secret: this.clientSecret,
     };
 
@@ -89,7 +64,6 @@ export class GitHubApiService {
         hasError: !!data.error
       });
 
-      // Se houver erro na resposta
       if (data.error) {
         console.log('❌ GitHub Token Exchange Error:', JSON.stringify(data, null, 2));
         throw new ServiceException(
@@ -99,7 +73,6 @@ export class GitHubApiService {
         );
       }
 
-      // Se não houver access_token
       if (!data.access_token) {
         console.log('❌ GitHub Token Exchange Error:', JSON.stringify(data, null, 2));
         throw new ServiceException(
@@ -110,9 +83,11 @@ export class GitHubApiService {
       }
 
       return {
-        accessToken: data.access_token,
-        tokenType: data.token_type || 'bearer',
+        access_token: data.access_token,
+        token_type: data.token_type || 'bearer',
         scope: data.scope || '',
+        refresh_token: data.refresh_token,
+        expires_in: data.expires_in,
       };
     } catch (error) {
       if (error instanceof ServiceException) {
@@ -127,11 +102,7 @@ export class GitHubApiService {
     }
   }
 
-  /**
-   * Busca dados do usuário do GitHub usando o token
-   * IMPORTANTE: Use o token já obtido, não tente trocar o código novamente!
-   */
-  async getGitHubUserData(accessToken: string): Promise<GitHubUserData> {
+  async getUserData(accessToken: string): Promise<GitHubUserData> {
     console.log('👤 Getting GitHub user data...');
     
     try {
@@ -162,12 +133,13 @@ export class GitHubApiService {
       return {
         id: userData.id,
         login: userData.login,
-        name: userData.name,
-        email: userData.email,
+        avatar_url: userData.avatar_url,
         bio: userData.bio,
-        publicRepos: userData.public_repos || 0,
+        public_repos: userData.public_repos || 0,
         followers: userData.followers || 0,
         following: userData.following || 0,
+        email: userData.email,
+        name: userData.name,
       };
     } catch (error) {
       if (error instanceof ServiceException) {
@@ -182,10 +154,7 @@ export class GitHubApiService {
     }
   }
 
-  /**
-   * Busca emails do usuário do GitHub
-   */
-  async getGitHubUserEmails(accessToken: string): Promise<GitHubEmailData[]> {
+  async getUserEmails(accessToken: string): Promise<GitHubEmailData[]> {
     console.log('📧 Fetching GitHub user emails...');
     
     try {
@@ -206,10 +175,11 @@ export class GitHubApiService {
       }
 
       const emails = await response.json();
-      const primaryEmail = emails.find((email: any) => email.primary);
+      console.log('📧 GitHub Emails found:', emails.length);
       
+      const primaryEmail = emails.find((email: any) => email.primary);
       if (primaryEmail) {
-        console.log('📧 Found primary email:', primaryEmail.email);
+        console.log('📧 Primary email found:', primaryEmail.email);
       }
 
       return emails.map((email: any) => ({
@@ -229,5 +199,23 @@ export class GitHubApiService {
         GitHubApiService.name,
       );
     }
+  }
+
+  getAuthorizationUrl(state?: string): string {
+    const clientId = this.clientId;
+    const redirectUri = process.env.GITHUB_REDIRECT_URI || 'http://localhost:3000/auth/github/callback';
+    const scope = 'user:email'; // Scope necessário para acessar emails
+    
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: scope,
+    });
+    
+    if (state) {
+      params.append('state', state);
+    }
+    
+    return `https://github.com/login/oauth/authorize?${params.toString()}`;
   }
 }
