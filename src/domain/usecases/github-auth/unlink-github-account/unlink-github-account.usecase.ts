@@ -32,7 +32,7 @@ export class UnlinkGitHubAccountUseCase implements UseCase<UnlinkGitHubAccountIn
     }
 
     // 2. Remover vinculação
-    await this.githubAccountGatewayRepository.deleteByUserId(userId);
+    // await this.githubAccountGatewayRepository.deleteByUserId(userId);
 
     return {
       success: true,
