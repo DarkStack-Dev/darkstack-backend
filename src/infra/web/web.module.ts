@@ -24,6 +24,10 @@ import { LinkGitHubAccountRoute } from './routes/github-auth/link/link-github-ac
 import { UnlinkGitHubAccountRoute } from './routes/github-auth/unlink/unlink-github-account.route';
 import { UserProvidersRoute } from './routes/user/providers/user-providers.route';
 
+// Google Auth Routes
+import { StartGoogleAuthRoute } from './routes/google-auth/start/start-google-auth.route';
+import { GoogleCallbackRoute } from './routes/google-auth/callback/google-callback.route';
+
 @Module({
   imports: [ServiceModule, UsecaseModule],
   controllers: [
@@ -40,6 +44,10 @@ import { UserProvidersRoute } from './routes/user/providers/user-providers.route
     GitHubCallbackRoute,
     LinkGitHubAccountRoute,
     UnlinkGitHubAccountRoute,
+
+    // Google auth routes
+    StartGoogleAuthRoute,
+    GoogleCallbackRoute,
   ],
   providers: [
     AuthGuardProvider,
