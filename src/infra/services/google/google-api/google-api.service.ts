@@ -1,4 +1,4 @@
-// src/infra/services/google/google-api/google-api.service.ts
+// src/infra/services/google/google-api/google-api.service.ts - MELHORADO
 
 import { Injectable } from '@nestjs/common';
 import { ServiceException } from '../../exceptions/service.exception';
@@ -68,8 +68,27 @@ export class GoogleApiService {
       console.log('📥 Google Response Status:', response.status);
 
       if (!response.ok) {
+        // ✅ MELHORADO: Capturar detalhes do erro
+        let errorDetails = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorDetails = JSON.stringify(errorData);
+          console.log('❌ Google API Error Details:', errorData);
+          
+          // ✅ Tratar erro específico de código já usado
+          if (errorData.error === 'invalid_grant') {
+            throw new ServiceException(
+              `Google authorization code already used or invalid: ${errorDetails}`,
+              'Código de autorização já foi usado ou expirou. Tente fazer login novamente.',
+              GoogleApiService.name,
+            );
+          }
+        } catch (jsonError) {
+          errorDetails = response.statusText;
+        }
+
         throw new ServiceException(
-          `Google API returned ${response.status}: ${response.statusText}`,
+          `Google API returned ${response.status}: ${errorDetails}`,
           'Erro ao autenticar com Google',
           GoogleApiService.name,
         );
@@ -86,9 +105,21 @@ export class GoogleApiService {
       // Se houver erro na resposta
       if (data.error) {
         console.log('❌ Google Token Exchange Error:', JSON.stringify(data, null, 2));
+        
+        // ✅ MELHORADO: Mensagens de erro mais específicas
+        let userMessage = 'Erro ao obter token de acesso do Google';
+        
+        if (data.error === 'invalid_grant') {
+          userMessage = 'Código de autorização já foi usado ou expirou. Tente fazer login novamente.';
+        } else if (data.error === 'invalid_client') {
+          userMessage = 'Configuração do Google OAuth inválida.';
+        } else if (data.error === 'invalid_request') {
+          userMessage = 'Requisição inválida para o Google.';
+        }
+
         throw new ServiceException(
           `Google token exchange returned error: ${JSON.stringify(data)}`,
-          'Erro ao obter token de acesso do Google',
+          userMessage,
           GoogleApiService.name,
         );
       }
@@ -115,6 +146,15 @@ export class GoogleApiService {
         throw error;
       }
 
+      // ✅ MELHORADO: Detectar problemas de rede
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new ServiceException(
+          `Network error while contacting Google: ${error.message}`,
+          'Erro de conexão com o Google. Verifique sua internet.',
+          GoogleApiService.name,
+        );
+      }
+
       throw new ServiceException(
         `Failed to exchange Google code for token: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'Erro ao autenticar com Google',
@@ -138,8 +178,18 @@ export class GoogleApiService {
       });
 
       if (!response.ok) {
+        // ✅ MELHORADO: Capturar detalhes do erro
+        let errorDetails = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorDetails = JSON.stringify(errorData);
+          console.log('❌ Google User API Error Details:', errorData);
+        } catch (jsonError) {
+          errorDetails = response.statusText;
+        }
+
         throw new ServiceException(
-          `Google API returned ${response.status}: ${response.statusText}`,
+          `Google User API returned ${response.status}: ${errorDetails}`,
           'Erro ao buscar dados do usuário no Google',
           GoogleApiService.name,
         );
