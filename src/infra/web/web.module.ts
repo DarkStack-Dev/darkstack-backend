@@ -22,6 +22,11 @@ import { StartGitHubAuthRoute } from './routes/github-auth/start/start-github-au
 import { GitHubCallbackRoute } from './routes/github-auth/callback/github-callback.route';
 import { LinkGitHubAccountRoute } from './routes/github-auth/link/link-github-account.route';
 import { UnlinkGitHubAccountRoute } from './routes/github-auth/unlink/unlink-github-account.route';
+import { UserProvidersRoute } from './routes/user/providers/user-providers.route';
+
+// Google Auth Routes
+import { StartGoogleAuthRoute } from './routes/google-auth/start/start-google-auth.route';
+import { GoogleCallbackRoute } from './routes/google-auth/callback/google-callback.route';
 
 @Module({
   imports: [ServiceModule, UsecaseModule],
@@ -32,12 +37,17 @@ import { UnlinkGitHubAccountRoute } from './routes/github-auth/unlink/unlink-git
     RefreshAuthTokenRoute,
     FindByIdUserRoute,
     MeUserRoute,
+    // UserProvidersRoute, // ✅ NOVO
     
     // GitHub auth routes
     StartGitHubAuthRoute,
     GitHubCallbackRoute,
     LinkGitHubAccountRoute,
     UnlinkGitHubAccountRoute,
+
+    // Google auth routes
+    StartGoogleAuthRoute,
+    GoogleCallbackRoute,
   ],
   providers: [
     AuthGuardProvider,

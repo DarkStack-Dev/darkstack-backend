@@ -116,4 +116,32 @@ export class GitHubAccountPrismaRepository extends GitHubAccountGatewayRepositor
       },
     });
   }
+
+  
+  // ✅ NOVO: Implementação do método deleteByUserId
+  async deleteByUserId(userId: string): Promise<void> {
+    console.log(`🗑️ Deletando conta GitHub para userId: ${userId}`);
+    
+    // Verificar se existe uma conta GitHub para este usuário
+    const existingAccount = await prismaClient.gitHubAccount.findUnique({
+      where: {
+        userId: userId,
+      },
+    });
+
+    if (!existingAccount) {
+      console.log(`⚠️ Nenhuma conta GitHub encontrada para userId: ${userId}`);
+      return; // Não fazer nada se não encontrar
+    }
+
+    // Deletar a conta GitHub
+    await prismaClient.gitHubAccount.delete({
+      where: {
+        userId: userId,
+      },
+    });
+
+    console.log(`✅ Conta GitHub deletada com sucesso para userId: ${userId}`);
+  }
+
 }

@@ -8,4 +8,5 @@ export abstract class GitHubAccountGatewayRepository {
   abstract create(githubAccount: GitHubAccount): Promise<void>;
   abstract update(githubAccount: GitHubAccount): Promise<void>;
   abstract delete(id: string): Promise<void>;
+  abstract deleteByUserId(userId: string): Promise<void>; // ✅ NOVO método
 }

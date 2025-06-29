@@ -8,6 +8,8 @@ import { StartGitHubAuthUseCase } from '@/domain/usecases/github-auth/start-gith
 import { GitHubCallbackUseCase } from '@/domain/usecases/github-auth/github-callback/github-callback.usecase';
 import { LinkGitHubAccountUseCase } from '@/domain/usecases/github-auth/link-github-account/link-github-account.usecase';
 import { UnlinkGitHubAccountUseCase } from '@/domain/usecases/github-auth/unlink-github-account/unlink-github-account.usecase';
+import { StartGoogleAuthUseCase } from '@/domain/usecases/google-auth/start-google-auth/start-google-auth.usecase';
+import { GoogleCallbackUseCase } from '@/domain/usecases/google-auth/google-callback/google-callback.usecase';
 import { DatabaseModule } from 'src/infra/repositories/database.module';
 import { ServiceModule } from 'src/infra/services/service.module';
 
@@ -25,6 +27,10 @@ import { ServiceModule } from 'src/infra/services/service.module';
     GitHubCallbackUseCase,
     LinkGitHubAccountUseCase,
     UnlinkGitHubAccountUseCase,
+
+    // Google auth use cases
+    StartGoogleAuthUseCase,
+    GoogleCallbackUseCase,
   ],
   exports: [
     // User use cases
@@ -38,6 +44,10 @@ import { ServiceModule } from 'src/infra/services/service.module';
     GitHubCallbackUseCase,
     LinkGitHubAccountUseCase,
     UnlinkGitHubAccountUseCase,
+
+    // Google auth use cases
+    StartGoogleAuthUseCase,
+    GoogleCallbackUseCase,
   ],
 })
 export class UsecaseModule {}
