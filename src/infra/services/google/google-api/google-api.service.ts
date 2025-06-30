@@ -47,7 +47,7 @@ export class GoogleApiService {
       client_secret: this.clientSecret,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: 'http://localhost:3000/auth/google/callback',
+      redirect_uri: process.env.GITHUB_REDIRECT_URI || 'http://localhost:3000/auth/google/callback',
     };
 
     console.log('📤 Google Token Exchange Request:', {
