@@ -1,4 +1,5 @@
 import { compareSync, genSaltSync, hashSync } from "bcryptjs";
+import * as crypto from 'crypto';
 
 export class Utils{
   public static GenerateUUID(): string {
