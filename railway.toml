@@ -1,0 +1,10 @@
+[build]
+builder = "nixpacks"
+
+[build.nixpacksConfig]
+setup = ["npm install"]
+build = ["npm run build"]
+start = ["npm run start:prod"]
+
+[deploy]
+restartPolicyType = "never"
