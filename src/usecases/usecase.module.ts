@@ -12,6 +12,8 @@ import { StartGoogleAuthUseCase } from '@/domain/usecases/google-auth/start-goog
 import { GoogleCallbackUseCase } from '@/domain/usecases/google-auth/google-callback/google-callback.usecase';
 import { DatabaseModule } from 'src/infra/repositories/database.module';
 import { ServiceModule } from 'src/infra/services/service.module';
+// Project use cases
+import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-projects.usecase';
 
 @Module({
   imports: [DatabaseModule, ServiceModule],
@@ -31,6 +33,9 @@ import { ServiceModule } from 'src/infra/services/service.module';
     // Google auth use cases
     StartGoogleAuthUseCase,
     GoogleCallbackUseCase,
+
+    // Project use cases
+    CreateProjectsUseCase,
   ],
   exports: [
     // User use cases
@@ -48,6 +53,10 @@ import { ServiceModule } from 'src/infra/services/service.module';
     // Google auth use cases
     StartGoogleAuthUseCase,
     GoogleCallbackUseCase,
+
+    // Project use cases
+    CreateProjectsUseCase,
+    
   ],
 })
 export class UsecaseModule {}

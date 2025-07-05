@@ -28,6 +28,13 @@ import { UserProvidersRoute } from './routes/user/providers/user-providers.route
 import { StartGoogleAuthRoute } from './routes/google-auth/start/start-google-auth.route';
 import { GoogleCallbackRoute } from './routes/google-auth/callback/google-callback.route';
 
+// Project routes
+import { CreateProjectRoute } from './routes/projects/create/create-project.route';
+import { FindProjectByIdRoute } from './routes/projects/find-by-id/find-project-by-id.route';
+import { ListProjectsRoute } from './routes/projects/list/list-projects.route';
+import { MyProjectsRoute } from './routes/projects/my-projects/my-projects.route';
+import { DeleteProjectRoute } from './routes/projects/delete/delete-project.route';
+
 @Module({
   imports: [ServiceModule, UsecaseModule],
   controllers: [
@@ -48,6 +55,13 @@ import { GoogleCallbackRoute } from './routes/google-auth/callback/google-callba
     // Google auth routes
     StartGoogleAuthRoute,
     GoogleCallbackRoute,
+
+    // Project routes
+    CreateProjectRoute,
+    FindProjectByIdRoute,
+    ListProjectsRoute,
+    MyProjectsRoute,
+    DeleteProjectRoute,
   ],
   providers: [
     AuthGuardProvider,

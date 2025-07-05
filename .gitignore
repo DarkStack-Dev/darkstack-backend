@@ -61,3 +61,18 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 ./Dockerfile
 docker-compose.yml
 Dockerfile
+
+# Adicionar ao seu .gitignore existente:
+
+# Uploads (não versionar arquivos de usuário)
+public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/projects/.gitkeep
+!public/uploads/avatars/.gitkeep
+
+# Logs de upload
+upload-errors.log
+
+# Arquivos temporários de imagem
+*.tmp
+temp-uploads/
