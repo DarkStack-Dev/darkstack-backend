@@ -28,6 +28,14 @@ enum AuthProvider {
   GOOGLE
 }
 
+// Enum para status do projeto
+enum ProjectStatus {
+  PENDING   // Aguardando aprovação
+  APPROVED  // Aprovado e visível
+  REJECTED  // Rejeitado pelos moderadores
+  ARCHIVED  // Arquivado pelo dono
+}
+
 model User {
   id           String       @id @default(cuid())
   name         String
@@ -44,7 +52,97 @@ model User {
   githubAccount GitHubAccount?
   googleAccount GoogleAccount?
 
+  // Relacionamentos com projetos
+  ownedProjects     Project[]            @relation("ProjectOwner")
+  approvedProjects  Project[]            @relation("ProjectApprover")
+  
+  // Relacionamentos com participantes
+  participations    ProjectParticipant[] @relation("UserParticipant")
+  addedParticipants ProjectParticipant[] @relation("ParticipantAdder")
+
   @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String
+  status      ProjectStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt
+  deletedAt   DateTime?     // Soft delete
+  
+  // Relacionamentos
+  ownerId     String
+  owner       User          @relation("ProjectOwner", fields: [ownerId], references: [id])
+  
+  // Moderação
+  approvedById String?      // Qual moderador aprovou
+  approvedBy   User?        @relation("ProjectApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?    // Quando foi aprovado
+  rejectionReason String?   // Motivo da rejeição, se houver
+  
+  // Participantes do projeto
+  participants ProjectParticipant[]
+  images       ProjectImage[]
+
+  @@map("projects")
+}
+
+enum ImageType {
+  JPG
+  JPEG
+  PNG
+  WEBP
+  GIF
+  SVG
+}
+
+model ProjectImage {
+  id        String   @id @default(cuid())
+  projectId String
+  filename  String
+  type      ImageType
+  size      Int?     // Tamanho em bytes
+  width     Int?     // Largura em pixels
+  height    Int?     // Altura em pixels
+  
+  // Armazenamento da imagem
+  base64    String?  @db.Text // Para armazenar base64 (apenas para imagens pequenas)
+  url       String?  // URL externa (S3, Cloudinary, etc.)
+  
+  // Metadados adicionais (JSON)
+  metadata  Json?    // Informações extras como EXIF, configurações, etc.
+  
+  // Ordenação e configuração
+  order     Int      @default(0) // Para ordenar as imagens
+  isMain    Boolean  @default(false) // Imagem principal do projeto
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamento
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_images")
+}
+
+model ProjectParticipant {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  addedById String
+  role      String?  // "COLLABORATOR", "DESIGNER", "DEVELOPER", etc.
+  joinedAt  DateTime @default(now())
+  
+  // Relacionamentos
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserParticipant", fields: [userId], references: [id])
+  addedBy   User     @relation("ParticipantAdder", fields: [addedById], references: [id])
+
+  @@unique([projectId, userId]) // Um usuário só pode participar uma vez do mesmo projeto
+  @@map("project_participants")
 }
 
 // Autenticação por email/senha

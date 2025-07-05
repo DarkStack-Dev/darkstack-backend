@@ -42,7 +42,7 @@ export class CreateUserUsecase
       throw exception;
     }
 
-    const anUser = User.create({name, email, password, roles });
+    const anUser = User.create({name: name, email: email, password: password, roles: roles});
 
     await this.userGateway.create(anUser);
 

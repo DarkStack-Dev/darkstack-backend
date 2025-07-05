@@ -1,6 +1,6 @@
 // src/domain/entities/user/user.entitty.ts - Versão corrigida
 
-import {Utils} from "@/shared/utils/utils";
+import { Utils } from "@/shared/utils/utils";
 import { Entity } from "../../shared/entities/entity";
 import { UserValidatorFactory } from "../../factories/user/user.validator.factory";
 import { UserPasswordValidatorFactory } from "../../factories/user/user-password.validator.factory";
@@ -12,6 +12,7 @@ export type UserCreateDto = {
   name: string;
   roles: UserRole[];
   isOAuthUser?: boolean; // ✅ Adicionar flag para OAuth
+  avatar?: string; // ✅ Adicionar avatar
 }
 
 export type UserWithDto = {
@@ -23,27 +24,34 @@ export type UserWithDto = {
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;
+  isOAuthUser?: boolean; // ✅ Adicionar flag para OAuth
+  avatar: string; // ✅ Adicionar avatar
+  emailVerified: boolean; // ✅ Adicionar verificação de e-mail
 };
 
 export class User extends Entity {
   private name: string;
   private email: string;
   private password: string;
-  private roles: UserRole[];  
+  private roles: UserRole[];
+  private avatar: string;
+  private emailVerified: boolean;
 
-  constructor(id: string, name: string, email: string, password: string, roles: UserRole[], createdAt: Date, updatedAt: Date, isActive: boolean) {
+  constructor(id: string, name: string, email: string, roles: UserRole[], avatar: string, emailVerified: boolean, password: string,  createdAt: Date, updatedAt: Date, isActive: boolean) {
     super(id, createdAt, updatedAt, isActive);
     this.name = name;
     this.email = email;
     this.password = password;
     this.roles = roles;
+    this.avatar = avatar;
+    this.emailVerified = emailVerified;
     this.validate();
   }
 
-  public static create({name, email, password = '', roles, isOAuthUser = false}: UserCreateDto): User {
+  public static create({name, email, roles, password = '', isOAuthUser = false, avatar=''}: UserCreateDto): User {
     const id = Utils.GenerateUUID();
     const isActive = true;
-
+    const emailVerified = false; // ✅ Definir como false por padrão
     // ✅ Só validar senha se não for OAuth e se tiver senha
     if (!isOAuthUser && password) {
       UserPasswordValidatorFactory.create().validate(password);
@@ -54,7 +62,7 @@ export class User extends Entity {
     
     const createdAt = new Date();
     const updatedAt = new Date();
-    return new User(id, name, email, hashedPassword, roles, createdAt, updatedAt, isActive);
+    return new User(id, name, email, roles, avatar, emailVerified, hashedPassword, createdAt, updatedAt, isActive);
   }
 
   public static with({
@@ -65,9 +73,11 @@ export class User extends Entity {
     roles,
     createdAt,
     updatedAt,
-    isActive = true
+    isActive = true,
+    avatar,
+    emailVerified
   }: UserWithDto): User {
-    return new User(id, name, email,  password, roles, createdAt, updatedAt, isActive);
+    return new User(id, name, email, roles, avatar, emailVerified, password, createdAt, updatedAt, isActive);
   }
 
   protected validate(): void {
@@ -88,6 +98,14 @@ export class User extends Entity {
 
   public getRoles(): UserRole[] {
     return this.roles;
+  }
+
+  public getAvatar(): string | undefined {
+    return this.avatar;
+  }
+
+  public isEmailVerified(): boolean {
+    return this.emailVerified ?? false; // ✅ Retornar false se não definido
   }
 
   public comparePassword(password: string): boolean {

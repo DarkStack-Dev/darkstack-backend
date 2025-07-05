@@ -13,6 +13,8 @@ export class UserPrismaModelToUserEntityMapper {
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
       isActive: model.isActive,
+      avatar: model.avatar || null,
+      emailVerified: model.emailVerified ?? false,
     });
   }
 }

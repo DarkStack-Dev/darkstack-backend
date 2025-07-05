@@ -25,12 +25,12 @@ export class CreateUserUseCase implements UseCase<CreateUserInput, CreateUserOut
     if (existentUser) {
       throw new EmailAlreadyExistsUsecaseException(
         `Email already exists while creating user with email ${email} in ${CreateUserUseCase.name}.`,
-        "O -email já está sendo utilizado.",
+        "O e-mail já está sendo utilizado.",
         CreateUserUseCase.name,
       )
     }
 
-    const anUser = User.create({name, email, password, roles});
+    const anUser = User.create({name, email, password, roles, avatar: ''});
 
     await this.userGatewayRepository.create(anUser);
 
