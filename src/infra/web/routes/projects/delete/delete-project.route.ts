@@ -1,22 +1,24 @@
-// ===== ROUTE =====
+// src/infra/web/routes/projects/delete/delete-project.route.ts - ATUALIZADA
 
-// src/infra/web/routes/projects/delete/delete-project.route.ts
-
-import { Controller, Delete, Param, Req, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Controller, Delete, Param, Req, Post } from '@nestjs/common';
 import { Request } from 'express';
-import { ProjectsGatewayRepository } from '@/domain/repositories/projects/projects.gateway.repository';
-import { ImageUploadService } from '@/infra/services/image-upload/image-upload.service';
 import { DeleteProjectResponse } from './delete-project.dto';
 import { DeleteProjectPresenter } from './delete-project.presenter';
 import { Roles } from '@/infra/web/auth/decorators/roles.decorator';
+import { DeleteProjectUseCase } from '@/domain/usecases/projects/delete/delete-project.usecase';
+import { RestoreProjectUseCase } from '@/domain/usecases/projects/restore/restore-project.usecase';
 
 @Controller('/projects')
 export class DeleteProjectRoute {
   constructor(
-    private readonly projectsRepository: ProjectsGatewayRepository,
-    private readonly imageUploadService: ImageUploadService,
+    private readonly deleteProjectUseCase: DeleteProjectUseCase,
+    private readonly restoreProjectUseCase: RestoreProjectUseCase,
   ) {}
 
+  /**
+   * Soft delete - marca projeto como deletado
+   * DELETE /projects/:id
+   */
   @Delete('/:id')
   public async handle(
     @Param('id') projectId: string,
@@ -25,46 +27,24 @@ export class DeleteProjectRoute {
     const userId = req['userId'];
     const userRoles = req['user']?.roles || [];
 
-    console.log(`🗑️ Tentativa de deletar projeto ${projectId} por userId: ${userId}`);
+    console.log(`🗑️ API: Soft delete do projeto ${projectId} por userId: ${userId}`);
 
-    // Buscar o projeto
-    const project = await this.projectsRepository.findById(projectId);
-    
-    if (!project) {
-      throw new NotFoundException('Projeto não encontrado');
-    }
+    const output = await this.deleteProjectUseCase.execute({
+      projectId,
+      userId,
+      userRoles,
+      isPermanent: false,
+    });
 
-    // Verificar permissões: apenas o dono ou admin pode deletar
-    const isOwner = project.getOwnerId() === userId;
-    const isAdmin = userRoles.includes('ADMIN') || userRoles.includes('MODERATOR');
+    console.log(`✅ API: ${output.message}`);
 
-    if (!isOwner && !isAdmin) {
-      throw new ForbiddenException('Você não tem permissão para deletar este projeto');
-    }
-
-    try {
-      // Fazer soft delete
-      await this.projectsRepository.softDelete(projectId);
-      
-      const deletedAt = new Date();
-
-      console.log(`✅ Projeto ${project.getName()} deletado com sucesso`);
-
-      // Opcionalmente, deletar imagens do storage (comentado para permitir recuperação)
-      // for (const image of project.getImages()) {
-      //   if (image.filename) {
-      //     await this.imageUploadService.deleteImage(image.filename, 'projects');
-      //   }
-      // }
-
-      return DeleteProjectPresenter.toHttp(deletedAt);
-    } catch (error) {
-      console.error('❌ Erro ao deletar projeto:', error);
-      throw error;
-    }
+    return DeleteProjectPresenter.toHttp(output);
   }
 
-  // Rota adicional para hard delete (apenas admins)
+  /**
+   * Hard delete - remove projeto permanentemente (apenas admins)
+   * DELETE /projects/:id/permanent
+   */
   @Delete('/:id/permanent')
   @Roles('ADMIN')
   public async hardDelete(
@@ -72,44 +52,49 @@ export class DeleteProjectRoute {
     @Req() req: Request,
   ): Promise<DeleteProjectResponse> {
     const userId = req['userId'];
+    const userRoles = req['user']?.roles || [];
 
-    console.log(`💀 Hard delete do projeto ${projectId} por admin ${userId}`);
+    console.log(`💀 API: Hard delete do projeto ${projectId} por admin ${userId}`);
 
-    // Buscar o projeto (incluindo soft deleted)
-    const project = await this.projectsRepository.findByIdIncludingDeleted(projectId);
-    
-    if (!project) {
-      throw new NotFoundException('Projeto não encontrado');
-    }
+    const output = await this.deleteProjectUseCase.execute({
+      projectId,
+      userId,
+      userRoles,
+      isPermanent: true,
+    });
 
-    try {
-      // Deletar imagens do storage
-      for (const image of project.getImages()) {
-        if (image.filename) {
-          try {
-            await this.imageUploadService.deleteImage(image.filename, 'projects');
-            console.log(`🗑️ Imagem deletada: ${image.filename}`);
-          } catch (error) {
-            console.warn(`⚠️ Erro ao deletar imagem ${image.filename}:`, error);
-          }
-        }
-      }
+    console.log(`✅ API: ${output.message}`);
 
-      // Hard delete do banco
-      await this.projectsRepository.hardDelete(projectId);
-      
-      const deletedAt = new Date();
+    return DeleteProjectPresenter.toHttp(output);
+  }
 
-      console.log(`✅ Projeto ${project.getName()} removido permanentemente`);
+  /**
+   * Restaurar projeto deletado (apenas admin/moderador)
+   * POST /projects/:id/restore
+   */
+  @Post('/:id/restore')
+  @Roles('ADMIN', 'MODERATOR')
+  public async restore(
+    @Param('id') projectId: string,
+    @Req() req: Request,
+  ): Promise<{ success: boolean; message: string; restoredAt: Date }> {
+    const userId = req['userId'];
+    const userRoles = req['user']?.roles || [];
 
-      return {
-        success: true,
-        message: 'Projeto removido permanentemente',
-        deletedAt,
-      };
-    } catch (error) {
-      console.error('❌ Erro ao remover projeto permanentemente:', error);
-      throw error;
-    }
+    console.log(`🔄 API: Restaurando projeto ${projectId} por ${userId}`);
+
+    const output = await this.restoreProjectUseCase.execute({
+      projectId,
+      userId,
+      userRoles,
+    });
+
+    console.log(`✅ API: ${output.message}`);
+
+    return {
+      success: output.success,
+      message: output.message,
+      restoredAt: output.restoredAt,
+    };
   }
 }

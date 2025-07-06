@@ -1,48 +1,52 @@
-// ===== PRESENTER =====
+// src/infra/web/routes/projects/find-by-id/find-project-by-id.presenter.ts - ATUALIZADA
 
-// src/infra/web/routes/projects/find-by-id/find-project-by-id.presenter.ts
-
-import { Projects } from '@/domain/entities/projects/projects.entity';
+import { FindProjectByIdOutput } from '@/domain/usecases/projects/find-by-id/find-project-by-id.usecase';
 import { FindProjectByIdResponse } from './find-project-by-id.dto';
 
 export class FindProjectByIdPresenter {
-  public static toHttp(project: Projects, currentUserId?: string): FindProjectByIdResponse {
+  public static toHttp(output: FindProjectByIdOutput): FindProjectByIdResponse {
     return {
-      id: project.getId(),
-      name: project.getName(),
-      description: project.getDescription(),
-      status: project.getStatus(),
-      createdAt: project.getCreatedAt(),
-      updatedAt: project.getUpdatedAt(),
+      id: output.id,
+      name: output.name,
+      description: output.description,
+      status: output.status,
+      createdAt: output.createdAt,
+      updatedAt: output.updatedAt,
+      
+      // Dados do proprietário (agora vem do use case)
       owner: {
-        id: project.getOwnerId(),
-        name: 'Unknown', // TODO: Buscar dados do owner
-        email: 'unknown@example.com',
-        avatar: undefined,
+        id: output.owner.id,
+        name: output.owner.name,
+        email: output.owner.email,
+        avatar: output.owner.avatar,
       },
-      images: project.getImages().map(image => ({
+      
+      // Imagens processadas
+      images: output.images.map(image => ({
         id: image.id,
         filename: image.filename,
-        url: image.url || '',
+        url: image.url,
         isMain: image.isMain,
         order: image.order,
       })),
-      participants: project.getParticipants()?.map(participant => {
-        const base = {
-          id: participant.id,
-          user: {
-            id: participant.userId,
-            name: 'Unknown', // TODO: Buscar dados do usuário
-            email: 'unknown@example.com',
-          },
-          joinedAt: participant.joinedAt,
-        };
-        return participant.role != null
-          ? { ...base, role: participant.role }
-          : base;
-      }) || [],
-      participantCount: project.getParticipants()?.length || 0,
-      isOwner: currentUserId === project.getOwnerId(),
+      
+      // Participantes com dados completos (agora vem do use case)
+      participants: output.participants.map(participant => ({
+        id: participant.id,
+        user: {
+          id: participant.user.id,
+          name: participant.user.name,
+          email: participant.user.email,
+        },
+        role: participant.role,
+        joinedAt: participant.joinedAt,
+      })),
+      
+      // Contadores
+      participantCount: output.participantCount,
+      
+      // Permissões
+      isOwner: output.isOwner,
     };
   }
 }

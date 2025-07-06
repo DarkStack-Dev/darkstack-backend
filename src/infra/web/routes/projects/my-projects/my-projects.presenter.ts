@@ -1,53 +1,34 @@
-// ===== PRESENTER =====
+// src/infra/web/routes/projects/my-projects/my-projects.presenter.ts - ATUALIZADA
 
-// src/infra/web/routes/projects/my-projects/my-projects.presenter.ts
-
-import { Projects } from '@/domain/entities/projects/projects.entity';
+import { MyProjectsOutput } from '@/domain/usecases/projects/my-projects/my-projects.usecase';
 import { MyProjectsResponse } from './my-projects.dto';
 
 export class MyProjectsPresenter {
-  public static toHttp(
-    projects: Projects[], 
-    stats: any,
-    total: number, 
-    page: number, 
-    limit: number
-  ): MyProjectsResponse {
-    const totalPages = Math.ceil(total / limit);
-    
+  public static toHttp(output: MyProjectsOutput): MyProjectsResponse {
     return {
-      projects: projects.map(project => ({
-        id: project.getId(),
-        name: project.getName(),
-        description: project.getDescription().length > 100 
-          ? project.getDescription().substring(0, 100) + '...'
-          : project.getDescription(),
-        status: project.getStatus(),
-        createdAt: project.getCreatedAt(),
-        updatedAt: project.getUpdatedAt(),
-        deletedAt: project.getDeletedAt(),
-        mainImage: (() => {
-          const mainImg = project.getImages().find(img => img.isMain);
-          return mainImg ? {
-            url: mainImg.url || '',
-            filename: mainImg.filename,
-          } : undefined;
-        })(),
-        participantCount: project.getParticipants()?.length || 0,
-        imageCount: project.getImages().length,
-        approvedAt: project.getApprovedAt(),
-        rejectionReason: project.getRejectionReason(),
-        isActive: project.getIsActivate(),
+      projects: output.projects.map(project => ({
+        id: project.id,
+        name: project.name,
+        description: project.description,
+        status: project.status,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+        deletedAt: project.deletedAt,
+        
+        // Imagem principal
+        mainImage: project.mainImage,
+        
+        // Contadores
+        participantCount: project.participantCount,
+        imageCount: project.imageCount,
+        
+        // Informações de moderação
+        approvedAt: project.approvedAt,
+        rejectionReason: project.rejectionReason,
+        isActive: project.isActive,
       })),
-      stats,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrevious: page > 1,
-      },
+      stats: output.stats,
+      pagination: output.pagination,
     };
   }
 }

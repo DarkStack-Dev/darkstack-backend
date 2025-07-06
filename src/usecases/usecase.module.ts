@@ -14,6 +14,14 @@ import { DatabaseModule } from 'src/infra/repositories/database.module';
 import { ServiceModule } from 'src/infra/services/service.module';
 // Project use cases
 import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-projects.usecase';
+import { FindProjectByIdUseCase } from '@/domain/usecases/projects/find-by-id/find-project-by-id.usecase';
+import { ListProjectsUseCase } from '@/domain/usecases/projects/list/list-projects.usecase';
+import { MyProjectsUseCase } from '@/domain/usecases/projects/my-projects/my-projects.usecase';
+// User providers use case - ✅ ADICIONADO
+import { UserProvidersUseCase } from '@/domain/usecases/providers/user-providers.usecase';
+import { DeleteProjectUseCase } from '@/domain/usecases/projects/delete/delete-project.usecase';
+import { RestoreProjectUseCase } from '@/domain/usecases/projects/restore/restore-project.usecase';
+import { ListDeletedProjectsUseCase } from '@/domain/usecases/projects/list-deleted/list-deleted-projects.usecase';
 
 @Module({
   imports: [DatabaseModule, ServiceModule],
@@ -23,6 +31,7 @@ import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-
     FindUserUsecase,
     LoginUserUsecase,
     RefreshAuthTokenUserUsecase,
+    UserProvidersUseCase, // ✅ ADICIONADO
     
     // GitHub auth use cases
     StartGitHubAuthUseCase,
@@ -36,6 +45,12 @@ import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-
 
     // Project use cases
     CreateProjectsUseCase,
+    FindProjectByIdUseCase,
+    ListProjectsUseCase,
+    MyProjectsUseCase,
+    DeleteProjectUseCase,
+    RestoreProjectUseCase,
+    ListDeletedProjectsUseCase
   ],
   exports: [
     // User use cases
@@ -43,6 +58,7 @@ import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-
     FindUserUsecase,
     LoginUserUsecase,
     RefreshAuthTokenUserUsecase,
+    UserProvidersUseCase, // ✅ ADICIONADO
     
     // GitHub auth use cases
     StartGitHubAuthUseCase,
@@ -56,6 +72,12 @@ import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-
 
     // Project use cases
     CreateProjectsUseCase,
+    FindProjectByIdUseCase,
+    ListProjectsUseCase,
+    MyProjectsUseCase,
+    DeleteProjectUseCase,
+    RestoreProjectUseCase,
+    ListDeletedProjectsUseCase,
     
   ],
 })

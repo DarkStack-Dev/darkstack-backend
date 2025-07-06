@@ -1,4 +1,4 @@
-// Atualizar: src/infra/web/web.module.ts
+// src/infra/web/web.module.ts - ATUALIZADO
 import { Module } from '@nestjs/common';
 import { UsecaseModule } from 'src/usecases/usecase.module';
 import { DomainExceptionFilterProvider } from './filters/domain/domain-exception.filter';
@@ -28,12 +28,13 @@ import { UserProvidersRoute } from './routes/user/providers/user-providers.route
 import { StartGoogleAuthRoute } from './routes/google-auth/start/start-google-auth.route';
 import { GoogleCallbackRoute } from './routes/google-auth/callback/google-callback.route';
 
-// Project routes
+// Project routes - ATUALIZADOS
 import { CreateProjectRoute } from './routes/projects/create/create-project.route';
 import { FindProjectByIdRoute } from './routes/projects/find-by-id/find-project-by-id.route';
 import { ListProjectsRoute } from './routes/projects/list/list-projects.route';
 import { MyProjectsRoute } from './routes/projects/my-projects/my-projects.route';
 import { DeleteProjectRoute } from './routes/projects/delete/delete-project.route';
+import { ListDeletedProjectsRoute } from './routes/projects/list-deleted/list-deleted-projects.route';
 
 @Module({
   imports: [ServiceModule, UsecaseModule],
@@ -44,7 +45,7 @@ import { DeleteProjectRoute } from './routes/projects/delete/delete-project.rout
     RefreshAuthTokenRoute,
     FindByIdUserRoute,
     MeUserRoute,
-    // UserProvidersRoute, // ✅ NOVO
+    UserProvidersRoute, // ✅ ATIVADO
     
     // GitHub auth routes
     StartGitHubAuthRoute,
@@ -56,12 +57,13 @@ import { DeleteProjectRoute } from './routes/projects/delete/delete-project.rout
     StartGoogleAuthRoute,
     GoogleCallbackRoute,
 
-    // Project routes
+    // Project routes - TODOS ATIVOS
     CreateProjectRoute,
     FindProjectByIdRoute,
     ListProjectsRoute,
     MyProjectsRoute,
     DeleteProjectRoute,
+    ListDeletedProjectsRoute,
   ],
   providers: [
     AuthGuardProvider,

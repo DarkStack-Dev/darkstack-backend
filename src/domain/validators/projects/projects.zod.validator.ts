@@ -1,10 +1,11 @@
+// src/domain/validators/projects/projects.zod.validator.ts - MELHORADO
+
 import { z } from "zod";
-import { User } from "../../entities/user/user.entitty";
 import { Validator } from "../../shared/validators/validator";
 import { ZodUtils } from "../../../shared/utils/zod-utils";
 import { ValidatorDomainException } from "../../shared/exceptions/validator-domain.exception";
 import { DomainException } from "../../shared/exceptions/domain.exception";
-import { ImageType, ProjectStatus, UserRole } from "generated/prisma";
+import { ImageType, ProjectStatus } from "generated/prisma";
 import { Projects } from "@/domain/entities/projects/projects.entity";
 
 export class ProjectsZodValidator implements Validator<Projects>{
@@ -38,20 +39,10 @@ export class ProjectsZodValidator implements Validator<Projects>{
   }
 
   private getZodSchema() {
-    // Schema para validar User
-    const userSchema = z.object({
-      id: z.string().cuid(),
-      name: z.string().min(1, "User name is required"),
-      email: z.string().email("Invalid email format"),
-      avatar: z.string().url("Invalid avatar URL").optional().nullable(),
-      createdAt: z.date(),
-      updatedAt: z.date(),
-      roles: z.array(z.nativeEnum(UserRole)).min(1, "User must have at least one role"),
-      isActive: z.boolean(),
-      emailVerified: z.boolean(),
-    });
-
-    // Schema para validar ProjectImage
+    // ✅ SIMPLIFICADO: Schema focado apenas nos dados essenciais da entidade
+    // Removidas validações de relacionamentos complexos que são tratados pelos Use Cases
+    
+    // Schema para validar ProjectImage (simplificado)
     const projectImageSchema = z.object({
       id: z.string().cuid(),
       projectId: z.string().cuid(),
@@ -62,14 +53,14 @@ export class ProjectsZodValidator implements Validator<Projects>{
       height: z.number().positive("Height must be positive").optional().nullable(),
       base64: z.string().optional().nullable(),
       url: z.string().url("Invalid image URL").optional().nullable(),
-      metadata: z.any().optional().nullable(), // JSON pode ser qualquer coisa
+      metadata: z.any().optional().nullable(),
       order: z.number().int().min(0, "Order must be non-negative"),
       isMain: z.boolean(),
       createdAt: z.date(),
       updatedAt: z.date(),
     });
 
-    // Schema para validar ProjectParticipant
+    // Schema para validar ProjectParticipant (simplificado)
     const projectParticipantSchema = z.object({
       id: z.string().cuid(),
       projectId: z.string().cuid(),
@@ -79,7 +70,7 @@ export class ProjectsZodValidator implements Validator<Projects>{
       joinedAt: z.date(),
     });
 
-    // Schema principal para Projects
+    // Schema principal para Projects (focado na entidade, não nas relações)
     const zodSchema = z.object({
       // Campos herdados da Entity
       id: z.string().cuid("Invalid project ID format"),
@@ -105,14 +96,10 @@ export class ProjectsZodValidator implements Validator<Projects>{
       ownerId: z.string()
         .cuid("Invalid owner ID format"),
       
-      owner: userSchema,
-      
       // Campos opcionais de moderação
-      approvedByIds: z.string()
+      approvedById: z.string()
         .cuid("Invalid approver ID format")
         .optional(),
-      
-      approvedBy: userSchema.optional(),
       
       approvedAt: z.date().optional(),
       
@@ -120,7 +107,10 @@ export class ProjectsZodValidator implements Validator<Projects>{
         .max(1000, "Rejection reason must not exceed 1000 characters")
         .optional(),
       
-      // Arrays relacionados
+      // Soft delete
+      deletedAt: z.date().optional(),
+      
+      // Arrays relacionados (validação básica)
       participants: z.array(projectParticipantSchema)
         .optional()
         .default([]),
@@ -129,10 +119,11 @@ export class ProjectsZodValidator implements Validator<Projects>{
         .min(1, "At least one image is required")
         .max(10, "Maximum of 10 images allowed"),
     })
+    // ✅ MELHORADO: Validações condicionais mais robustas
     .refine((data) => {
-      // Validação customizada: se status é APPROVED, deve ter approvedBy e approvedAt
+      // Validação: se status é APPROVED, deve ter approvedBy e approvedAt
       if (data.status === ProjectStatus.APPROVED) {
-        return data.approvedBy && data.approvedAt && data.approvedByIds;
+        return data.approvedById && data.approvedAt;
       }
       return true;
     }, {
@@ -140,7 +131,7 @@ export class ProjectsZodValidator implements Validator<Projects>{
       path: ["status"]
     })
     .refine((data) => {
-      // Validação customizada: se status é REJECTED, deve ter rejectionReason
+      // Validação: se status é REJECTED, deve ter rejectionReason
       if (data.status === ProjectStatus.REJECTED) {
         return data.rejectionReason && data.rejectionReason.trim().length > 0;
       }
@@ -150,14 +141,14 @@ export class ProjectsZodValidator implements Validator<Projects>{
       path: ["rejectionReason"]
     })
     .refine((data) => {
-      // Validação customizada: pelo menos uma imagem deve ser marcada como principal
+      // Validação: pelo menos uma imagem deve ser marcada como principal
       return data.images.some(image => image.isMain === true);
     }, {
       message: "At least one image must be marked as main",
       path: ["images"]
     })
     .refine((data) => {
-      // Validação customizada: não pode ter mais de uma imagem principal
+      // Validação: não pode ter mais de uma imagem principal
       const mainImages = data.images.filter(image => image.isMain === true);
       return mainImages.length === 1;
     }, {
@@ -165,14 +156,24 @@ export class ProjectsZodValidator implements Validator<Projects>{
       path: ["images"]
     })
     .refine((data) => {
-      // Validação customizada: owner não pode estar nos participants
-      if (data.participants && data.participants.length > 0) {
-        return !data.participants.some(participant => participant.userId === data.ownerId);
+      // ✅ IMPLEMENTADO: Validação de data de aprovação deve ser após criação
+      if (data.approvedAt && data.createdAt) {
+        return data.approvedAt >= data.createdAt;
       }
       return true;
     }, {
-      message: "Project owner cannot be a participant",
-      path: ["participants"]
+      message: "Approval date must be after creation date",
+      path: ["approvedAt"]
+    })
+    .refine((data) => {
+      // ✅ IMPLEMENTADO: Projeto deletado não pode estar ativo
+      if (data.deletedAt) {
+        return !data.isActive;
+      }
+      return true;
+    }, {
+      message: "Deleted projects cannot be active",
+      path: ["isActive"]
     });
 
     return zodSchema;
