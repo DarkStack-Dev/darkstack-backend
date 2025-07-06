@@ -1,6 +1,6 @@
-// src/infra/web/routes/projects/delete/delete-project.presenter.ts - ATUALIZADA
+// src/infra/web/routes/projects/delete/delete-project.presenter.ts - ATUALIZADO
 
-import { DeleteProjectOutput } from '@/domain/usecases/projects/delete/delete-project.usecase';
+import { DeleteProjectOutput } from '@/usecases/projects/delete/delete-project.usecase'; // ✅ CORRIGIDO
 import { DeleteProjectResponse } from './delete-project.dto';
 
 export class DeleteProjectPresenter {

@@ -1,6 +1,6 @@
-// src/infra/web/routes/projects/find-by-id/find-project-by-id.presenter.ts - ATUALIZADA
+// src/infra/web/routes/projects/find-by-id/find-project-by-id.presenter.ts - ATUALIZADO
 
-import { FindProjectByIdOutput } from '@/domain/usecases/projects/find-by-id/find-project-by-id.usecase';
+import { FindProjectByIdOutput } from '@/usecases/projects/find-by-id/find-project-by-id.usecase'; // ✅ CORRIGIDO
 import { FindProjectByIdResponse } from './find-project-by-id.dto';
 
 export class FindProjectByIdPresenter {
@@ -13,7 +13,7 @@ export class FindProjectByIdPresenter {
       createdAt: output.createdAt,
       updatedAt: output.updatedAt,
       
-      // Dados do proprietário (agora vem do use case)
+      // Dados do proprietário (agora vem do use case de aplicação)
       owner: {
         id: output.owner.id,
         name: output.owner.name,
@@ -30,7 +30,7 @@ export class FindProjectByIdPresenter {
         order: image.order,
       })),
       
-      // Participantes com dados completos (agora vem do use case)
+      // Participantes com dados completos (agora vem do use case de aplicação)
       participants: output.participants.map(participant => ({
         id: participant.id,
         user: {

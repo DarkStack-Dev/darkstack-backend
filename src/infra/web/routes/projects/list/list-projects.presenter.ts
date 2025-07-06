@@ -1,6 +1,6 @@
-// src/infra/web/routes/projects/list/list-projects.presenter.ts - ATUALIZADA
+// src/infra/web/routes/projects/list/list-projects.presenter.ts - ATUALIZADO
 
-import { ListProjectsOutput } from '@/domain/usecases/projects/list/list-projects.usecase';
+import { ListProjectsOutput } from '@/usecases/projects/list/list-projects.usecase'; // ✅ CORRIGIDO
 import { ListProjectsResponse } from './list-projects.dto';
 
 export class ListProjectsPresenter {
@@ -14,7 +14,7 @@ export class ListProjectsPresenter {
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
         
-        // Dados do proprietário agora vem do use case
+        // Dados do proprietário agora vem do use case de aplicação
         owner: {
           id: project.owner.id,
           name: project.owner.name,

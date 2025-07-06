@@ -1,10 +1,8 @@
-// ===== ROUTE =====
-
-// src/infra/web/routes/projects/create/create-project.route.ts
+// src/infra/web/routes/projects/create/create-project.route.ts - ATUALIZADA
 
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
-import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-projects.usecase';
+import { CreateProjectUsecase } from '@/usecases/projects/create/create-project.usecase'; // ✅ CORRIGIDO
 import { ImageUploadService } from '@/infra/services/image-upload/image-upload.service';
 import { CreateProjectRequest, CreateProjectResponse } from './create-project.dto';
 import { CreateProjectPresenter } from './create-project.presenter';
@@ -12,7 +10,7 @@ import { CreateProjectPresenter } from './create-project.presenter';
 @Controller('/projects')
 export class CreateProjectRoute {
   constructor(
-    private readonly createProjectsUseCase: CreateProjectsUseCase,
+    private readonly createProjectUsecase: CreateProjectUsecase, // ✅ CORRIGIDO
     private readonly imageUploadService: ImageUploadService,
   ) {}
 
@@ -54,7 +52,7 @@ export class CreateProjectRoute {
       console.log(`✅ Upload de ${uploadedImages.length} imagens concluído`);
 
       // 2. Criar o projeto com as URLs das imagens
-      const projectResult = await this.createProjectsUseCase.execute({
+      const projectResult = await this.createProjectUsecase.execute({ // ✅ CORRIGIDO
         name: request.name,
         description: request.description,
         userId,
@@ -75,10 +73,6 @@ export class CreateProjectRoute {
       return response;
     } catch (error) {
       console.error('❌ Erro ao criar projeto:', error);
-      
-      // Em caso de erro, tentar limpar imagens que foram feitas upload
-      // TODO: Implementar cleanup das imagens em caso de erro
-      
       throw error;
     }
   }

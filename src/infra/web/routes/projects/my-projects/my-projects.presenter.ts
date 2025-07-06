@@ -1,6 +1,6 @@
-// src/infra/web/routes/projects/my-projects/my-projects.presenter.ts - ATUALIZADA
+// src/infra/web/routes/projects/my-projects/my-projects.presenter.ts - ATUALIZADO
 
-import { MyProjectsOutput } from '@/domain/usecases/projects/my-projects/my-projects.usecase';
+import { MyProjectsOutput } from '@/usecases/projects/my-projects/my-projects.usecase'; // ✅ CORRIGIDO
 import { MyProjectsResponse } from './my-projects.dto';
 
 export class MyProjectsPresenter {

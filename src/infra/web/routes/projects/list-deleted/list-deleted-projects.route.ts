@@ -1,9 +1,9 @@
-// src/infra/web/routes/projects/list-deleted/list-deleted-projects.route.ts
+// src/infra/web/routes/projects/list-deleted/list-deleted-projects.route.ts - ATUALIZADA
 
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { Roles } from '@/infra/web/auth/decorators/roles.decorator';
-import { ListDeletedProjectsUseCase, ListDeletedProjectsOutput } from '@/domain/usecases/projects/list-deleted/list-deleted-projects.usecase';
+import { ListDeletedProjectsUsecase, ListDeletedProjectsOutput } from '@/usecases/projects/list-deleted/list-deleted-projects.usecase'; // ✅ CORRIGIDO
 
 export type ListDeletedProjectsQuery = {
   page?: string;
@@ -15,7 +15,7 @@ export type ListDeletedProjectsResponse = ListDeletedProjectsOutput;
 @Controller('/projects')
 export class ListDeletedProjectsRoute {
   constructor(
-    private readonly listDeletedProjectsUseCase: ListDeletedProjectsUseCase,
+    private readonly listDeletedProjectsUsecase: ListDeletedProjectsUsecase, // ✅ CORRIGIDO
   ) {}
 
   /**
@@ -33,7 +33,7 @@ export class ListDeletedProjectsRoute {
 
     console.log(`🗑️ API: Listando projetos deletados para ${userId}`);
 
-    const output = await this.listDeletedProjectsUseCase.execute({
+    const output = await this.listDeletedProjectsUsecase.execute({ // ✅ CORRIGIDO
       userId,
       userRoles,
       page: query.page ? parseInt(query.page) : 1,

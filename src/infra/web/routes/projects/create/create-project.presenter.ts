@@ -1,8 +1,6 @@
-// ===== PRESENTER =====
+// src/infra/web/routes/projects/create/create-project.presenter.ts - ATUALIZADO
 
-// src/infra/web/routes/projects/create/create-project.presenter.ts
-
-import { CreateProjectOutput } from '@/domain/usecases/projects/create/create-projects.usecase';
+import { CreateProjectOutput } from '@/usecases/projects/create/create-project.usecase'; // ✅ CORRIGIDO
 import { CreateProjectResponse } from './create-project.dto';
 
 export class CreateProjectPresenter {

@@ -5,12 +5,12 @@ import { Request } from 'express';
 import { FindProjectByIdResponse } from './find-project-by-id.dto';
 import { FindProjectByIdPresenter } from './find-project-by-id.presenter';
 import { IsPublic } from '@/infra/web/auth/decorators/is-public.decorator';
-import { FindProjectByIdUseCase } from '@/domain/usecases/projects/find-by-id/find-project-by-id.usecase';
+import { FindProjectByIdUsecase } from '@/usecases/projects/find-by-id/find-project-by-id.usecase'; // ✅ CORRIGIDO
 
 @Controller('/projects')
 export class FindProjectByIdRoute {
   constructor(
-    private readonly findProjectByIdUseCase: FindProjectByIdUseCase,
+    private readonly findProjectByIdUsecase: FindProjectByIdUsecase, // ✅ CORRIGIDO
   ) {}
 
   @IsPublic() // Projetos aprovados podem ser visualizados por qualquer um
@@ -24,7 +24,7 @@ export class FindProjectByIdRoute {
     const currentUserId = req['userId']; // Pode ser undefined se não autenticado
 
     try {
-      const output = await this.findProjectByIdUseCase.execute({
+      const output = await this.findProjectByIdUsecase.execute({ // ✅ CORRIGIDO
         projectId,
         currentUserId,
       });

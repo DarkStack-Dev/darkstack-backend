@@ -4,12 +4,12 @@ import { Controller, Get, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { MyProjectsQuery, MyProjectsResponse } from './my-projects.dto';
 import { MyProjectsPresenter } from './my-projects.presenter';
-import { MyProjectsUseCase } from '@/domain/usecases/projects/my-projects/my-projects.usecase';
+import { MyProjectsUsecase } from '@/usecases/projects/my-projects/my-projects.usecase'; // ✅ CORRIGIDO
 
 @Controller('/projects')
 export class MyProjectsRoute {
   constructor(
-    private readonly myProjectsUseCase: MyProjectsUseCase,
+    private readonly myProjectsUsecase: MyProjectsUsecase, // ✅ CORRIGIDO
   ) {}
 
   @Get('/my-projects')
@@ -19,7 +19,7 @@ export class MyProjectsRoute {
   ): Promise<MyProjectsResponse> {
     const userId = req['userId']; // Vem do AuthGuard
 
-    const output = await this.myProjectsUseCase.execute({
+    const output = await this.myProjectsUsecase.execute({ // ✅ CORRIGIDO
       userId,
       page: query.page ? parseInt(query.page) : 1,
       limit: query.limit ? parseInt(query.limit) : 10,

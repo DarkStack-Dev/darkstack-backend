@@ -14,7 +14,7 @@ import { DatabaseModule } from 'src/infra/repositories/database.module';
 import { ServiceModule } from 'src/infra/services/service.module';
 // Project use cases
 import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-projects.usecase';
-import { FindProjectByIdUseCase } from '@/domain/usecases/projects/find-by-id/find-project-by-id.usecase';
+
 import { ListProjectsUseCase } from '@/domain/usecases/projects/list/list-projects.usecase';
 import { MyProjectsUseCase } from '@/domain/usecases/projects/my-projects/my-projects.usecase';
 // User providers use case - ✅ ADICIONADO
@@ -22,6 +22,14 @@ import { UserProvidersUseCase } from '@/domain/usecases/providers/user-providers
 import { DeleteProjectUseCase } from '@/domain/usecases/projects/delete/delete-project.usecase';
 import { RestoreProjectUseCase } from '@/domain/usecases/projects/restore/restore-project.usecase';
 import { ListDeletedProjectsUseCase } from '@/domain/usecases/projects/list-deleted/list-deleted-projects.usecase';
+import { CreateProjectUsecase } from './projects/create/create-project.usecase';
+import { FindProjectByIdUsecase } from './projects/find-by-id/find-project-by-id.usecase';
+import { FindProjectByIdUseCase } from '@/domain/usecases/projects/find-by-id/find-project-by-id.usecase';
+import { ListProjectsUsecase } from './projects/list/list-projects.usecase';
+import { MyProjectsUsecase } from './projects/my-projects/my-projects.usecase';
+import { DeleteProjectUsecase } from './projects/delete/delete-project.usecase';
+import { RestoreProjectUsecase } from './projects/restore/restore-project.usecase';
+import { ListDeletedProjectsUsecase } from './projects/list-deleted/list-deleted-projects.usecase';
 
 @Module({
   imports: [DatabaseModule, ServiceModule],
@@ -45,12 +53,19 @@ import { ListDeletedProjectsUseCase } from '@/domain/usecases/projects/list-dele
 
     // Project use cases
     CreateProjectsUseCase,
+    CreateProjectUsecase,
+    FindProjectByIdUsecase,
     FindProjectByIdUseCase,
     ListProjectsUseCase,
+    ListProjectsUsecase,
     MyProjectsUseCase,
+    MyProjectsUsecase,
     DeleteProjectUseCase,
+    DeleteProjectUsecase,
     RestoreProjectUseCase,
-    ListDeletedProjectsUseCase
+    RestoreProjectUsecase,
+    ListDeletedProjectsUseCase,
+    ListDeletedProjectsUsecase,
   ],
   exports: [
     // User use cases
@@ -72,12 +87,19 @@ import { ListDeletedProjectsUseCase } from '@/domain/usecases/projects/list-dele
 
     // Project use cases
     CreateProjectsUseCase,
+    CreateProjectUsecase,
+    FindProjectByIdUsecase,
     FindProjectByIdUseCase,
     ListProjectsUseCase,
+    ListProjectsUsecase,
     MyProjectsUseCase,
+    MyProjectsUsecase,
     DeleteProjectUseCase,
+    DeleteProjectUsecase,
     RestoreProjectUseCase,
+    RestoreProjectUsecase,
     ListDeletedProjectsUseCase,
+    ListDeletedProjectsUsecase,
     
   ],
 })

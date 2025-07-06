@@ -5,14 +5,14 @@ import { Request } from 'express';
 import { DeleteProjectResponse } from './delete-project.dto';
 import { DeleteProjectPresenter } from './delete-project.presenter';
 import { Roles } from '@/infra/web/auth/decorators/roles.decorator';
-import { DeleteProjectUseCase } from '@/domain/usecases/projects/delete/delete-project.usecase';
-import { RestoreProjectUseCase } from '@/domain/usecases/projects/restore/restore-project.usecase';
+import { DeleteProjectUsecase } from '@/usecases/projects/delete/delete-project.usecase'; // ✅ CORRIGIDO
+import { RestoreProjectUsecase } from '@/usecases/projects/restore/restore-project.usecase'; // ✅ CORRIGIDO
 
 @Controller('/projects')
 export class DeleteProjectRoute {
   constructor(
-    private readonly deleteProjectUseCase: DeleteProjectUseCase,
-    private readonly restoreProjectUseCase: RestoreProjectUseCase,
+    private readonly deleteProjectUsecase: DeleteProjectUsecase, // ✅ CORRIGIDO
+    private readonly restoreProjectUsecase: RestoreProjectUsecase, // ✅ CORRIGIDO
   ) {}
 
   /**
@@ -29,7 +29,7 @@ export class DeleteProjectRoute {
 
     console.log(`🗑️ API: Soft delete do projeto ${projectId} por userId: ${userId}`);
 
-    const output = await this.deleteProjectUseCase.execute({
+    const output = await this.deleteProjectUsecase.execute({ // ✅ CORRIGIDO
       projectId,
       userId,
       userRoles,
@@ -56,7 +56,7 @@ export class DeleteProjectRoute {
 
     console.log(`💀 API: Hard delete do projeto ${projectId} por admin ${userId}`);
 
-    const output = await this.deleteProjectUseCase.execute({
+    const output = await this.deleteProjectUsecase.execute({ // ✅ CORRIGIDO
       projectId,
       userId,
       userRoles,
@@ -83,7 +83,7 @@ export class DeleteProjectRoute {
 
     console.log(`🔄 API: Restaurando projeto ${projectId} por ${userId}`);
 
-    const output = await this.restoreProjectUseCase.execute({
+    const output = await this.restoreProjectUsecase.execute({ // ✅ CORRIGIDO
       projectId,
       userId,
       userRoles,

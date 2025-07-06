@@ -36,6 +36,12 @@ import { MyProjectsRoute } from './routes/projects/my-projects/my-projects.route
 import { DeleteProjectRoute } from './routes/projects/delete/delete-project.route';
 import { ListDeletedProjectsRoute } from './routes/projects/list-deleted/list-deleted-projects.route';
 
+
+// ✅ NOVO: Project Exception Filters
+import { ProjectNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-not-found-usecase-exception.filter';
+import { ProjectLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-limit-reached-usecase-exception.filter';
+import { ProjectAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-access-denied-usecase-exception.filter';
+
 @Module({
   imports: [ServiceModule, UsecaseModule],
   controllers: [
@@ -67,13 +73,25 @@ import { ListDeletedProjectsRoute } from './routes/projects/list-deleted/list-de
   ],
   providers: [
     AuthGuardProvider,
+    
+    // Domain exception filters
     ValidatorDomainExceptionFilterProvider,
     DomainExceptionFilterProvider,
+    
+    // General usecase exception filters
     UsecaseExceptionFilterProvider,
+    
+    // User exception filters
     CredentialsNotValidUsecaseExceptionFilterProvider,
     EmailAlreadyExistsUsecaseExceptionFilterProvider,
-    UsecaseExceptionFilterProvider,
     UserNotFoundUsecaseExceptionFilterProvider,
+    
+    // ✅ NOVO: Project exception filters
+    ProjectNotFoundUsecaseExceptionFilterProvider,
+    ProjectLimitReachedUsecaseExceptionFilterProvider,
+    ProjectAccessDeniedUsecaseExceptionFilterProvider,
+    
+    // Service exception filters
     ServiceExceptionFilterProvider,
     RefreshTokenNotValidServiceExceptionFilterProvider,
   ],
