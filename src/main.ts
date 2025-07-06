@@ -13,8 +13,8 @@ async function bootstrap() {
   });
 
   // Configurar limite de upload
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Servir arquivos estáticos usando express diretamente
   const publicPath = join(__dirname, '..', 'public');
@@ -30,5 +30,6 @@ async function bootstrap() {
   console.log(`🚀 Servidor rodando na porta ${port}`);
   console.log(`📁 Arquivos estáticos em: ${join(__dirname, '..', 'public')}`);
   console.log(`🌐 URL base: ${process.env.BASE_URL || `http://localhost:${port}`}`);
+  console.log(`📤 Upload multipart disponível em: POST /projects/multipart`);
 }
 bootstrap();

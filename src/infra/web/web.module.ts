@@ -41,6 +41,7 @@ import { ListDeletedProjectsRoute } from './routes/projects/list-deleted/list-de
 import { ProjectNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-not-found-usecase-exception.filter';
 import { ProjectLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-limit-reached-usecase-exception.filter';
 import { ProjectAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-access-denied-usecase-exception.filter';
+import { CreateProjectMultipartRoute } from './routes/projects/create/create-project-multipart.route';
 
 @Module({
   imports: [ServiceModule, UsecaseModule],
@@ -65,6 +66,7 @@ import { ProjectAccessDeniedUsecaseExceptionFilterProvider } from './filters/use
 
     // Project routes - TODOS ATIVOS
     CreateProjectRoute,
+    CreateProjectMultipartRoute,  // ← Multipart (NOVO)
     FindProjectByIdRoute,
     ListProjectsRoute,
     MyProjectsRoute,
