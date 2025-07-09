@@ -37,7 +37,7 @@ enum ProjectStatus {
 }
 
 model User {
-  id           String       @id @default(cuid())
+  id           String       @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   name         String
   email        String       @unique
   avatar       String?      // URL do avatar
@@ -64,7 +64,7 @@ model User {
 }
 
 model Project {
-  id          String        @id @default(cuid())
+  id          String        @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   name        String
   description String
   status      ProjectStatus @default(PENDING)
@@ -99,7 +99,7 @@ enum ImageType {
 }
 
 model ProjectImage {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   projectId String
   filename  String
   type      ImageType
@@ -129,7 +129,7 @@ model ProjectImage {
 }
 
 model ProjectParticipant {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   projectId String
   userId    String
   addedById String
@@ -147,7 +147,7 @@ model ProjectParticipant {
 
 // Autenticação por email/senha
 model EmailAuth {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   userId    String   @unique
   password  String   // Hash da senha
   createdAt DateTime @default(now())
@@ -161,7 +161,7 @@ model EmailAuth {
 
 // Autenticação GitHub
 model GitHubAccount {
-  id                   String    @id @default(cuid())
+  id                   String    @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   userId               String    @unique
   githubId             String    @unique // ID do usuário no GitHub
   username             String    // Login do GitHub
@@ -186,7 +186,7 @@ model GitHubAccount {
 
 // Autenticação Google
 model GoogleAccount {
-  id                   String    @id @default(cuid())
+  id                   String    @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   userId               String    @unique
   googleId             String    @unique // ID do usuário no Google
   googleEmail          String    // Email do Google (pode ser diferente do email principal)
@@ -209,7 +209,7 @@ model GoogleAccount {
 
 // Tabela opcional para rastrear tentativas de login
 model LoginAttempt {
-  id            String      @id @default(cuid())
+  id            String      @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   userId        String?     // Nullable para tentativas com usuários inexistentes
   email         String
   provider      AuthProvider

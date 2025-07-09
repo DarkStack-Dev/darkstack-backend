@@ -68,22 +68,26 @@ export class CreateProjectsUseCase implements UseCase<CreateProjectInput, Create
     // Verificar limite de projetos por usuário
     await this.validateProjectLimit(userId);
 
-    // Processar e validar imagens
-    const processedImages = this.processProjectImages(images);
+    // ✅ CORRIGIDO: Gerar ID do projeto antecipadamente
+    const projectId = Utils.GenerateUUID();
 
-    // Criar o projeto
+    // Processar e validar imagens com o projectId correto
+    const processedImages = this.processProjectImages(images, projectId);
+
+    // Criar o projeto com o ID pré-gerado
     const project = Projects.create({
-    name: name.trim(),
-    description: description.trim(),
-    status: ProjectStatus.PENDING,
-    ownerId: userId, // Apenas ID
-    images: processedImages,
-    // Campos opcionais para criação
-    approvedById: undefined, // CORRIGIDO: singular
-    approvedAt: undefined,
-    rejectionReason: undefined,
-    participants: [],
-  });
+      id: projectId, // ✅ CORRIGIDO: Passar o ID gerado
+      name: name.trim(),
+      description: description.trim(),
+      status: ProjectStatus.PENDING,
+      ownerId: userId,
+      images: processedImages,
+      // Campos opcionais para criação
+      approvedById: undefined,
+      approvedAt: undefined,
+      rejectionReason: undefined,
+      participants: [],
+    });
 
     // Persistir o projeto
     await this.projectsGatewayRepository.create(project);
@@ -167,7 +171,8 @@ export class CreateProjectsUseCase implements UseCase<CreateProjectInput, Create
     }
   }
 
-  private processProjectImages(imagesInput: ProjectImageInput[]): ProjectImage[] {
+  // ✅ CORRIGIDO: Receber projectId como parâmetro
+  private processProjectImages(imagesInput: ProjectImageInput[], projectId: string): ProjectImage[] {
     const hasMainImage = imagesInput.some(img => img.isMain === true);
     
     return imagesInput.map((imageInput, index) => {
@@ -194,7 +199,7 @@ export class CreateProjectsUseCase implements UseCase<CreateProjectInput, Create
 
       const projectImage: ProjectImage = {
         id: Utils.GenerateUUID(),
-        projectId: "", // Será definido quando o projeto for criado
+        projectId: projectId, // ✅ CORRIGIDO: Usar o projectId correto
         filename: imageInput.filename,
         type: imageInput.type,
         size: imageInput.size || null,

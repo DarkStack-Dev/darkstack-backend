@@ -4,6 +4,7 @@ import { Utils } from "@/shared/utils/utils";
 import { ProjectImage, ProjectParticipant, ProjectStatus, User } from "generated/prisma";
 
 export type ProjectsCreateDto = {
+  id?: string; // ✅ NOVO: ID opcional
   name: string;
   description: string;
   status: ProjectStatus;
@@ -75,7 +76,9 @@ export class Projects extends Entity{
     this.validate();
   }
 
+  // ✅ CORRIGIDO: Aceitar ID opcional
   public static create({
+    id, // ✅ NOVO: ID opcional
     name, 
     description, 
     status, 
@@ -86,13 +89,13 @@ export class Projects extends Entity{
     participants, 
     images
   }: ProjectsCreateDto): Projects {
-    const id = Utils.GenerateUUID();
+    const projectId = id || Utils.GenerateUUID(); // ✅ Usar ID fornecido ou gerar novo
     const isActive = true;
     const createdAt = new Date();
     const updatedAt = new Date();
     
     return new Projects(
-      id, name, description, status, ownerId, images, 
+      projectId, name, description, status, ownerId, images, 
       createdAt, updatedAt, isActive, approvedById, 
       approvedAt, rejectionReason, participants
     );
