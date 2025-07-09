@@ -1,4 +1,4 @@
-// src/domain/entities/user/user.entitty.ts - Versão corrigida
+// src/domain/entities/user/user.entitty.ts - ATUALIZADA com método update
 
 import { Utils } from "@/shared/utils/utils";
 import { Entity } from "../../shared/entities/entity";
@@ -27,6 +27,17 @@ export type UserWithDto = {
   isOAuthUser?: boolean; // ✅ Adicionar flag para OAuth
   avatar: string; // ✅ Adicionar avatar
   emailVerified: boolean; // ✅ Adicionar verificação de e-mail
+};
+
+// ✅ NOVO: Tipo para update
+export type UserUpdateDto = {
+  name?: string;
+  email?: string;
+  avatar?: string;
+  roles?: UserRole[];
+  isActive?: boolean;
+  emailVerified?: boolean;
+  password?: string; // Nova senha
 };
 
 export class User extends Entity {
@@ -78,6 +89,65 @@ export class User extends Entity {
     emailVerified
   }: UserWithDto): User {
     return new User(id, name, email, roles, avatar, emailVerified, password, createdAt, updatedAt, isActive);
+  }
+
+  // ✅ NOVO: Método para atualizar usuário
+  public update(updateData: UserUpdateDto): User {
+    const updatedName = updateData.name !== undefined ? updateData.name.trim() : this.name;
+    const updatedEmail = updateData.email !== undefined ? updateData.email.trim() : this.email;
+    const updatedAvatar = updateData.avatar !== undefined ? updateData.avatar : this.avatar;
+    const updatedRoles = updateData.roles !== undefined ? updateData.roles : this.roles;
+    const updatedIsActive = updateData.isActive !== undefined ? updateData.isActive : this.isActive;
+    const updatedEmailVerified = updateData.emailVerified !== undefined ? updateData.emailVerified : this.emailVerified;
+    
+    // Processar senha se fornecida
+    let updatedPassword = this.password;
+    if (updateData.password !== undefined) {
+      if (updateData.password && updateData.password.length > 0) {
+        // Validar e criptografar nova senha
+        UserPasswordValidatorFactory.create().validate(updateData.password);
+        updatedPassword = Utils.encryptPassword(updateData.password);
+      } else {
+        // Remover senha (para usuários OAuth)
+        updatedPassword = '';
+      }
+    }
+
+    // Atualizar timestamp
+    const updatedAt = new Date();
+
+    return new User(
+      this.id,
+      updatedName,
+      updatedEmail,
+      updatedRoles,
+      updatedAvatar,
+      updatedEmailVerified,
+      updatedPassword,
+      this.createdAt,
+      updatedAt,
+      updatedIsActive
+    );
+  }
+
+  // ✅ NOVO: Método para validar se pode ser atualizado
+  public canBeUpdated(): boolean {
+    return this.isActive; // Usuários inativos não podem ser atualizados
+  }
+
+  // ✅ NOVO: Método para verificar se é admin
+  public isAdmin(): boolean {
+    return this.roles.includes(UserRole.ADMIN);
+  }
+
+  // ✅ NOVO: Método para verificar se é moderador
+  public isModerator(): boolean {
+    return this.roles.includes(UserRole.MODERATOR);
+  }
+
+  // ✅ NOVO: Método para verificar se tem roles elevadas
+  public hasElevatedRoles(): boolean {
+    return this.isAdmin() || this.isModerator();
   }
 
   protected validate(): void {
