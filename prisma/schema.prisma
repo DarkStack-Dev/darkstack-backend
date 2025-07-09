@@ -36,6 +36,102 @@ enum ProjectStatus {
   ARCHIVED  // Arquivado pelo dono
 }
 
+// Enum para status do artigo
+enum ArticleStatus {
+  PENDING   // Aguardando aprovação
+  APPROVED  // Aprovado e visível
+  REJECTED  // Rejeitado pelos moderadores
+  ARCHIVED  // Arquivado pelo autor
+}
+
+// Enum para categorias de TI
+enum ArticleCategory {
+  FRONTEND     // React, Vue, Angular, HTML, CSS, JS
+  BACKEND      // Node.js, Python, Java, .NET, PHP
+  MOBILE       // React Native, Flutter, Native
+  DEVOPS       // Docker, Kubernetes, AWS, CI/CD
+  DATABASE     // SQL, NoSQL, MongoDB, PostgreSQL
+  SECURITY     // Cibersegurança, Autenticação
+  AI_ML        // Inteligência Artificial, Machine Learning
+  BLOCKCHAIN   // Criptomoedas, Smart Contracts
+  CAREER       // Carreira em TI, Soft Skills
+  TOOLS        // IDEs, Ferramentas, Produtividade
+  ARCHITECTURE // Clean Architecture, Design Patterns
+  OTHER        // Outros tópicos
+}
+
+model Article {
+  id          String         @id @default(uuid())
+  titulo      String
+  slug        String         @unique // URL amigável gerada do título
+  descricao   String         // Resumo/subtítulo do artigo
+  conteudo    String         @db.Text // Conteúdo completo em markdown
+  categoria   ArticleCategory
+  tags        String[]       // Array de tags
+  status      ArticleStatus  @default(PENDING)
+  
+  // Métricas do artigo
+  visualizacoes         Int      @default(0)
+  tempoLeituraMinutos   Int?     // Calculado automaticamente
+  
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Para soft delete
+  isActive    Boolean   @default(true)
+  
+  // Relacionamentos
+  authorId    String
+  author      User      @relation("ArticleAuthor", fields: [authorId], references: [id])
+  
+  // Moderação
+  approvedById String?   // Qual moderador aprovou
+  approvedBy   User?     @relation("ArticleApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime? // Quando foi aprovado
+  rejectionReason String? @db.Text // Motivo da rejeição, se houver
+  
+  // Imagens do artigo
+  images       ArticleImage[]
+  
+  @@map("articles")
+  @@index([status])
+  @@index([categoria])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([visualizacoes])
+}
+
+model ArticleImage {
+  id        String   @id @default(uuid())
+  articleId String
+  filename  String
+  type      ImageType
+  size      Int?     // Tamanho em bytes
+  width     Int?     // Largura em pixels
+  height    Int?     // Altura em pixels
+  
+  // Armazenamento da imagem
+  base64    String?  @db.Text // Para armazenar base64 (apenas para imagens pequenas)
+  url       String?  // URL externa (S3, Cloudinary, etc.)
+  alt       String?  // Texto alternativo para acessibilidade
+  
+  // Metadados adicionais
+  metadata  Json?    // Informações extras como EXIF, etc.
+  
+  // Ordenação
+  order     Int      @default(0) // Para ordenar as imagens
+  isMain    Boolean  @default(false) // Imagem principal do artigo
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relacionamento
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("article_images")
+}
+
 model User {
   id           String       @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
   name         String
@@ -59,6 +155,10 @@ model User {
   // Relacionamentos com participantes
   participations    ProjectParticipant[] @relation("UserParticipant")
   addedParticipants ProjectParticipant[] @relation("ParticipantAdder")
+
+  // ✅ ADICIONAR: Relacionamentos com artigos
+  authoredArticles  Article[] @relation("ArticleAuthor")
+  approvedArticles  Article[] @relation("ArticleApprover")
 
   @@map("users")
 }

@@ -43,6 +43,20 @@ import { ProjectLimitReachedUsecaseExceptionFilterProvider } from './filters/use
 import { ProjectAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-access-denied-usecase-exception.filter';
 import { CreateProjectMultipartRoute } from './routes/projects/create/create-project-multipart.route';
 
+// ✅ ADICIONAR: Article routes
+import { CreateArticleRoute } from './routes/article/create/create-article.route';
+import { FindArticleByIdRoute } from './routes/article/find-by-id/find-article-by-id.route';
+import { FindArticleBySlugRoute } from './routes/article/find-by-slug/find-article-by-slug.route';
+import { ListArticlesRoute } from './routes/article/list/list-articles.route';
+import { MyArticlesRoute } from './routes/article/my-articles/my-articles.route';
+import { ModerateArticleRoute } from './routes/article/moderate/moderate-article.route';
+import { PendingModerationRoute } from './routes/article/pending-moderation/pending-moderation.route';
+
+// ✅ ADICIONAR: Article exception filters
+import { ArticleNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/article/article-not-found-usecase-exception.filter';
+import { ArticleLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/article/article-limit-reached-usecase-exception.filter';
+import { ArticleAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/article/article-access-denied-usecase-exception.filter';
+
 @Module({
   imports: [ServiceModule, UsecaseModule],
   controllers: [
@@ -72,6 +86,15 @@ import { CreateProjectMultipartRoute } from './routes/projects/create/create-pro
     MyProjectsRoute,
     DeleteProjectRoute,
     ListDeletedProjectsRoute,
+
+    // ✅ NOVO: Article routes
+    CreateArticleRoute,
+    FindArticleByIdRoute,
+    FindArticleBySlugRoute,
+    ListArticlesRoute,
+    MyArticlesRoute,
+    ModerateArticleRoute,
+    PendingModerationRoute,
   ],
   providers: [
     AuthGuardProvider,
@@ -92,6 +115,11 @@ import { CreateProjectMultipartRoute } from './routes/projects/create/create-pro
     ProjectNotFoundUsecaseExceptionFilterProvider,
     ProjectLimitReachedUsecaseExceptionFilterProvider,
     ProjectAccessDeniedUsecaseExceptionFilterProvider,
+
+    // ✅ NOVO: Article exception filters
+    ArticleNotFoundUsecaseExceptionFilterProvider,
+    ArticleLimitReachedUsecaseExceptionFilterProvider,
+    ArticleAccessDeniedUsecaseExceptionFilterProvider,
     
     // Service exception filters
     ServiceExceptionFilterProvider,

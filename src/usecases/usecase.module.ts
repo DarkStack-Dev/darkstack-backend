@@ -31,6 +31,18 @@ import { DeleteProjectUsecase } from './projects/delete/delete-project.usecase';
 import { RestoreProjectUsecase } from './projects/restore/restore-project.usecase';
 import { ListDeletedProjectsUsecase } from './projects/list-deleted/list-deleted-projects.usecase';
 
+// ✅ ADICIONAR: Article use cases - Domain Layer
+import { CreateArticleUseCase } from '@/domain/usecases/article/create/create-article.usecase';
+import { FindArticleByIdUseCase } from '@/domain/usecases/article/find-by-id/find-article-by-id.usecase';
+import { ListArticlesUseCase } from '@/domain/usecases/article/list/list-articles.usecase';
+
+// ✅ ADICIONAR: Article use cases - Application Layer
+import { CreateArticleUsecase } from './article/create/create-article.usecase';
+import { FindArticleByIdUsecase } from './article/find-by-id/find-article-by-id.usecase';
+import { ListArticlesUsecase } from './article/list/list-articles.usecase';
+import { MyArticlesUsecase } from './article/my-articles/my-articles.usecase';
+import { ModerateArticleUsecase } from './article/moderate/moderate-article.usecase';
+
 @Module({
   imports: [DatabaseModule, ServiceModule],
   providers: [
@@ -66,6 +78,18 @@ import { ListDeletedProjectsUsecase } from './projects/list-deleted/list-deleted
     RestoreProjectUsecase,
     ListDeletedProjectsUseCase,
     ListDeletedProjectsUsecase,
+
+    // ✅ NOVO: Article use cases - Domain Layer
+    CreateArticleUseCase,
+    FindArticleByIdUseCase,
+    ListArticlesUseCase,
+
+    // ✅ NOVO: Article use cases - Application Layer
+    CreateArticleUsecase,
+    FindArticleByIdUsecase,
+    ListArticlesUsecase,
+    MyArticlesUsecase,
+    ModerateArticleUsecase,
   ],
   exports: [
     // User use cases
@@ -101,6 +125,18 @@ import { ListDeletedProjectsUsecase } from './projects/list-deleted/list-deleted
     ListDeletedProjectsUseCase,
     ListDeletedProjectsUsecase,
     
+
+    // ✅ NOVO: Article use cases - Domain Layer
+    CreateArticleUseCase,
+    FindArticleByIdUseCase,
+    ListArticlesUseCase,
+
+    // ✅ NOVO: Article use cases - Application Layer
+    CreateArticleUsecase,
+    FindArticleByIdUsecase,
+    ListArticlesUsecase,
+    MyArticlesUsecase,
+    ModerateArticleUsecase,
   ],
 })
 export class UsecaseModule {}
