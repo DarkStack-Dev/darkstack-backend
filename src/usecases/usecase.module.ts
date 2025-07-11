@@ -1,4 +1,4 @@
-// Atualizar: src/usecases/usecase.module.ts
+// src/usecases/usecase.module.ts - ATUALIZADO com novos casos de uso
 import { Module } from '@nestjs/common';
 import { CreateUserUsecase } from './user/create/create-user.usecase';
 import { FindUserUsecase } from './user/find-by-id/find-user.usecase';
@@ -31,17 +31,27 @@ import { DeleteProjectUsecase } from './projects/delete/delete-project.usecase';
 import { RestoreProjectUsecase } from './projects/restore/restore-project.usecase';
 import { ListDeletedProjectsUsecase } from './projects/list-deleted/list-deleted-projects.usecase';
 
-// ✅ ADICIONAR: Article use cases - Domain Layer
+// ✅ Article use cases - Domain Layer
 import { CreateArticleUseCase } from '@/domain/usecases/article/create/create-article.usecase';
 import { FindArticleByIdUseCase } from '@/domain/usecases/article/find-by-id/find-article-by-id.usecase';
+import { FindArticleBySlugUseCase } from '@/domain/usecases/article/find-by-slug/find-article-by-slug.usecase'; // ✅ NOVO
 import { ListArticlesUseCase } from '@/domain/usecases/article/list/list-articles.usecase';
+import { GetPendingModerationUseCase } from '@/domain/usecases/article/get-pending-moderation/get-pending-moderation.usecase'; // ✅ NOVO
+import { SearchArticlesUseCase } from '@/domain/usecases/article/search/search-articles.usecase'; // ✅ NOVO
+import { ArticleStatsUseCase } from '@/domain/usecases/article/stats/article-stats.usecase'; // ✅ NOVO
+import { PopularTagsUseCase } from '@/domain/usecases/article/popular-tags/popular-tags.usecase'; // ✅ NOVO
 
-// ✅ ADICIONAR: Article use cases - Application Layer
+// ✅ Article use cases - Application Layer
 import { CreateArticleUsecase } from './article/create/create-article.usecase';
 import { FindArticleByIdUsecase } from './article/find-by-id/find-article-by-id.usecase';
+import { FindArticleBySlugUsecase } from './article/find-by-slug/find-article-by-slug.usecase'; // ✅ NOVO
 import { ListArticlesUsecase } from './article/list/list-articles.usecase';
 import { MyArticlesUsecase } from './article/my-articles/my-articles.usecase';
 import { ModerateArticleUsecase } from './article/moderate/moderate-article.usecase';
+import { GetPendingModerationUsecase } from './article/get-pending-moderation/get-pending-moderation.usecase'; // ✅ NOVO
+import { SearchArticlesUsecase } from './article/search/search-articles.usecase'; // ✅ NOVO
+import { ArticleStatsUsecase } from './article/stats/article-stats.usecase'; // ✅ NOVO
+import { PopularTagsUsecase } from './article/popular-tags/popular-tags.usecase'; // ✅ NOVO
 
 @Module({
   imports: [DatabaseModule, ServiceModule],
@@ -51,7 +61,7 @@ import { ModerateArticleUsecase } from './article/moderate/moderate-article.usec
     FindUserUsecase,
     LoginUserUsecase,
     RefreshAuthTokenUserUsecase,
-    UserProvidersUseCase, // ✅ ADICIONADO
+    UserProvidersUseCase,
     
     // GitHub auth use cases
     StartGitHubAuthUseCase,
@@ -79,17 +89,27 @@ import { ModerateArticleUsecase } from './article/moderate/moderate-article.usec
     ListDeletedProjectsUseCase,
     ListDeletedProjectsUsecase,
 
-    // ✅ NOVO: Article use cases - Domain Layer
+    // ✅ Article use cases - Domain Layer
     CreateArticleUseCase,
     FindArticleByIdUseCase,
+    FindArticleBySlugUseCase, // ✅ NOVO
     ListArticlesUseCase,
+    GetPendingModerationUseCase, // ✅ NOVO
+    SearchArticlesUseCase, // ✅ NOVO
+    ArticleStatsUseCase, // ✅ NOVO
+    PopularTagsUseCase, // ✅ NOVO
 
-    // ✅ NOVO: Article use cases - Application Layer
+    // ✅ Article use cases - Application Layer
     CreateArticleUsecase,
     FindArticleByIdUsecase,
+    FindArticleBySlugUsecase, // ✅ NOVO
     ListArticlesUsecase,
     MyArticlesUsecase,
     ModerateArticleUsecase,
+    GetPendingModerationUsecase, // ✅ NOVO
+    SearchArticlesUsecase, // ✅ NOVO
+    ArticleStatsUsecase, // ✅ NOVO
+    PopularTagsUsecase, // ✅ NOVO
   ],
   exports: [
     // User use cases
@@ -97,7 +117,7 @@ import { ModerateArticleUsecase } from './article/moderate/moderate-article.usec
     FindUserUsecase,
     LoginUserUsecase,
     RefreshAuthTokenUserUsecase,
-    UserProvidersUseCase, // ✅ ADICIONADO
+    UserProvidersUseCase,
     
     // GitHub auth use cases
     StartGitHubAuthUseCase,
@@ -126,17 +146,27 @@ import { ModerateArticleUsecase } from './article/moderate/moderate-article.usec
     ListDeletedProjectsUsecase,
     
 
-    // ✅ NOVO: Article use cases - Domain Layer
+    // ✅ Article use cases - Domain Layer
     CreateArticleUseCase,
     FindArticleByIdUseCase,
+    FindArticleBySlugUseCase, // ✅ NOVO
     ListArticlesUseCase,
+    GetPendingModerationUseCase, // ✅ NOVO
+    SearchArticlesUseCase, // ✅ NOVO
+    ArticleStatsUseCase, // ✅ NOVO
+    PopularTagsUseCase, // ✅ NOVO
 
-    // ✅ NOVO: Article use cases - Application Layer
+    // ✅ Article use cases - Application Layer
     CreateArticleUsecase,
     FindArticleByIdUsecase,
+    FindArticleBySlugUsecase, // ✅ NOVO
     ListArticlesUsecase,
     MyArticlesUsecase,
     ModerateArticleUsecase,
+    GetPendingModerationUsecase, // ✅ NOVO
+    SearchArticlesUsecase, // ✅ NOVO
+    ArticleStatsUsecase, // ✅ NOVO
+    PopularTagsUsecase, // ✅ NOVO
   ],
 })
 export class UsecaseModule {}

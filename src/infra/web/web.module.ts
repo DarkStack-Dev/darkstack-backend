@@ -56,6 +56,10 @@ import { PendingModerationRoute } from './routes/article/pending-moderation/pend
 import { ArticleNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/article/article-not-found-usecase-exception.filter';
 import { ArticleLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/article/article-limit-reached-usecase-exception.filter';
 import { ArticleAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/article/article-access-denied-usecase-exception.filter';
+import { SearchArticlesRoute } from './routes/article/search/search-articles.route';
+import { ArticleStatsRoute } from './routes/article/stats/article-stats.route';
+import { PopularTagsRoute } from './routes/article/tags/popular-tags.route';
+
 
 @Module({
   imports: [ServiceModule, UsecaseModule],
@@ -87,14 +91,19 @@ import { ArticleAccessDeniedUsecaseExceptionFilterProvider } from './filters/use
     DeleteProjectRoute,
     ListDeletedProjectsRoute,
 
-    // ✅ NOVO: Article routes
+    // ✅ Article routes (principais)
     CreateArticleRoute,
     FindArticleByIdRoute,
-    FindArticleBySlugRoute,
+    FindArticleBySlugRoute, // 🔄 ATUALIZADA para usar UseCase
     ListArticlesRoute,
     MyArticlesRoute,
     ModerateArticleRoute,
-    PendingModerationRoute,
+    PendingModerationRoute, // 🔄 ATUALIZADA para usar UseCase
+
+    // ✅ Article routes (extras - se implementar)
+    SearchArticlesRoute, // ✅ NOVA - usa SearchArticlesUsecase
+    ArticleStatsRoute, // ✅ NOVA - usa ArticleStatsUsecase
+    PopularTagsRoute, // ✅ NOVA - usa PopularTagsUsecase
   ],
   providers: [
     AuthGuardProvider,

@@ -1,39 +1,14 @@
-// src/infra/web/routes/article/pending-moderation/pending-moderation.route.ts
+// src/infra/web/routes/article/pending-moderation/pending-moderation.route.ts - CORRIGIDO
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
-import { ArticleGatewayRepository } from '@/domain/repositories/article/article.gateway.repository';
-import { UserGatewayRepository } from '@/domain/repositories/user/user.gateway.repository';
+import { GetPendingModerationUsecase } from '@/usecases/article/get-pending-moderation/get-pending-moderation.usecase';
+import { PendingModerationResponse, PendingModerationPresenter } from './pending-moderation.presenter';
 import { Roles } from '@/infra/web/auth/decorators/roles.decorator';
-
-export type PendingModerationResponse = {
-  articles: Array<{
-    id: string;
-    titulo: string;
-    slug: string;
-    descricao: string;
-    categoria: string;
-    tags: string[];
-    createdAt: Date;
-    tempoLeituraMinutos?: number;
-    author: {
-      id: string;
-      name: string;
-      email: string;
-      avatar?: string;
-    };
-    mainImage?: {
-      url: string;
-      alt?: string;
-    };
-  }>;
-  total: number;
-};
 
 @Controller('/articles')
 export class PendingModerationRoute {
   constructor(
-    private readonly articleRepository: ArticleGatewayRepository,
-    private readonly userRepository: UserGatewayRepository,
+    private readonly getPendingModerationUsecase: GetPendingModerationUsecase, // ✅ Usando caso de uso
   ) {}
 
   @Get('/pending-moderation')
@@ -43,64 +18,19 @@ export class PendingModerationRoute {
     @Req() req: Request,
   ): Promise<PendingModerationResponse> {
     const moderatorId = req['userId'];
+    const moderatorRoles = req['user']?.roles || [];
     const shouldIncludeOwn = includeOwn === 'true';
 
     console.log(`🔍 Buscando artigos pendentes para moderador ${moderatorId}`);
 
-    const pendingArticles = await this.articleRepository.findForModeration(
-      shouldIncludeOwn ? undefined : moderatorId
-    );
-
-    // Buscar dados dos autores
-    const authorIds = [...new Set(pendingArticles.map(article => article.getAuthorId()))];
-    const authorsMap = new Map();
-    
-    for (const authorId of authorIds) {
-      const author = await this.userRepository.findById(authorId);
-      if (author) {
-        authorsMap.set(authorId, {
-          id: author.getId(),
-          name: author.getName(),
-          email: author.getEmail(),
-          avatar: author.getAvatar(),
-        });
-      }
-    }
-
-    const articles = pendingArticles.map(article => {
-      const author = authorsMap.get(article.getAuthorId()) || {
-        id: article.getAuthorId(),
-        name: 'Autor não encontrado',
-        email: '',
-        avatar: undefined,
-      };
-
-      const mainImage = article.getImages().find(img => img.isMain);
-
-      return {
-        id: article.getId(),
-        titulo: article.getTitulo(),
-        slug: article.getSlug(),
-        descricao: article.getDescricao(),
-        categoria: article.getCategoria(),
-        tags: article.getTags(),
-        createdAt: article.getCreatedAt(),
-        tempoLeituraMinutos: article.getTempoLeituraMinutos(),
-        author,
-        ...(mainImage && {
-          mainImage: {
-            url: mainImage.url || '',
-            alt: mainImage.alt,
-          },
-        }),
-      };
+    const output = await this.getPendingModerationUsecase.execute({
+      moderatorId,
+      moderatorRoles,
+      includeOwn: shouldIncludeOwn,
     });
 
-    console.log(`✅ Encontrados ${articles.length} artigos pendentes`);
+    console.log(`✅ Encontrados ${output.total} artigos pendentes`);
 
-    return {
-      articles,
-      total: articles.length,
-    };
+    return PendingModerationPresenter.toHttp(output);
   }
 }
