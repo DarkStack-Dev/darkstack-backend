@@ -13,7 +13,7 @@ export class FindArticleByIdRoute {
   ) {}
 
   @Get('/:id')
-  @IsPublic() // Artigos públicos podem ser vistos sem autenticação
+  // @IsPublic() // Artigos públicos podem ser vistos sem autenticação
   public async handle(
     @Param('id') articleId: string,
     @Query('includeContent') includeContent: string,

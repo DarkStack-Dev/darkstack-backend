@@ -5,7 +5,7 @@ import { GetPendingModerationUsecase } from '@/usecases/article/get-pending-mode
 import { PendingModerationResponse, PendingModerationPresenter } from './pending-moderation.presenter';
 import { Roles } from '@/infra/web/auth/decorators/roles.decorator';
 
-@Controller('/articles')
+@Controller('/articlesa')
 export class PendingModerationRoute {
   constructor(
     private readonly getPendingModerationUsecase: GetPendingModerationUsecase, // ✅ Usando caso de uso

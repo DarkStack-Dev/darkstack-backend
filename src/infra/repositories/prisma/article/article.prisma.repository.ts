@@ -20,35 +20,9 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
           orderBy: { order: 'asc' },
         },
       },
-      ...(includeContent ? {} : {
-        select: {
-          id: true,
-          titulo: true,
-          slug: true,
-          descricao: true,
-          categoria: true,
-          tags: true,
-          status: true,
-          visualizacoes: true,
-          tempoLeituraMinutos: true,
-          authorId: true,
-          approvedById: true,
-          approvedAt: true,
-          rejectionReason: true,
-          createdAt: true,
-          updatedAt: true,
-          isActive: true,
-          deletedAt: true,
-          author: true,
-          approvedBy: true,
-          images: {
-            orderBy: { order: 'asc' },
-          },
-        },
-      }),
     });
 
-    return model ? ArticlePrismaModelToEntityMapper.map(model) : null;
+    return model ? ArticlePrismaModelToEntityMapper.map(model, includeContent) : null;
   }
 
   async findBySlug(slug: string, includeContent = true): Promise<Article | null> {
@@ -61,35 +35,9 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
           orderBy: { order: 'asc' },
         },
       },
-      ...(includeContent ? {} : {
-        select: {
-          id: true,
-          titulo: true,
-          slug: true,
-          descricao: true,
-          categoria: true,
-          tags: true,
-          status: true,
-          visualizacoes: true,
-          tempoLeituraMinutos: true,
-          authorId: true,
-          approvedById: true,
-          approvedAt: true,
-          rejectionReason: true,
-          createdAt: true,
-          updatedAt: true,
-          isActive: true,
-          deletedAt: true,
-          author: true,
-          approvedBy: true,
-          images: {
-            orderBy: { order: 'asc' },
-          },
-        },
-      }),
     });
 
-    return model ? ArticlePrismaModelToEntityMapper.map(model) : null;
+    return model ? ArticlePrismaModelToEntityMapper.map(model, includeContent) : null;
   }
 
   async findByIdIncludingDeleted(id: string): Promise<Article | null> {
@@ -174,32 +122,6 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
         orderBy: { [sortBy]: sortOrder },
         take: limit,
         skip: offset,
-        ...(includeContent ? {} : {
-          select: {
-            id: true,
-            titulo: true,
-            slug: true,
-            descricao: true,
-            categoria: true,
-            tags: true,
-            status: true,
-            visualizacoes: true,
-            tempoLeituraMinutos: true,
-            authorId: true,
-            approvedById: true,
-            approvedAt: true,
-            rejectionReason: true,
-            createdAt: true,
-            updatedAt: true,
-            isActive: true,
-            deletedAt: true,
-            author: true,
-            approvedBy: true,
-            images: {
-              orderBy: { order: 'asc' },
-            },
-          },
-        }),
       }),
       prismaClient.article.count({ where }),
     ]);
@@ -208,7 +130,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      articles: articles.map(ArticlePrismaModelToEntityMapper.map),
+      articles: articles.map(model => ArticlePrismaModelToEntityMapper.map(model, includeContent)),
       total,
       page,
       pageSize: limit,
@@ -313,35 +235,9 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
         },
       },
       orderBy: { createdAt: 'desc' },
-      ...(includeContent ? {} : {
-        select: {
-          id: true,
-          titulo: true,
-          slug: true,
-          descricao: true,
-          categoria: true,
-          tags: true,
-          status: true,
-          visualizacoes: true,
-          tempoLeituraMinutos: true,
-          authorId: true,
-          approvedById: true,
-          approvedAt: true,
-          rejectionReason: true,
-          createdAt: true,
-          updatedAt: true,
-          isActive: true,
-          deletedAt: true,
-          author: true,
-          approvedBy: true,
-          images: {
-            orderBy: { order: 'asc' },
-          },
-        },
-      }),
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model, includeContent));
   }
 
   async findByCategory(categoria: ArticleCategory, filters?: Partial<ArticleSearchFilters>): Promise<Article[]> {
@@ -365,7 +261,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model));
   }
 
   async findByTag(tag: string, filters?: Partial<ArticleSearchFilters>): Promise<Article[]> {
@@ -389,7 +285,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model));
   }
 
   async findByStatus(status: ArticleStatus, filters?: Partial<ArticleSearchFilters>): Promise<Article[]> {
@@ -411,7 +307,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model));
   }
 
   async findPublished(filters?: Partial<ArticleSearchFilters>): Promise<PaginatedArticleResult> {
@@ -430,20 +326,28 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
     return this.findByStatus(ArticleStatus.REJECTED, filters);
   }
 
+  // src/infra/repositories/prisma/article/article.prisma.repository.ts - MÉTODO CORRIGIDO
+
   async findForModeration(moderatorId?: string): Promise<Article[]> {
+    console.log(`[findForModeration] Buscando artigos para moderação. ModeratorId: ${moderatorId}`);
+    
     const where: any = {
       status: ArticleStatus.PENDING,
       deletedAt: null,
       isActive: true,
     };
 
+    // 🐛 CORREÇÃO: Removido o filtro problemático
+    // O filtro anterior estava excluindo artigos incorretamente
+    // Para artigos PENDING, o approvedById deve ser null de qualquer forma
+    
+    // Se quisermos excluir artigos do próprio moderador (opcional):
     if (moderatorId) {
-      // Se especificado, buscar artigos que este moderador pode revisar
-      // Por exemplo, excluir artigos que ele já rejeitou
-      where.NOT = {
-        approvedById: moderatorId,
-      };
+      // Excluir apenas artigos criados pelo próprio moderador
+      where.authorId = { not: moderatorId };
     }
+
+    console.log('[findForModeration] Query WHERE:', JSON.stringify(where, null, 2));
 
     const models = await prismaClient.article.findMany({
       where,
@@ -457,7 +361,49 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       orderBy: { createdAt: 'asc' }, // Mais antigos primeiro
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    console.log(`[findForModeration] Encontrados ${models.length} artigos no banco`);
+    
+    if (models.length > 0) {
+      console.log('[findForModeration] Primeiros artigos encontrados:', 
+        models.slice(0, 3).map(m => ({
+          id: m.id,
+          titulo: m.titulo,
+          status: m.status,
+          authorId: m.authorId,
+          approvedById: m.approvedById,
+          isActive: m.isActive,
+          deletedAt: m.deletedAt,
+        }))
+      );
+    }
+
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model, false));
+  }
+
+  // 🔍 MÉTODO ADICIONAL PARA DEBUG
+  async debugPendingArticles(): Promise<any[]> {
+    console.log('[debugPendingArticles] Executando query de debug...');
+    
+    const rawQuery = `
+      SELECT 
+        id,
+        titulo,
+        status,
+        "authorId",
+        "approvedById",
+        "isActive",
+        "deletedAt",
+        "createdAt"
+      FROM "Article" 
+      WHERE status = 'PENDING'
+      ORDER BY "createdAt" DESC
+      LIMIT 10;
+    `;
+    
+    const result = await prismaClient.$queryRawUnsafe(rawQuery);
+    console.log('[debugPendingArticles] Resultado raw:', result);
+    
+    return result as any[];
   }
 
   async findModeratedBy(moderatorId: string): Promise<Article[]> {
@@ -476,7 +422,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       orderBy: { approvedAt: 'desc' },
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model));
   }
 
   async count(filters?: Partial<ArticleSearchFilters>): Promise<number> {
@@ -581,7 +527,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       take: limit,
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model));
   }
 
   async getRecentlyPublished(limit = 10): Promise<Article[]> {
@@ -602,7 +548,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       take: limit,
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model));
   }
 
   async getSimilarArticles(articleId: string, limit = 5): Promise<Article[]> {
@@ -632,7 +578,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       take: limit,
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model));
   }
 
   async getAllTags(): Promise<string[]> {
@@ -728,7 +674,7 @@ export class ArticlePrismaRepository extends ArticleGatewayRepository {
       orderBy: { deletedAt: 'desc' },
     });
 
-    return models.map(ArticlePrismaModelToEntityMapper.map);
+    return models.map(model => ArticlePrismaModelToEntityMapper.map(model));
   }
 
   async searchByContent(query: string, filters?: Partial<ArticleSearchFilters>): Promise<PaginatedArticleResult> {

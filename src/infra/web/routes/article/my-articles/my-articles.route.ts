@@ -5,7 +5,7 @@ import { MyArticlesUsecase } from '@/usecases/article/my-articles/my-articles.us
 import { MyArticlesQuery, MyArticlesResponse } from './my-articles.dto';
 import { MyArticlesPresenter } from './my-articles.presenter';
 
-@Controller('/articles')
+@Controller('/articlesa')
 export class MyArticlesRoute {
   constructor(
     private readonly myArticlesUsecase: MyArticlesUsecase,

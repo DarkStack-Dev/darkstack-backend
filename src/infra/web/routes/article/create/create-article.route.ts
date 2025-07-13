@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { CreateArticleUsecase } from '@/usecases/article/create/create-article.usecase';
 import { CreateArticleRequest, CreateArticleResponse } from './create-article.dto';
 import { CreateArticlePresenter } from './create-article.presenter';
+import { InvalidInputUsecaseException } from '@/usecases/exceptions/input/invalid-input.usecase.exception';
 
 @Controller('/articles')
 export class CreateArticleRoute {
@@ -16,6 +17,7 @@ export class CreateArticleRoute {
     @Body() request: CreateArticleRequest,
     @Req() req: Request,
   ): Promise<CreateArticleResponse> {
+
     const userId = req['userId'];
 
     console.log(`📝 Criando artigo: ${request.titulo} por usuário ${userId}`);

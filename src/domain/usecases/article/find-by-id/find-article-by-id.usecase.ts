@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
 import { ArticleGatewayRepository } from '@/domain/repositories/article/article.gateway.repository';
 import { UserGatewayRepository } from '@/domain/repositories/user/user.gateway.repository';
-import { User } from '@/domain/entities/user/user.entitty'; // ✅ Import correto da entidade User
+import { User } from '@/domain/entities/user/user.entitty';
 import { InvalidInputUsecaseException } from '../../exceptions/input/invalid-input.usecase.exception';
 import { ArticleStatus } from 'generated/prisma';
 
@@ -59,6 +59,8 @@ export class FindArticleByIdUseCase implements UseCase<FindArticleByIdInput, Fin
   ) {}
 
   async execute({ id, currentUserId, includeContent = true }: FindArticleByIdInput): Promise<FindArticleByIdOutput> {
+    console.log(`[FindArticleByIdUseCase] Executing with includeContent: ${includeContent}`);
+
     const article = await this.articleRepository.findById(id, includeContent);
     if (!article) {
       throw new InvalidInputUsecaseException(
@@ -88,7 +90,7 @@ export class FindArticleByIdUseCase implements UseCase<FindArticleByIdInput, Fin
       );
     }
 
-    // ✅ CORRIGIDO: Tipagem explícita para approver
+    // Buscar aprovador se existir
     let approver: User | null = null;
     if (article.getApprovedById()) {
       approver = await this.userRepository.findById(article.getApprovedById()!);
@@ -102,12 +104,12 @@ export class FindArticleByIdUseCase implements UseCase<FindArticleByIdInput, Fin
     const isOwner = currentUserId === article.getAuthorId();
     const canEdit = article.canBeEditedBy(currentUserId || '');
 
-    return {
+    // ✅ CORRIGIDO: Tratar conteúdo baseado em includeContent
+    const response: FindArticleByIdOutput = {
       id: article.getId(),
       titulo: article.getTitulo(),
       slug: article.getSlug(),
       descricao: article.getDescricao(),
-      ...(includeContent && { conteudo: article.getConteudo() }),
       categoria: article.getCategoria(),
       tags: article.getTags(),
       status: article.getStatus(),
@@ -121,14 +123,6 @@ export class FindArticleByIdUseCase implements UseCase<FindArticleByIdInput, Fin
         email: author.getEmail(),
         avatar: author.getAvatar(),
       },
-      // ✅ CORRIGIDO: Verificação de tipo correto
-      ...(approver && {
-        approver: {
-          id: approver.getId(),
-          name: approver.getName(),
-          email: approver.getEmail(),
-        },
-      }),
       approvedAt: article.getApprovedAt(),
       rejectionReason: article.getRejectionReason(),
       images: article.getImages().map(img => ({
@@ -142,6 +136,25 @@ export class FindArticleByIdUseCase implements UseCase<FindArticleByIdInput, Fin
       isOwner,
       canEdit,
     };
+
+    // ✅ CORRIGIDO: Só incluir conteúdo se solicitado e não for placeholder
+    if (includeContent) {
+      const conteudo = article.getConteudo();
+      if (conteudo && conteudo !== 'CONTENT_NOT_LOADED') {
+        response.conteudo = conteudo;
+      }
+    }
+
+    // ✅ CORRIGIDO: Só incluir aprovador se existir
+    if (approver) {
+      response.approver = {
+        id: approver.getId(),
+        name: approver.getName(),
+        email: approver.getEmail(),
+      };
+    }
+
+    return response;
   }
 
   private canUserViewArticle(article: any, userId?: string): boolean {

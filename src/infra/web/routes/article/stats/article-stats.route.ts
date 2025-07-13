@@ -36,7 +36,7 @@ export type ArticleStatsResponse = {
   generatedAt: Date;
 };
 
-@Controller('/articles')
+@Controller('/articlesa')
 export class ArticleStatsRoute {
   constructor(
     private readonly articleStatsUsecase: ArticleStatsUsecase, // ✅ Usando caso de uso

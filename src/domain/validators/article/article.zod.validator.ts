@@ -1,4 +1,4 @@
-// src/domain/validators/article/article.zod.validator.ts
+// src/domain/validators/article/article.zod.validator.ts - CORRIGIDO
 import { z } from "zod";
 import { Validator } from "@/domain/shared/validators/validator";
 import { Article } from "@/domain/entities/article/article.entity";
@@ -20,6 +20,7 @@ export class ArticleZodValidator implements Validator<Article> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const message = ZodUtils.formatZodError(error);
+        console.error(`[ArticleZodValidator] Error validating Article ${input.getId()}: ${message}`);
         throw new ValidatorDomainException(
           `Error validating Article ${input.getId()}: ${message}`,
           `Dados inválidos para artigo: ${message}`,
@@ -78,9 +79,20 @@ export class ArticleZodValidator implements Validator<Article> {
         .trim(),
       
       conteudo: z.string()
-        .min(100, "Conteúdo deve ter pelo menos 100 caracteres")
-        .max(50000, "Conteúdo não pode exceder 50.000 caracteres")
-        .trim(),
+        .refine((content) => {
+          // ✅ CORRIGIDO: Permitir conteúdo vazio quando não carregado
+          if (content === '' || content === 'CONTENT_NOT_LOADED') {
+            return true; // Placeholder quando conteúdo não foi carregado
+          }
+          return content.trim().length >= 100;
+        }, {
+          message: "Conteúdo deve ter pelo menos 100 caracteres"
+        })
+        .refine((content) => {
+          return content.length <= 50000;
+        }, {
+          message: "Conteúdo não pode exceder 50.000 caracteres"
+        }),
       
       categoria: z.nativeEnum(ArticleCategory, {
         errorMap: () => ({ message: "Categoria de artigo inválida" })
@@ -104,28 +116,29 @@ export class ArticleZodValidator implements Validator<Article> {
         .int()
         .min(0, "Visualizações devem ser não negativas"),
       
+      // ✅ CORRIGIDO: Usar nullish() para aceitar null, undefined ou o valor
       tempoLeituraMinutos: z.number()
         .int()
         .min(1, "Tempo de leitura deve ser pelo menos 1 minuto")
         .max(120, "Tempo de leitura não pode exceder 120 minutos")
-        .optional(),
+        .nullish(),
       
       authorId: z.string()
         .uuid("ID do autor inválido"),
       
-      // Campos de moderação
+      // ✅ CORRIGIDO: Campos de moderação que podem ser null no banco
       approvedById: z.string()
         .uuid("ID do aprovador inválido")
-        .optional(),
+        .nullish(), // Aceita null, undefined ou string
       
-      approvedAt: z.date().optional(),
+      approvedAt: z.date().nullish(), // Aceita null, undefined ou Date
       
       rejectionReason: z.string()
         .max(500, "Motivo da rejeição não pode exceder 500 caracteres")
-        .optional(),
+        .nullish(), // Aceita null, undefined ou string
       
-      // Soft delete
-      deletedAt: z.date().optional(),
+      // ✅ CORRIGIDO: Soft delete também pode ser null
+      deletedAt: z.date().nullish(), // Aceita null, undefined ou Date
       
       // Imagens do artigo
       images: z.array(articleImageSchema)
@@ -153,7 +166,7 @@ export class ArticleZodValidator implements Validator<Article> {
           path: ["images"]
         }),
     })
-    // Validações condicionais
+    // ✅ CORRIGIDO: Validações condicionais também precisam considerar null
     .refine((data) => {
       if (data.status === ArticleStatus.APPROVED) {
         return data.approvedById && data.approvedAt;
