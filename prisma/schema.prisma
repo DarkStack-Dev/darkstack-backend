@@ -160,6 +160,10 @@ model User {
   authoredArticles  Article[] @relation("ArticleAuthor")
   approvedArticles  Article[] @relation("ArticleApprover")
 
+  // Relacionamentos com perguntas
+  ownedQuestions Question[] @relation("QuestionOwner")
+  approvedQuestions Question[] @relation("QuestionApprover")
+
   @@map("users")
 }
 
@@ -323,4 +327,39 @@ model LoginAttempt {
   @@index([email])
   @@index([userId])
   @@index([createdAt])
+}
+
+enum QuestionStatus {
+  PENDING   // Aguardando aprovação
+  APPROVED  // Aprovado e visível
+  REJECTED  // Rejeitado pelos moderadores
+}
+
+
+model Question {
+  id String   @id @default(uuid())
+  statement String
+  description String?
+  typeQuestion String 
+  response String?
+  points Int
+  status QuestionStatus @default(PENDING) // "pending", "approved", "rejected"
+  categories String[] // Array de categorias
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Para soft delete
+  approvalAt DateTime? // Quando foi aprovado
+  isActive Boolean @default(true)
+  justifyApprover String? // Justificativa do aprovador, se houver
+  
+  
+  // Relacionamentos
+  ownerId String
+  owner User @relation("QuestionOwner", fields: [ownerId], references: [id])
+  
+  approverId String? // Qual moderador aprovou
+  approver User? @relation("QuestionApprover", fields: [approverId], references: [id])
+
+  // relacionamentos que faltam
+  @@map("questions")
 }
