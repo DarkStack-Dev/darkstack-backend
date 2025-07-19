@@ -164,7 +164,14 @@ model User {
   ownedQuestions Question[] @relation("QuestionOwner")
   approvedQuestions Question[] @relation("QuestionApprover")
 
+
+  ResponseQuestionUser ResponseQuestionUser[] @relation("UserResponses")
+  Like Like[] @relation("UserLikes")
+  Feedback Feedback[] @relation("UserFeedbacks")
+
+
   @@map("users")
+  
 }
 
 model Project {
@@ -360,6 +367,99 @@ model Question {
   approverId String? // Qual moderador aprovou
   approver User? @relation("QuestionApprover", fields: [approverId], references: [id])
 
+
+  Alternative Alternative[] @relation("QuestionAlternatives")
+  ResponseQuestionUser ResponseQuestionUser[] @relation("QuestionResponse")
+  Like Like[] @relation("QuestionLikes")
+  Feedback Feedback[] @relation("QuestionFeedbacks")
+
+
   // relacionamentos que faltam
   @@map("questions")
+  
+}
+
+model Alternative {
+  id String @id @default(uuid())
+  description String
+  isCorrect Boolean @default(false) // Indica se é a resposta correta
+  explanation String? // Explicação da resposta correta
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Para soft delete
+  approvalAt DateTime? // Quando foi aprovado
+  isActive Boolean @default(true) // Indica se a alternativa está ativa
+  
+  // Relacionamentos
+  questionId String
+  question Question @relation("QuestionAlternatives",fields: [questionId], references: [id], onDelete: Cascade)
+
+
+  ResponseQuestionUser ResponseQuestionUser[] @relation("AlternativeResponses")
+
+
+  @@map("alternative")
+}
+
+model ResponseQuestionUser {
+  id String @id @default(uuid())
+  response String // Resposta do usuário
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Para soft delete
+
+
+  // Relacionamentos
+  questionId String
+  question Question @relation("QuestionResponse",fields: [questionId], references: [id], onDelete: Cascade)
+
+  alternativeId String
+  alternative Alternative @relation("AlternativeResponses",fields: [alternativeId], references: [id], onDelete:Cascade)
+
+  userId String
+  user User @relation("UserResponses", fields: [userId], references: [id])
+
+  @@map("response_question_user")
+}
+
+enum InteractionType {
+  LIKE
+  DISLIKE
+}
+
+model Like {
+  id String @id @default(uuid())
+  interaction InteractionType // "like" ou "dislike"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Para soft delete
+
+  // Relacionamentos
+  userId String
+  user User @relation("UserLikes", fields: [userId], references: [id])
+
+  questionId String
+  question Question @relation("QuestionLikes", fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId]) //evitar usuario dar like e deslike na mesma questao
+  @@map("like")
+}
+
+model Feedback {
+  id String @id @default(uuid())
+  comment String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Para soft delete
+
+
+  //Relacionamentos
+  userId String
+  user User @relation("UserFeedbacks", fields: [userId], references: [id])
+
+  questionId String
+  question Question @relation("QuestionFeedbacks", fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("feedback")
+
 }
