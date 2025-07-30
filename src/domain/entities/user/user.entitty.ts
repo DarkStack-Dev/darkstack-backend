@@ -1,6 +1,6 @@
-// src/domain/entities/user/user.entitty.ts - Versão corrigida
+// src/domain/entities/user/user.entitty.ts - ATUALIZADA com método update
 
-import {Utils} from "@/shared/utils/utils";
+import { Utils } from "@/shared/utils/utils";
 import { Entity } from "../../shared/entities/entity";
 import { UserValidatorFactory } from "../../factories/user/user.validator.factory";
 import { UserPasswordValidatorFactory } from "../../factories/user/user-password.validator.factory";
@@ -12,6 +12,7 @@ export type UserCreateDto = {
   name: string;
   roles: UserRole[];
   isOAuthUser?: boolean; // ✅ Adicionar flag para OAuth
+  avatar?: string; // ✅ Adicionar avatar
 }
 
 export type UserWithDto = {
@@ -23,27 +24,45 @@ export type UserWithDto = {
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;
+  isOAuthUser?: boolean; // ✅ Adicionar flag para OAuth
+  avatar: string; // ✅ Adicionar avatar
+  emailVerified: boolean; // ✅ Adicionar verificação de e-mail
+};
+
+// ✅ NOVO: Tipo para update
+export type UserUpdateDto = {
+  name?: string;
+  email?: string;
+  avatar?: string;
+  roles?: UserRole[];
+  isActive?: boolean;
+  emailVerified?: boolean;
+  password?: string; // Nova senha
 };
 
 export class User extends Entity {
   private name: string;
   private email: string;
   private password: string;
-  private roles: UserRole[];  
+  private roles: UserRole[];
+  private avatar: string;
+  private emailVerified: boolean;
 
-  constructor(id: string, name: string, email: string, password: string, roles: UserRole[], createdAt: Date, updatedAt: Date, isActive: boolean) {
+  constructor(id: string, name: string, email: string, roles: UserRole[], avatar: string, emailVerified: boolean, password: string,  createdAt: Date, updatedAt: Date, isActive: boolean) {
     super(id, createdAt, updatedAt, isActive);
     this.name = name;
     this.email = email;
     this.password = password;
     this.roles = roles;
+    this.avatar = avatar;
+    this.emailVerified = emailVerified;
     this.validate();
   }
 
-  public static create({name, email, password = '', roles, isOAuthUser = false}: UserCreateDto): User {
+  public static create({name, email, roles, password = '', isOAuthUser = false, avatar=''}: UserCreateDto): User {
     const id = Utils.GenerateUUID();
     const isActive = true;
-
+    const emailVerified = false; // ✅ Definir como false por padrão
     // ✅ Só validar senha se não for OAuth e se tiver senha
     if (!isOAuthUser && password) {
       UserPasswordValidatorFactory.create().validate(password);
@@ -54,7 +73,7 @@ export class User extends Entity {
     
     const createdAt = new Date();
     const updatedAt = new Date();
-    return new User(id, name, email, hashedPassword, roles, createdAt, updatedAt, isActive);
+    return new User(id, name, email, roles, avatar, emailVerified, hashedPassword, createdAt, updatedAt, isActive);
   }
 
   public static with({
@@ -65,9 +84,70 @@ export class User extends Entity {
     roles,
     createdAt,
     updatedAt,
-    isActive = true
+    isActive = true,
+    avatar,
+    emailVerified
   }: UserWithDto): User {
-    return new User(id, name, email,  password, roles, createdAt, updatedAt, isActive);
+    return new User(id, name, email, roles, avatar, emailVerified, password, createdAt, updatedAt, isActive);
+  }
+
+  // ✅ NOVO: Método para atualizar usuário
+  public update(updateData: UserUpdateDto): User {
+    const updatedName = updateData.name !== undefined ? updateData.name.trim() : this.name;
+    const updatedEmail = updateData.email !== undefined ? updateData.email.trim() : this.email;
+    const updatedAvatar = updateData.avatar !== undefined ? updateData.avatar : this.avatar;
+    const updatedRoles = updateData.roles !== undefined ? updateData.roles : this.roles;
+    const updatedIsActive = updateData.isActive !== undefined ? updateData.isActive : this.isActive;
+    const updatedEmailVerified = updateData.emailVerified !== undefined ? updateData.emailVerified : this.emailVerified;
+    
+    // Processar senha se fornecida
+    let updatedPassword = this.password;
+    if (updateData.password !== undefined) {
+      if (updateData.password && updateData.password.length > 0) {
+        // Validar e criptografar nova senha
+        UserPasswordValidatorFactory.create().validate(updateData.password);
+        updatedPassword = Utils.encryptPassword(updateData.password);
+      } else {
+        // Remover senha (para usuários OAuth)
+        updatedPassword = '';
+      }
+    }
+
+    // Atualizar timestamp
+    const updatedAt = new Date();
+
+    return new User(
+      this.id,
+      updatedName,
+      updatedEmail,
+      updatedRoles,
+      updatedAvatar,
+      updatedEmailVerified,
+      updatedPassword,
+      this.createdAt,
+      updatedAt,
+      updatedIsActive
+    );
+  }
+
+  // ✅ NOVO: Método para validar se pode ser atualizado
+  public canBeUpdated(): boolean {
+    return this.isActive; // Usuários inativos não podem ser atualizados
+  }
+
+  // ✅ NOVO: Método para verificar se é admin
+  public isAdmin(): boolean {
+    return this.roles.includes(UserRole.ADMIN);
+  }
+
+  // ✅ NOVO: Método para verificar se é moderador
+  public isModerator(): boolean {
+    return this.roles.includes(UserRole.MODERATOR);
+  }
+
+  // ✅ NOVO: Método para verificar se tem roles elevadas
+  public hasElevatedRoles(): boolean {
+    return this.isAdmin() || this.isModerator();
   }
 
   protected validate(): void {
@@ -88,6 +168,14 @@ export class User extends Entity {
 
   public getRoles(): UserRole[] {
     return this.roles;
+  }
+
+  public getAvatar(): string | undefined {
+    return this.avatar;
+  }
+
+  public isEmailVerified(): boolean {
+    return this.emailVerified ?? false; // ✅ Retornar false se não definido
   }
 
   public comparePassword(password: string): boolean {

@@ -1,4 +1,4 @@
-// src/domain/validators/github-account/github-account.zod.validator.ts
+// src/domain/validators/github-account/github-account.zod.validator.ts - Corrigido para UUID
 import { z } from "zod";
 import { Validator } from "@/domain/shared/validators/validator";
 import { ZodUtils } from "@/shared/utils/zod-utils";
@@ -38,8 +38,8 @@ export class GitHubAccountZodValidator implements Validator<GitHubAccount> {
 
   private getZodSchema() {
     const zodSchema = z.object({
-      id: z.string().uuid(),
-      userId: z.string().uuid(),
+      id: z.string().uuid("Invalid GitHub account ID format"), // ✅ Mudou de .uuid() para .uuid() (já estava correto)
+      userId: z.string().uuid("Invalid user ID format"), // ✅ Mudou de .uuid() para .uuid() (já estava correto)
       githubId: z.string().min(1, "GitHub ID is required"),
       username: z.string().min(1, "Username is required"),
       bio: z.string().optional(),

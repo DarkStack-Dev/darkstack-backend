@@ -1,4 +1,4 @@
-// Atualizar: src/infra/web/web.module.ts
+// src/infra/web/web.module.ts - ATUALIZADO
 import { Module } from '@nestjs/common';
 import { UsecaseModule } from 'src/usecases/usecase.module';
 import { DomainExceptionFilterProvider } from './filters/domain/domain-exception.filter';
@@ -28,6 +28,39 @@ import { UserProvidersRoute } from './routes/user/providers/user-providers.route
 import { StartGoogleAuthRoute } from './routes/google-auth/start/start-google-auth.route';
 import { GoogleCallbackRoute } from './routes/google-auth/callback/google-callback.route';
 
+// Project routes - ATUALIZADOS
+import { CreateProjectRoute } from './routes/projects/create/create-project.route';
+import { FindProjectByIdRoute } from './routes/projects/find-by-id/find-project-by-id.route';
+import { ListProjectsRoute } from './routes/projects/list/list-projects.route';
+import { MyProjectsRoute } from './routes/projects/my-projects/my-projects.route';
+import { DeleteProjectRoute } from './routes/projects/delete/delete-project.route';
+import { ListDeletedProjectsRoute } from './routes/projects/list-deleted/list-deleted-projects.route';
+
+
+// ✅ NOVO: Project Exception Filters
+import { ProjectNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-not-found-usecase-exception.filter';
+import { ProjectLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-limit-reached-usecase-exception.filter';
+import { ProjectAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/projects/project-access-denied-usecase-exception.filter';
+import { CreateProjectMultipartRoute } from './routes/projects/create/create-project-multipart.route';
+
+// ✅ ADICIONAR: Article routes
+import { CreateArticleRoute } from './routes/article/create/create-article.route';
+import { FindArticleByIdRoute } from './routes/article/find-by-id/find-article-by-id.route';
+import { FindArticleBySlugRoute } from './routes/article/find-by-slug/find-article-by-slug.route';
+import { ListArticlesRoute } from './routes/article/list/list-articles.route';
+import { MyArticlesRoute } from './routes/article/my-articles/my-articles.route';
+import { ModerateArticleRoute } from './routes/article/moderate/moderate-article.route';
+import { PendingModerationRoute } from './routes/article/pending-moderation/pending-moderation.route';
+
+// ✅ ADICIONAR: Article exception filters
+import { ArticleNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/article/article-not-found-usecase-exception.filter';
+import { ArticleLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/article/article-limit-reached-usecase-exception.filter';
+import { ArticleAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/article/article-access-denied-usecase-exception.filter';
+import { SearchArticlesRoute } from './routes/article/search/search-articles.route';
+import { ArticleStatsRoute } from './routes/article/stats/article-stats.route';
+import { PopularTagsRoute } from './routes/article/tags/popular-tags.route';
+
+
 @Module({
   imports: [ServiceModule, UsecaseModule],
   controllers: [
@@ -37,7 +70,7 @@ import { GoogleCallbackRoute } from './routes/google-auth/callback/google-callba
     RefreshAuthTokenRoute,
     FindByIdUserRoute,
     MeUserRoute,
-    // UserProvidersRoute, // ✅ NOVO
+    UserProvidersRoute, // ✅ ATIVADO
     
     // GitHub auth routes
     StartGitHubAuthRoute,
@@ -48,16 +81,56 @@ import { GoogleCallbackRoute } from './routes/google-auth/callback/google-callba
     // Google auth routes
     StartGoogleAuthRoute,
     GoogleCallbackRoute,
+
+    // Project routes - TODOS ATIVOS
+    CreateProjectRoute,
+    CreateProjectMultipartRoute,  // ← Multipart (NOVO)
+    FindProjectByIdRoute,
+    ListProjectsRoute,
+    MyProjectsRoute,
+    DeleteProjectRoute,
+    ListDeletedProjectsRoute,
+
+    // ✅ Article routes (principais)
+    CreateArticleRoute,
+    FindArticleByIdRoute,
+    FindArticleBySlugRoute, // 🔄 ATUALIZADA para usar UseCase
+    ListArticlesRoute,
+    MyArticlesRoute,
+    ModerateArticleRoute,
+    PendingModerationRoute, // 🔄 ATUALIZADA para usar UseCase
+
+    // ✅ Article routes (extras - se implementar)
+    SearchArticlesRoute, // ✅ NOVA - usa SearchArticlesUsecase
+    ArticleStatsRoute, // ✅ NOVA - usa ArticleStatsUsecase
+    PopularTagsRoute, // ✅ NOVA - usa PopularTagsUsecase
   ],
   providers: [
     AuthGuardProvider,
+    
+    // Domain exception filters
     ValidatorDomainExceptionFilterProvider,
     DomainExceptionFilterProvider,
+    
+    // General usecase exception filters
     UsecaseExceptionFilterProvider,
+    
+    // User exception filters
     CredentialsNotValidUsecaseExceptionFilterProvider,
     EmailAlreadyExistsUsecaseExceptionFilterProvider,
-    UsecaseExceptionFilterProvider,
     UserNotFoundUsecaseExceptionFilterProvider,
+    
+    // ✅ NOVO: Project exception filters
+    ProjectNotFoundUsecaseExceptionFilterProvider,
+    ProjectLimitReachedUsecaseExceptionFilterProvider,
+    ProjectAccessDeniedUsecaseExceptionFilterProvider,
+
+    // ✅ NOVO: Article exception filters
+    ArticleNotFoundUsecaseExceptionFilterProvider,
+    ArticleLimitReachedUsecaseExceptionFilterProvider,
+    ArticleAccessDeniedUsecaseExceptionFilterProvider,
+    
+    // Service exception filters
     ServiceExceptionFilterProvider,
     RefreshTokenNotValidServiceExceptionFilterProvider,
   ],

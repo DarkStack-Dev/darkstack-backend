@@ -70,7 +70,7 @@ export class AuthGuard implements CanActivate {
   }
 
   const hasRequiredRole = userRoles.some((role) => requiredRoles.includes(role));
-
+  console.log(hasRequiredRole, requiredRoles, userRoles);
   if (!hasRequiredRole) {
     throw new UnauthorizedException(
       `Access denied. Required roles: ${requiredRoles.join(', ')}`

@@ -1,4 +1,4 @@
-// src/domain/validators/user/user.zod.validator.ts - Versão corrigida
+// src/domain/validators/user/user.zod.validator.ts - Corrigido para UUID
 
 import { z } from "zod";
 import { User } from "../../entities/user/user.entitty";
@@ -40,7 +40,7 @@ export class UserZodValidator implements Validator<User>{
 
   private getZodSchema() {
     const zodSchema = z.object({
-      id: z.string().uuid(),
+      id: z.string().uuid("Invalid user ID format"), // ✅ Mudou de .uuid() para .uuid() (já estava correto)
       name: z.string().min(1, "Name is required"),
       email: z.string().email("Invalid email format"),
       password: z.string(), // ✅ Permitir string vazia para OAuth
