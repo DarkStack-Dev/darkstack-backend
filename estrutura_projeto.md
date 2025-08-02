@@ -1,10 +1,10 @@
 # Estrutura do Projeto: darkstack
 
-**Data de geração:** 01/08/2025 22:40:58
+**Data de geração:** 02/08/2025 11:34:02
 
 **Estatísticas:**
-- 📁 Diretórios: 236
-- 📄 Arquivos: 346
+- 📁 Diretórios: 237
+- 📄 Arquivos: 350
 
 ## 🌳 Estrutura de Arquivos
 
@@ -12,6 +12,8 @@
 .env
 README.md
 docker-compose.yml
+estrutura_detalhada.md
+estrutura_projeto.md
 generated\prisma\client.d.ts
 generated\prisma\client.js
 generated\prisma\default.d.ts
@@ -298,6 +300,8 @@ src\infra\web\routes\user\update-profile\update-user-profile.dto.ts
 src\infra\web\routes\user\update-profile\update-user-profile.presenter.ts
 src\infra\web\routes\user\update-profile\update-user-profile.route.ts
 src\infra\web\web.module.ts
+src\infra\websocket\notification.gateway.ts
+src\infra\websocket\websocket.module.ts
 src\main.ts
 src\shared\exceptions\exception.ts
 src\shared\utils\exception-utils.ts
@@ -622,6 +626,8 @@ tsconfig.json
 - `src\infra\web\routes\user\update-profile\update-user-profile.presenter.ts`
 - `src\infra\web\routes\user\update-profile\update-user-profile.route.ts`
 - `src\infra\web\web.module.ts`
+- `src\infra\websocket\notification.gateway.ts`
+- `src\infra\websocket\websocket.module.ts`
 - `src\main.ts`
 - `src\shared\exceptions\exception.ts`
 - `src\shared\utils\exception-utils.ts`
@@ -710,6 +716,8 @@ tsconfig.json
 
 - `.env`
 - `README.md`
+- `estrutura_detalhada.md`
+- `estrutura_projeto.md`
 - `src\domain\usecases\article\business_rules.md`
 - `src\domain\usecases\article\comandos.md`
 - `src\domain\usecases\article\docs.md`

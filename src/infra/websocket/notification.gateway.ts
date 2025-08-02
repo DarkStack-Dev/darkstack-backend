@@ -1,4 +1,4 @@
-// src/infra/websocket/notification.gateway.ts
+// src/infra/websocket/notification.gateway.ts - CORRIGIDO
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -11,7 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Injectable, Logger } from '@nestjs/common';
 import { UserGatewayRepository } from '@/domain/repositories/user/user.gateway.repository';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService } from '@/infra/services/jwt/jwt.service'; // ✅ CORRIGIDO: Usar o serviço customizado
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -21,8 +21,9 @@ interface AuthenticatedSocket extends Socket {
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: process.env.FRONTEND_URL || "*",
+    methods: ["GET", "POST"],
+    credentials: true,
   },
   namespace: '/notifications'
 })
@@ -35,7 +36,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
   constructor(
     private readonly userRepository: UserGatewayRepository,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService, // ✅ CORRIGIDO: Usar o customizado
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -48,9 +49,9 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         return;
       }
 
-      // Verificar e decodificar token
-      const payload = this.jwtService.verify(token);
-      const userId = payload.sub || payload.userId;
+      // ✅ CORRIGIDO: Verificar e decodificar token usando o serviço customizado
+      const payload = this.jwtService.verifyAuthToken(token);
+      const userId = payload.userId;
 
       if (!userId) {
         this.logger.warn(`Client ${client.id} connected with invalid token`);
@@ -58,7 +59,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         return;
       }
 
-      // Verificar se usuário existe
+      // Verificar se usuário existe e está ativo
       const user = await this.userRepository.findById(userId);
       if (!user || !user.getIsActivate()) {
         this.logger.warn(`Client ${client.id} connected with non-existent or inactive user ${userId}`);
@@ -79,22 +80,28 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       // Juntar em room do usuário
       client.join(`user_${userId}`);
 
-      // Se for moderador, juntar em room de moderadores
+      // Se for moderador/admin, juntar em room de moderadores
       if (user.isModerator() || user.isAdmin()) {
         client.join('moderators');
+        this.logger.log(`Moderator ${user.getName()} joined moderators room`);
       }
 
-      this.logger.log(`User ${userId} connected (${client.id}). Active connections: ${this.getTotalConnections()}`);
+      this.logger.log(`User ${user.getName()} (${userId}) connected via WebSocket. Total connections: ${this.getTotalConnections()}`);
 
       // Enviar confirmação de conexão
       client.emit('connected', {
         message: 'Conectado ao sistema de notificações em tempo real',
         userId: userId,
+        userRoles: user.getRoles(),
         timestamp: new Date().toISOString(),
       });
 
     } catch (error) {
       this.logger.error(`Connection error for client ${client.id}:`, error);
+      client.emit('error', {
+        message: 'Erro de autenticação',
+        timestamp: new Date().toISOString(),
+      });
       client.disconnect();
     }
   }
@@ -113,8 +120,6 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       }
 
       this.logger.log(`User ${client.userId} disconnected (${client.id}). Active connections: ${this.getTotalConnections()}`);
-    } else {
-      this.logger.log(`Anonymous client ${client.id} disconnected`);
     }
   }
 
@@ -123,24 +128,24 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     client.emit('pong', { timestamp: new Date().toISOString() });
   }
 
-  @SubscribeMessage('markAsRead')
-  handleMarkAsRead(
+  @SubscribeMessage('joinRoom')
+  handleJoinRoom(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { notificationId: string }
+    @MessageBody() data: { room: string }
   ) {
-    // Emitir confirmação (o use case real será chamado via HTTP)
-    client.emit('notificationMarkedAsRead', {
-      notificationId: data.notificationId,
-      timestamp: new Date().toISOString(),
-    });
+    client.join(data.room);
+    client.emit('joinedRoom', { room: data.room, timestamp: new Date().toISOString() });
   }
 
-  // Métodos para envio de notificações
+  // ✅ MÉTODOS PRINCIPAIS PARA NOTIFICAÇÕES
 
+  /**
+   * Envia notificação para um usuário específico
+   */
   sendNotificationToUser(userId: string, notification: any): boolean {
     const userSockets = this.connectedUsers.get(userId);
     if (!userSockets || userSockets.length === 0) {
-      this.logger.debug(`No active connections for user ${userId}`);
+      this.logger.debug(`No active WebSocket connections for user ${userId}`);
       return false;
     }
 
@@ -153,8 +158,10 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     let sentCount = 0;
     userSockets.forEach(socket => {
       try {
-        socket.emit('newNotification', notificationData);
-        sentCount++;
+        if (!socket.disconnected) {
+          socket.emit('newNotification', notificationData);
+          sentCount++;
+        }
       } catch (error) {
         this.logger.error(`Error sending notification to socket ${socket.id}:`, error);
       }
@@ -164,31 +171,46 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     return sentCount > 0;
   }
 
-  sendNotificationToModerators(notification: any): boolean {
+  /**
+   * Envia notificação para todos os moderadores conectados
+   */
+  sendNotificationToModerators(notification: any): number {
     const notificationData = {
       type: 'moderation',
       data: notification,
       timestamp: new Date().toISOString(),
     };
 
-    this.server.to('moderators').emit('newModerationRequest', notificationData);
-    
-    const moderatorCount = this.getModeratorsConnectedCount();
-    this.logger.log(`Sent moderation notification to ${moderatorCount} connected moderators`);
-    
-    return moderatorCount > 0;
+    const moderatorsRoom = this.server.sockets.adapter.rooms.get('moderators');
+    const moderatorCount = moderatorsRoom?.size || 0;
+
+    if (moderatorCount > 0) {
+      this.server.to('moderators').emit('newModerationRequest', notificationData);
+      this.logger.log(`Sent moderation notification to ${moderatorCount} connected moderators`);
+    } else {
+      this.logger.debug('No moderators connected via WebSocket');
+    }
+
+    return moderatorCount;
   }
 
-  // Método para broadcast geral (raramente usado)
-  broadcastToAll(message: any) {
+  /**
+   * Envia broadcast para todos os usuários conectados
+   */
+  broadcastToAll(message: any): number {
+    const totalConnections = this.getTotalConnections();
+    
     this.server.emit('broadcast', {
       type: 'broadcast',
       data: message,
       timestamp: new Date().toISOString(),
     });
+
+    this.logger.log(`Broadcast sent to ${totalConnections} connections`);
+    return totalConnections;
   }
 
-  // Métodos utilitários
+  // ✅ MÉTODOS UTILITÁRIOS
 
   isUserConnected(userId: string): boolean {
     return this.connectedUsers.has(userId) && this.connectedUsers.get(userId)!.length > 0;
@@ -214,7 +236,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     return this.server.sockets.adapter.rooms.get('moderators')?.size || 0;
   }
 
-  // Status para debugging
+  // Status para debugging e monitoramento
   getConnectionStatus() {
     const status: any = {
       totalUsers: this.connectedUsers.size,
@@ -239,7 +261,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     const token = 
       client.handshake.auth?.token ||
       client.handshake.headers?.authorization?.replace('Bearer ', '') ||
-      client.handshake.query?.token;
+      client.handshake.query?.token as string;
 
     return typeof token === 'string' ? token : null;
   }

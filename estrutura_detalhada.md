@@ -1,6 +1,6 @@
 # Estrutura Detalhada: darkstack
 
-**Gerado em:** 01/08/2025 22:40:58
+**Gerado em:** 02/08/2025 11:34:02
 
 ## 📁 .
 
@@ -13,11 +13,11 @@
 - **docker-compose.yml** (1.7KB)
 - **eslint.config.mjs** (869B)
 - **estrutura_detalhada.md** (0B)
-- **estrutura_projeto.md** (43.2KB)
+- **estrutura_projeto.md** (43.4KB)
 - **leitor_nestjs.py** (6.5KB)
 - **nest-cli.json** (201B)
 - **nginx.conf** (879B)
-- **package-lock.json** (448.1KB)
+- **package-lock.json** (449.0KB)
 - **package.json** (2.9KB)
 - **railway.toml** (203B)
 - **tsconfig.build.json** (99B)
@@ -278,7 +278,7 @@
 
 ## 📁 src\domain\usecases\notification\create
 
-- **create-notification.usecase.ts** (3.9KB)
+- **create-notification.usecase.ts** (4.1KB)
 
 ## 📁 src\domain\usecases\notification\create-many
 
@@ -294,7 +294,7 @@
 
 ## 📁 src\domain\usecases\notification\notify-moderators
 
-- **notify-moderators.usecase.ts** (4.2KB)
+- **notify-moderators.usecase.ts** (5.4KB)
 
 ## 📁 src\domain\usecases\projects\approve
 
@@ -390,13 +390,9 @@
 - **user-password.zod.validator.ts** (1.5KB)
 - **user.zod.validator.ts** (2.0KB)
 
-## 📁 src\infra
-
-- **websocket** (7.4KB)
-
 ## 📁 src\infra\repositories
 
-- **database.module.ts** (1.2KB)
+- **database.module.ts** (1.4KB)
 
 ## 📁 src\infra\repositories\prisma
 
@@ -470,7 +466,7 @@
 
 ## 📁 src\infra\services
 
-- **service.module.ts** (961B)
+- **service.module.ts** (1.2KB)
 
 ## 📁 src\infra\services\exceptions
 
@@ -525,7 +521,7 @@
 
 ## 📁 src\infra\web
 
-- **web.module.ts** (7.0KB)
+- **web.module.ts** (8.0KB)
 
 ## 📁 src\infra\web\auth
 
@@ -800,6 +796,11 @@
 - **update-user-profile.presenter.ts** (726B)
 - **update-user-profile.route.ts** (1.4KB)
 
+## 📁 src\infra\websocket
+
+- **notification.gateway.ts** (8.3KB)
+- **websocket.module.ts** (600B)
+
 ## 📁 src\shared\exceptions
 
 - **exception.ts** (922B)
@@ -813,7 +814,7 @@
 
 ## 📁 src\usecases
 
-- **usecase.module.ts** (7.7KB)
+- **usecase.module.ts** (10.2KB)
 - **usecase.ts** (87B)
 
 ## 📁 src\usecases\article\approve

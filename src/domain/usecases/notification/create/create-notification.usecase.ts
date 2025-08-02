@@ -1,4 +1,4 @@
-// src/domain/usecases/notification/create/create-notification.usecase.ts - MODIFICADO PARA INCLUIR STREAM
+// src/domain/usecases/notification/create/create-notification.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
 import { NotificationGatewayRepository } from '@/domain/repositories/notification/notification.gateway.repository';
@@ -6,7 +6,7 @@ import { UserGatewayRepository } from '@/domain/repositories/user/user.gateway.r
 import { Notification } from '@/domain/entities/notification/notification.entity';
 import { UserNotFoundUsecaseException } from '../../exceptions/user/user-not-found.usecase.exception';
 import { NotificationType } from 'generated/prisma';
-import { NotificationStreamService } from '@/infra/services/notification/notification-stream.service';
+import { NotificationGateway } from '@/infra/websocket/notification.gateway'; // ✅ CORRIGIDO
 
 export type CreateNotificationInput = {
   type: NotificationType;
@@ -25,7 +25,7 @@ export type CreateNotificationOutput = {
   title: string;
   createdAt: Date;
   streamSent: boolean;
-  realTimeSent: boolean; // ✅ NOVO: Indica se a notificação foi enviada em tempo real
+  realTimeSent: boolean; // Indica se a notificação foi enviada em tempo real via WebSocket
 };
 
 @Injectable()
@@ -33,7 +33,7 @@ export class CreateNotificationUseCase implements UseCase<CreateNotificationInpu
   constructor(
     private readonly notificationRepository: NotificationGatewayRepository,
     private readonly userRepository: UserGatewayRepository,
-    private readonly notificationStreamService: NotificationStreamService, // ✅ NOVA DEPENDÊNCIA
+    private readonly notificationGateway: NotificationGateway, // ✅ WEBSOCKET GATEWAY
   ) {}
 
   async execute(input: CreateNotificationInput): Promise<CreateNotificationOutput> {
@@ -71,13 +71,13 @@ export class CreateNotificationUseCase implements UseCase<CreateNotificationInpu
       createdById: input.createdById,
     });
 
-    // Persistir
+    // Persistir no banco de dados
     await this.notificationRepository.create(notification);
 
-    // ✅ NOVO: Enviar notificação em tempo real via SSE
-    let streamSent = false;
+    // ✅ ENVIAR NOTIFICAÇÃO EM TEMPO REAL VIA WEBSOCKET
+    let realTimeSent = false;
     try {
-      this.notificationStreamService.sendNotificationToUser(input.userId, {
+      realTimeSent = this.notificationGateway.sendNotificationToUser(input.userId, {
         id: notification.getId(),
         type: notification.getType(),
         title: notification.getTitle(),
@@ -88,10 +88,14 @@ export class CreateNotificationUseCase implements UseCase<CreateNotificationInpu
         metadata: notification.getMetadata(),
         createdAt: notification.getCreatedAt(),
       });
-      streamSent = true;
-      console.log(`✅ [CreateNotificationUseCase] Real-time notification sent to user ${input.userId}`);
+      
+      if (realTimeSent) {
+        console.log(`✅ [CreateNotificationUseCase] Real-time notification sent to user ${input.userId} via WebSocket`);
+      } else {
+        console.log(`⚠️ [CreateNotificationUseCase] User ${input.userId} not connected to WebSocket`);
+      }
     } catch (error) {
-      console.error(`❌ [CreateNotificationUseCase] Failed to send real-time notification:`, error);
+      console.error(`❌ [CreateNotificationUseCase] Failed to send real-time notification via WebSocket:`, error);
     }
 
     return {
@@ -99,8 +103,8 @@ export class CreateNotificationUseCase implements UseCase<CreateNotificationInpu
       type: notification.getType(),
       title: notification.getTitle(),
       createdAt: notification.getCreatedAt(),
-      streamSent,
-      realTimeSent: streamSent, // Adiciona o campo obrigatório
+      streamSent: realTimeSent, // Para compatibilidade com código existente
+      realTimeSent, // ✅ Campo principal para WebSocket
     };
   }
 }
