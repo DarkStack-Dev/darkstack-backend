@@ -1,4 +1,4 @@
-// src/usecases/article/create/create-article.usecase.ts
+// src/usecases/article/create/create-article.usecase.ts - APPLICATION LAYER WEBSOCKET
 import { Injectable } from '@nestjs/common';
 import { Usecase } from '@/usecases/usecase';
 import { CreateArticleUseCase as DomainCreateArticleUseCase } from '@/domain/usecases/article/create/create-article.usecase';
@@ -22,6 +22,8 @@ export type CreateArticleOutput = {
   slug: string;
   status: string;
   createdAt: Date;
+  moderatorsNotified: number;
+  realTimeNotificationSent: boolean;
   message: string;
 };
 
@@ -35,13 +37,23 @@ export class CreateArticleUsecase implements Usecase<CreateArticleInput, CreateA
     try {
       const result = await this.domainCreateArticleUseCase.execute(input);
 
+      let message = 'Artigo criado com sucesso! ';
+      
+      if (result.realTimeNotificationSent) {
+        message += `${result.moderatorsNotified} moderadores foram notificados em tempo real.`;
+      } else {
+        message += `${result.moderatorsNotified} moderadores foram notificados (offline).`;
+      }
+
       return {
         id: result.id,
         titulo: result.titulo,
         slug: result.slug,
         status: result.status,
         createdAt: result.createdAt,
-        message: 'Artigo criado com sucesso! Aguarde a aprovação de um moderador.',
+        moderatorsNotified: result.moderatorsNotified,
+        realTimeNotificationSent: result.realTimeNotificationSent,
+        message,
       };
     } catch (error) {
       // Mapear exceptions do domínio para aplicação

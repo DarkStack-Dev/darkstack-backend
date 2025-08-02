@@ -1,4 +1,4 @@
-// src/domain/usecases/article/create/create-article.usecase.ts
+// src/domain/usecases/article/create/create-article.usecase.ts - MODIFICADO PARA INCLUIR NOTIFICAÇÕES
 import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
 import { ArticleGatewayRepository } from '@/domain/repositories/article/article.gateway.repository';
@@ -7,6 +7,8 @@ import { Article, ArticleImageDto } from '@/domain/entities/article/article.enti
 import { UserNotFoundUsecaseException } from '../../exceptions/user/user-not-found.usecase.exception';
 import { InvalidInputUsecaseException } from '../../exceptions/input/invalid-input.usecase.exception';
 import { ArticleCategory } from 'generated/prisma';
+import { NotifyModeratorsUseCase } from '../../notification/notify-moderators/notify-moderators.usecase';
+import { NotificationType } from 'generated/prisma';
 
 export type CreateArticleInput = {
   titulo: string;
@@ -24,6 +26,7 @@ export type CreateArticleOutput = {
   slug: string;
   status: string;
   createdAt: Date;
+  notificationsSent: number; // Quantas notificações foram enviadas
 };
 
 @Injectable()
@@ -31,6 +34,7 @@ export class CreateArticleUseCase implements UseCase<CreateArticleInput, CreateA
   constructor(
     private readonly articleRepository: ArticleGatewayRepository,
     private readonly userRepository: UserGatewayRepository,
+    private readonly notifyModeratorsUseCase: NotifyModeratorsUseCase, // ✅ NOVA DEPENDÊNCIA
   ) {}
 
   async execute({ titulo, descricao, conteudo, categoria, tags, images, userId }: CreateArticleInput): Promise<CreateArticleOutput> {
@@ -70,12 +74,14 @@ export class CreateArticleUseCase implements UseCase<CreateArticleInput, CreateA
 
     // Verificar se slug é único
     const isSlugUnique = await this.articleRepository.isSlugUnique(article.getSlug());
+    let finalArticle = article;
+    
     if (!isSlugUnique) {
       // Gerar slug alternativo
       const timestamp = Date.now();
       const newSlug = `${article.getSlug()}-${timestamp}`;
       // Recriar artigo com slug único
-      const uniqueArticle = Article.create({
+      finalArticle = Article.create({
         titulo: titulo.trim(),
         slug: newSlug,
         descricao: descricao.trim(),
@@ -85,27 +91,35 @@ export class CreateArticleUseCase implements UseCase<CreateArticleInput, CreateA
         authorId: userId,
         images: images || [],
       });
-      
-      await this.articleRepository.create(uniqueArticle);
-      
-      return {
-        id: uniqueArticle.getId(),
-        titulo: uniqueArticle.getTitulo(),
-        slug: uniqueArticle.getSlug(),
-        status: uniqueArticle.getStatus(),
-        createdAt: uniqueArticle.getCreatedAt(),
-      };
     }
 
-    // Persistir
-    await this.articleRepository.create(article);
+    // Persistir artigo
+    await this.articleRepository.create(finalArticle);
+
+    // ✅ NOVO: Notificar moderadores sobre novo artigo pendente
+    let notificationsSent = 0;
+    try {
+      const notificationResult = await this.notifyModeratorsUseCase.execute({
+        type: NotificationType.ARTICLE_PENDING,
+        relatedId: finalArticle.getId(),
+        relatedType: 'ARTICLE',
+        itemName: finalArticle.getTitulo(),
+      });
+      
+      notificationsSent = notificationResult.notifiedCount;
+      console.log(`✅ [CreateArticleUseCase] Notified ${notificationsSent} moderators about new article ${finalArticle.getId()}`);
+    } catch (error) {
+      // Log error but don't fail the article creation
+      console.error(`❌ [CreateArticleUseCase] Failed to notify moderators about article ${finalArticle.getId()}:`, error);
+    }
 
     return {
-      id: article.getId(),
-      titulo: article.getTitulo(),
-      slug: article.getSlug(),
-      status: article.getStatus(),
-      createdAt: article.getCreatedAt(),
+      id: finalArticle.getId(),
+      titulo: finalArticle.getTitulo(),
+      slug: finalArticle.getSlug(),
+      status: finalArticle.getStatus(),
+      createdAt: finalArticle.getCreatedAt(),
+      notificationsSent, // ✅ NOVO: Informar quantas notificações foram enviadas
     };
   }
 

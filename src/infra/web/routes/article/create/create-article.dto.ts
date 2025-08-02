@@ -1,4 +1,4 @@
-// src/infra/web/routes/article/create/create-article.dto.ts
+// src/infra/web/routes/article/create/create-article.dto.ts - WEBSOCKET VERSION
 import { ArticleImageDto } from "@/domain/entities/article/article.entity";
 import { ArticleCategory } from "generated/prisma";
 
@@ -18,4 +18,6 @@ export type CreateArticleResponse = {
   status: string;
   createdAt: Date;
   message: string;
+  moderatorsNotified: number;
+  realTimeNotification: boolean;
 };

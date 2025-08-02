@@ -160,6 +160,9 @@ model User {
   authoredArticles  Article[] @relation("ArticleAuthor")
   approvedArticles  Article[] @relation("ArticleApprover")
 
+  receivedNotifications  Notification[] @relation()
+  createdNotifications   Notification[] @relation("NotificationCreator")
+
   @@map("users")
 }
 
@@ -307,20 +310,53 @@ model GoogleAccount {
   @@index([userId])
 }
 
-// Tabela opcional para rastrear tentativas de login
-model LoginAttempt {
-  id            String      @id @default(uuid()) // ✅ Mudou de cuid() para uuid()
-  userId        String?     // Nullable para tentativas com usuários inexistentes
-  email         String
-  provider      AuthProvider
-  success       Boolean
-  ipAddress     String?
-  userAgent     String?
-  failureReason String?     // Razão da falha (senha errada, usuário não encontrado, etc.)
-  createdAt     DateTime    @default(now())
+// Adicionar ao prisma/schema.prisma
 
-  @@map("login_attempts")
-  @@index([email])
+// Atualizar o modelo User adicionando:
+// receivedNotifications  Notification[] @relation()
+// createdNotifications   Notification[] @relation("NotificationCreator")
+
+enum NotificationType {
+  ARTICLE_PENDING       // Novo artigo aguardando moderação
+  ARTICLE_APPROVED      // Artigo aprovado
+  ARTICLE_REJECTED      // Artigo rejeitado
+  PROJECT_PENDING       // Novo projeto aguardando moderação
+  PROJECT_APPROVED      // Projeto aprovado
+  PROJECT_REJECTED      // Projeto rejeitado
+  SYSTEM_ANNOUNCEMENT   // Anúncio do sistema
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  type        NotificationType
+  title       String           // Título da notificação
+  message     String           @db.Text // Mensagem completa
+  isRead      Boolean          @default(false)
+  
+  // Dados do item relacionado (artigo/projeto)
+  relatedId   String?          // ID do artigo ou projeto relacionado
+  relatedType String?          // "ARTICLE" ou "PROJECT"
+  
+  // Metadados adicionais
+  metadata    Json?            // Dados extras como URLs, etc.
+  
+  // Timestamps
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  readAt      DateTime?        // Quando foi lida
+  deletedAt   DateTime?        // Para soft delete
+  
+  // Relacionamentos
+  userId      String           // Quem vai receber a notificação
+  user        User             @relation(fields: [userId], references: [id])
+  
+  // Quem gerou a notificação (opcional)
+  createdById String?
+  createdBy   User?            @relation("NotificationCreator", fields: [createdById], references: [id])
+
+  @@map("notifications")
   @@index([userId])
+  @@index([type])
+  @@index([isRead])
   @@index([createdAt])
 }
