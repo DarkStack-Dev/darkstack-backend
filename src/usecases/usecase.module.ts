@@ -1,4 +1,4 @@
-// src/usecases/usecase.module.ts - ATUALIZADO com novos casos de uso
+// src/usecases/usecase.module.ts - ATUALIZADO COM NOTIFICAÇÕES
 import { Module } from '@nestjs/common';
 import { CreateUserUsecase } from './user/create/create-user.usecase';
 import { FindUserUsecase } from './user/find-by-id/find-user.usecase';
@@ -12,12 +12,12 @@ import { StartGoogleAuthUseCase } from '@/domain/usecases/google-auth/start-goog
 import { GoogleCallbackUseCase } from '@/domain/usecases/google-auth/google-callback/google-callback.usecase';
 import { DatabaseModule } from 'src/infra/repositories/database.module';
 import { ServiceModule } from 'src/infra/services/service.module';
+import { WebSocketModule } from '@/infra/websocket/websocket.module'; // ✅ NOVO
+
 // Project use cases
 import { CreateProjectsUseCase } from '@/domain/usecases/projects/create/create-projects.usecase';
-
 import { ListProjectsUseCase } from '@/domain/usecases/projects/list/list-projects.usecase';
 import { MyProjectsUseCase } from '@/domain/usecases/projects/my-projects/my-projects.usecase';
-// User providers use case - ✅ ADICIONADO
 import { UserProvidersUseCase } from '@/domain/usecases/providers/user-providers.usecase';
 import { DeleteProjectUseCase } from '@/domain/usecases/projects/delete/delete-project.usecase';
 import { RestoreProjectUseCase } from '@/domain/usecases/projects/restore/restore-project.usecase';
@@ -31,30 +31,51 @@ import { DeleteProjectUsecase } from './projects/delete/delete-project.usecase';
 import { RestoreProjectUsecase } from './projects/restore/restore-project.usecase';
 import { ListDeletedProjectsUsecase } from './projects/list-deleted/list-deleted-projects.usecase';
 
-// ✅ Article use cases - Domain Layer
+// Article use cases - Domain Layer
 import { CreateArticleUseCase } from '@/domain/usecases/article/create/create-article.usecase';
 import { FindArticleByIdUseCase } from '@/domain/usecases/article/find-by-id/find-article-by-id.usecase';
-import { FindArticleBySlugUseCase } from '@/domain/usecases/article/find-by-slug/find-article-by-slug.usecase'; // ✅ NOVO
+import { FindArticleBySlugUseCase } from '@/domain/usecases/article/find-by-slug/find-article-by-slug.usecase';
 import { ListArticlesUseCase } from '@/domain/usecases/article/list/list-articles.usecase';
-import { GetPendingModerationUseCase } from '@/domain/usecases/article/get-pending-moderation/get-pending-moderation.usecase'; // ✅ NOVO
-import { SearchArticlesUseCase } from '@/domain/usecases/article/search/search-articles.usecase'; // ✅ NOVO
-import { ArticleStatsUseCase } from '@/domain/usecases/article/stats/article-stats.usecase'; // ✅ NOVO
-import { PopularTagsUseCase } from '@/domain/usecases/article/popular-tags/popular-tags.usecase'; // ✅ NOVO
+import { GetPendingModerationUseCase } from '@/domain/usecases/article/get-pending-moderation/get-pending-moderation.usecase';
+import { SearchArticlesUseCase } from '@/domain/usecases/article/search/search-articles.usecase';
+import { ArticleStatsUseCase } from '@/domain/usecases/article/stats/article-stats.usecase';
+import { PopularTagsUseCase } from '@/domain/usecases/article/popular-tags/popular-tags.usecase';
+import { ApproveArticleUseCase } from '@/domain/usecases/article/approve/approve-article.usecase';
+import { RejectArticleUseCase } from '@/domain/usecases/article/reject/reject-article.usecase';
 
-// ✅ Article use cases - Application Layer
+// Article use cases - Application Layer
 import { CreateArticleUsecase } from './article/create/create-article.usecase';
 import { FindArticleByIdUsecase } from './article/find-by-id/find-article-by-id.usecase';
-import { FindArticleBySlugUsecase } from './article/find-by-slug/find-article-by-slug.usecase'; // ✅ NOVO
+import { FindArticleBySlugUsecase } from './article/find-by-slug/find-article-by-slug.usecase';
 import { ListArticlesUsecase } from './article/list/list-articles.usecase';
 import { MyArticlesUsecase } from './article/my-articles/my-articles.usecase';
 import { ModerateArticleUsecase } from './article/moderate/moderate-article.usecase';
-import { GetPendingModerationUsecase } from './article/get-pending-moderation/get-pending-moderation.usecase'; // ✅ NOVO
-import { SearchArticlesUsecase } from './article/search/search-articles.usecase'; // ✅ NOVO
-import { ArticleStatsUsecase } from './article/stats/article-stats.usecase'; // ✅ NOVO
-import { PopularTagsUsecase } from './article/popular-tags/popular-tags.usecase'; // ✅ NOVO
+import { GetPendingModerationUsecase } from './article/get-pending-moderation/get-pending-moderation.usecase';
+import { SearchArticlesUsecase } from './article/search/search-articles.usecase';
+import { ArticleStatsUsecase } from './article/stats/article-stats.usecase';
+import { PopularTagsUsecase } from './article/popular-tags/popular-tags.usecase';
+import { ApproveArticleUsecase } from './article/approve/approve-article.usecase';
+import { RejectArticleUsecase } from './article/reject/reject-article.usecase';
+
+// ✅ NOTIFICATION USE CASES - Domain Layer
+import { CreateNotificationUseCase } from '@/domain/usecases/notification/create/create-notification.usecase';
+import { CreateManyNotificationsUseCase } from '@/domain/usecases/notification/create-many/create-many-notifications.usecase';
+import { FindNotificationsByUserUseCase } from '@/domain/usecases/notification/find-by-user/find-notifications-by-user.usecase';
+import { MarkNotificationAsReadUseCase } from '@/domain/usecases/notification/mark-as-read/mark-notification-as-read.usecase';
+import { NotifyModeratorsUseCase } from '@/domain/usecases/notification/notify-moderators/notify-moderators.usecase';
+
+// ✅ NOTIFICATION USE CASES - Application Layer
+import { FindNotificationsByUserUsecase } from './notification/find-by-user/find-notifications-by-user.usecase';
+import { MarkNotificationAsReadUsecase } from './notification/mark-as-read/mark-notification-as-read.usecase';
+import { GetUnreadNotificationsCountUsecase } from './notification/get-unread-count/get-unread-notifications-count.usecase';
+import { MarkAllNotificationsAsReadUsecase } from './notification/mark-all-read/mark-all-notifications-as-read.usecase';
 
 @Module({
-  imports: [DatabaseModule, ServiceModule],
+  imports: [
+    DatabaseModule, 
+    ServiceModule,
+    WebSocketModule, // ✅ NOVO: Para integração com WebSocket
+  ],
   providers: [
     // User use cases
     CreateUserUsecase,
@@ -89,27 +110,44 @@ import { PopularTagsUsecase } from './article/popular-tags/popular-tags.usecase'
     ListDeletedProjectsUseCase,
     ListDeletedProjectsUsecase,
 
-    // ✅ Article use cases - Domain Layer
+    // Article use cases - Domain Layer
     CreateArticleUseCase,
     FindArticleByIdUseCase,
-    FindArticleBySlugUseCase, // ✅ NOVO
+    FindArticleBySlugUseCase,
     ListArticlesUseCase,
-    GetPendingModerationUseCase, // ✅ NOVO
-    SearchArticlesUseCase, // ✅ NOVO
-    ArticleStatsUseCase, // ✅ NOVO
-    PopularTagsUseCase, // ✅ NOVO
+    GetPendingModerationUseCase,
+    SearchArticlesUseCase,
+    ArticleStatsUseCase,
+    PopularTagsUseCase,
+    ApproveArticleUseCase, // ✅ ADICIONAR
+    RejectArticleUseCase,  // ✅ ADICIONAR
 
-    // ✅ Article use cases - Application Layer
+    // Article use cases - Application Layer
     CreateArticleUsecase,
     FindArticleByIdUsecase,
-    FindArticleBySlugUsecase, // ✅ NOVO
+    FindArticleBySlugUsecase,
     ListArticlesUsecase,
     MyArticlesUsecase,
     ModerateArticleUsecase,
-    GetPendingModerationUsecase, // ✅ NOVO
-    SearchArticlesUsecase, // ✅ NOVO
-    ArticleStatsUsecase, // ✅ NOVO
-    PopularTagsUsecase, // ✅ NOVO
+    GetPendingModerationUsecase,
+    SearchArticlesUsecase,
+    ArticleStatsUsecase,
+    PopularTagsUsecase,
+    ApproveArticleUsecase, // ✅ ADICIONAR
+    RejectArticleUsecase,  // ✅ ADICIONAR
+
+    // ✅ NOTIFICATION USE CASES - Domain Layer
+    CreateNotificationUseCase,
+    CreateManyNotificationsUseCase,
+    FindNotificationsByUserUseCase,
+    MarkNotificationAsReadUseCase,
+    NotifyModeratorsUseCase,
+
+    // ✅ NOTIFICATION USE CASES - Application Layer
+    FindNotificationsByUserUsecase,
+    MarkNotificationAsReadUsecase,
+    GetUnreadNotificationsCountUsecase,
+    MarkAllNotificationsAsReadUsecase,
   ],
   exports: [
     // User use cases
@@ -144,29 +182,45 @@ import { PopularTagsUsecase } from './article/popular-tags/popular-tags.usecase'
     RestoreProjectUsecase,
     ListDeletedProjectsUseCase,
     ListDeletedProjectsUsecase,
-    
 
-    // ✅ Article use cases - Domain Layer
+    // Article use cases - Domain Layer
     CreateArticleUseCase,
     FindArticleByIdUseCase,
-    FindArticleBySlugUseCase, // ✅ NOVO
+    FindArticleBySlugUseCase,
     ListArticlesUseCase,
-    GetPendingModerationUseCase, // ✅ NOVO
-    SearchArticlesUseCase, // ✅ NOVO
-    ArticleStatsUseCase, // ✅ NOVO
-    PopularTagsUseCase, // ✅ NOVO
+    GetPendingModerationUseCase,
+    SearchArticlesUseCase,
+    ArticleStatsUseCase,
+    PopularTagsUseCase,
+    ApproveArticleUseCase, // ✅ ADICIONAR
+    RejectArticleUseCase,  // ✅ ADICIONAR
 
-    // ✅ Article use cases - Application Layer
+    // Article use cases - Application Layer
     CreateArticleUsecase,
     FindArticleByIdUsecase,
-    FindArticleBySlugUsecase, // ✅ NOVO
+    FindArticleBySlugUsecase,
     ListArticlesUsecase,
     MyArticlesUsecase,
     ModerateArticleUsecase,
-    GetPendingModerationUsecase, // ✅ NOVO
-    SearchArticlesUsecase, // ✅ NOVO
-    ArticleStatsUsecase, // ✅ NOVO
-    PopularTagsUsecase, // ✅ NOVO
+    GetPendingModerationUsecase,
+    SearchArticlesUsecase,
+    ArticleStatsUsecase,
+    PopularTagsUsecase,
+    ApproveArticleUsecase, // ✅ ADICIONAR
+    RejectArticleUsecase,  // ✅ ADICIONAR
+
+    // ✅ NOTIFICATION USE CASES - Domain Layer
+    CreateNotificationUseCase,
+    CreateManyNotificationsUseCase,
+    FindNotificationsByUserUseCase,
+    MarkNotificationAsReadUseCase,
+    NotifyModeratorsUseCase,
+
+    // ✅ NOTIFICATION USE CASES - Application Layer
+    FindNotificationsByUserUsecase,
+    MarkNotificationAsReadUsecase,
+    GetUnreadNotificationsCountUsecase,
+    MarkAllNotificationsAsReadUsecase,
   ],
 })
 export class UsecaseModule {}

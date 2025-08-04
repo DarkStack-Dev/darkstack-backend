@@ -1,10 +1,9 @@
-// src/infra/web/routes/article/create/create-article.route.ts
+// src/infra/web/routes/article/create/create-article.route.ts - WEBSOCKET VERSION
 import { Controller, Post, Body, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { CreateArticleUsecase } from '@/usecases/article/create/create-article.usecase';
 import { CreateArticleRequest, CreateArticleResponse } from './create-article.dto';
 import { CreateArticlePresenter } from './create-article.presenter';
-import { InvalidInputUsecaseException } from '@/usecases/exceptions/input/invalid-input.usecase.exception';
 
 @Controller('/articles')
 export class CreateArticleRoute {
@@ -20,7 +19,7 @@ export class CreateArticleRoute {
 
     const userId = req['userId'];
 
-    console.log(`📝 Criando artigo: ${request.titulo} por usuário ${userId}`);
+    console.log(`📝 [CreateArticleRoute] User ${userId} creating article: ${request.titulo}`);
 
     const output = await this.createArticleUsecase.execute({
       titulo: request.titulo,
@@ -32,7 +31,7 @@ export class CreateArticleRoute {
       userId,
     });
 
-    console.log(`✅ Artigo criado: ${output.slug} (${output.status})`);
+    console.log(`✅ [CreateArticleRoute] Article created. Real-time notifications sent: ${output.realTimeNotificationSent}`);
 
     return CreateArticlePresenter.toHttp(output);
   }
