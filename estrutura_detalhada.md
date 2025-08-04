@@ -1,6 +1,6 @@
 # Estrutura Detalhada: darkstack
 
-**Gerado em:** 02/08/2025 11:34:02
+**Gerado em:** 03/08/2025 22:14:37
 
 ## 📁 .
 
@@ -298,11 +298,11 @@
 
 ## 📁 src\domain\usecases\projects\approve
 
-- **approve-project.usecase.ts** (7.1KB)
+- **approve-project.usecase.ts** (11.7KB)
 
 ## 📁 src\domain\usecases\projects\create
 
-- **create-projects.usecase.ts** (7.7KB)
+- **create-projects.usecase.ts** (10.9KB)
 
 ## 📁 src\domain\usecases\projects\delete
 
