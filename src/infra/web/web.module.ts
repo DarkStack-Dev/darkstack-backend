@@ -70,11 +70,30 @@ import { GetUnreadNotificationsCountRoute } from './routes/notification/get-unre
 import { NotificationStreamRoute } from './routes/notification/stream/notification-stream.route';
 import { WebSocketStatusRoute } from './routes/notification/websocket-status/websocket-status.route';
 
+// ✅ ADICIONAR - Comment Controllers
+import { CreateCommentRoute } from './routes/comment/create/create-comment.route';
+import { ListCommentsRoute } from './routes/comment/list/list-comments.route';
+import { FindRepliesRoute } from './routes/comment/find-replies/find-replies.route';
+import { UpdateCommentRoute } from './routes/comment/update/update-comment.route';
+import { DeleteCommentRoute } from './routes/comment/delete/delete-comment.route';
+import { CountCommentsRoute } from './routes/comment/count/count-comments.route';
+import { ApproveCommentRoute } from './routes/comment/moderate/approve-comment.route';
+import { RejectCommentRoute } from './routes/comment/moderate/reject-comment.route';
+import { FindPendingModerationRoute } from './routes/comment/moderate/pending-moderation.route';
+import { CommentStatsRoute } from './routes/comment/stats/comment-stats.route';
+
+
+// ✅ ADICIONAR - Comment Exception Filters
+import { CommentNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/comment/comment-not-found-usecase-exception.filter';
+import { CommentAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/comment/comment-access-denied-usecase-exception.filter';
+import { CommentLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/comment/comment-limit-reached-usecase-exception.filter';
+import { CommentModerationRequiredUsecaseExceptionFilterProvider } from './filters/usecases/comment/comment-moderation-required-usecase-exception.filter';
+
+//
 @Module({
   imports: [
     ServiceModule, 
     UsecaseModule,
-    WebSocketModule, // ✅ NOVO: Importar o WebSocketModule
   ],
   controllers: [
     // User routes
@@ -127,10 +146,28 @@ import { WebSocketStatusRoute } from './routes/notification/websocket-status/web
     GetUnreadNotificationsCountRoute,
     NotificationStreamRoute, // SSE (opcional)
     WebSocketStatusRoute,    // Status do WebSocket
+
+    // ✅ ADICIONAR - Comment Controllers
+    CreateCommentRoute,
+    ListCommentsRoute,
+    FindRepliesRoute,
+    UpdateCommentRoute,
+    DeleteCommentRoute,
+    CountCommentsRoute,
+    ApproveCommentRoute,
+    RejectCommentRoute,
+    FindPendingModerationRoute,
+    CommentStatsRoute,
   ],
   providers: [
     AuthGuardProvider,
     
+    // ✅ ADICIONAR - Comment Exception Filters
+    CommentNotFoundUsecaseExceptionFilterProvider,
+    CommentAccessDeniedUsecaseExceptionFilterProvider,
+    CommentLimitReachedUsecaseExceptionFilterProvider,
+    CommentModerationRequiredUsecaseExceptionFilterProvider,
+
     // Domain exception filters
     ValidatorDomainExceptionFilterProvider,
     DomainExceptionFilterProvider,
