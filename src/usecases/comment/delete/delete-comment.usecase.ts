@@ -16,27 +16,30 @@ export type DeleteCommentOutput = {
   id: string;
   isDeleted: boolean;
   updatedAt: Date;
-  realTimeBroadcast: boolean; // ✅ NOVO: Indica se foi enviado via WebSocket
+  realTimeBroadcast: boolean; // ✅ Propriedade da Application layer
 };
 
 @Injectable()
 export class DeleteCommentUsecase implements Usecase<DeleteCommentInput, DeleteCommentOutput> {
   constructor(
     private readonly domainDeleteCommentUseCase: DomainDeleteCommentUseCase,
-    private readonly notificationGateway: NotificationGateway, // ✅ CORRIGIDO: Usar NotificationGateway
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async execute(input: DeleteCommentInput): Promise<DeleteCommentOutput> {
     try {
       // 1. Delegar para Domain Use Case
-      const output = await this.domainDeleteCommentUseCase.execute(input);
+      const domainOutput = await this.domainDeleteCommentUseCase.execute(input);
 
       // 2. ✅ CORRIGIDO: Broadcast deletion via WebSocket
-      const realTimeBroadcast = await this.broadcastCommentDeletion(output);
+      const realTimeBroadcast = await this.broadcastCommentDeletion(domainOutput.id);
 
+      // 3. ✅ CORRIGIDO: Mapear campos explicitamente
       return {
-        ...output,
-        realTimeBroadcast,
+        id: domainOutput.id,
+        isDeleted: domainOutput.isDeleted,
+        updatedAt: domainOutput.updatedAt,
+        realTimeBroadcast, // ✅ Valor calculado na Application layer
       };
 
     } catch (error) {
@@ -45,10 +48,10 @@ export class DeleteCommentUsecase implements Usecase<DeleteCommentInput, DeleteC
     }
   }
 
-  private async broadcastCommentDeletion(output: DeleteCommentOutput): Promise<boolean> {
+  private async broadcastCommentDeletion(commentId: string): Promise<boolean> {
     try {
       // 🚀 BROADCAST VIA WEBSOCKET - Comentário deletado em tempo real
-      const broadcastCount = this.notificationGateway.broadcastCommentDelete(output.id);
+      const broadcastCount = this.notificationGateway.broadcastCommentDelete(commentId);
 
       console.log(`✅ [DeleteCommentUsecase] Broadcast comment deletion to ${broadcastCount} connections`);
       return broadcastCount > 0;

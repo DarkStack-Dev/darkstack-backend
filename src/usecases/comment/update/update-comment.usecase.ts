@@ -17,27 +17,31 @@ export type UpdateCommentOutput = {
   content: string;
   isEdited: boolean;
   updatedAt: Date;
-  realTimeBroadcast: boolean; // ✅ NOVO: Indica se foi enviado via WebSocket
+  realTimeBroadcast: boolean; // ✅ Propriedade da Application layer
 };
 
 @Injectable()
 export class UpdateCommentUsecase implements Usecase<UpdateCommentInput, UpdateCommentOutput> {
   constructor(
     private readonly domainUpdateCommentUseCase: DomainUpdateCommentUseCase,
-    private readonly notificationGateway: NotificationGateway, // ✅ CORRIGIDO: Usar NotificationGateway
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async execute(input: UpdateCommentInput): Promise<UpdateCommentOutput> {
     try {
       // 1. Delegar para Domain Use Case
-      const output = await this.domainUpdateCommentUseCase.execute(input);
+      const domainOutput = await this.domainUpdateCommentUseCase.execute(input);
 
       // 2. ✅ CORRIGIDO: Broadcast update via WebSocket
-      const realTimeBroadcast = await this.broadcastCommentUpdate(output);
+      const realTimeBroadcast = await this.broadcastCommentUpdate(domainOutput);
 
+      // 3. ✅ CORRIGIDO: Mapear campos explicitamente
       return {
-        ...output,
-        realTimeBroadcast,
+        id: domainOutput.id,
+        content: domainOutput.content,
+        isEdited: domainOutput.isEdited,
+        updatedAt: domainOutput.updatedAt,
+        realTimeBroadcast, // ✅ Valor calculado na Application layer
       };
 
     } catch (error) {
@@ -46,13 +50,13 @@ export class UpdateCommentUsecase implements Usecase<UpdateCommentInput, UpdateC
     }
   }
 
-  private async broadcastCommentUpdate(output: UpdateCommentOutput): Promise<boolean> {
+  private async broadcastCommentUpdate(domainOutput: { id: string; content: string; isEdited: boolean; updatedAt: Date }): Promise<boolean> {
     try {
       const updateData = {
-        commentId: output.id,
-        content: output.content,
-        isEdited: output.isEdited,
-        updatedAt: output.updatedAt,
+        commentId: domainOutput.id,
+        content: domainOutput.content,
+        isEdited: domainOutput.isEdited,
+        updatedAt: domainOutput.updatedAt,
       };
 
       // 🚀 BROADCAST VIA WEBSOCKET - Comentário atualizado em tempo real
