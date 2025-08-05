@@ -1,4 +1,4 @@
-// src/usecases/comment/moderate/find-pending-moderation.usecase.ts
+// src/usecases/comment/moderate/find-pending-moderation.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { Usecase } from '@/usecases/usecase';
 import { CommentGatewayRepository } from '@/domain/repositories/comment/comment.gateway.repository';
@@ -27,9 +27,9 @@ export type FindPendingModerationOutput = {
     targetType: CommentTarget;
     targetInfo: {
       title: string;
-      url?: string;
+      url?: string; // ✅ CORRIGIDO: opcional
     };
-    parentId?: string;
+    parentId?: string; // ✅ CORRIGIDO: opcional
     parentInfo?: {
       id: string;
       content: string;
@@ -80,15 +80,15 @@ export class FindPendingModerationUsecase implements Usecase<FindPendingModerati
           (now.getTime() - comment.getCreatedAt().getTime()) / (1000 * 60 * 60 * 24)
         );
 
-        // Buscar informações da entidade alvo
-        let targetInfo = { title: 'Unknown', url: undefined };
+        // ✅ CORRIGIDO: Buscar informações da entidade alvo
+        let targetInfo = { title: 'Unknown', url: undefined as string | undefined };
         try {
           switch (comment.getTargetType()) {
             case 'ARTICLE':
               const article = await this.articleRepository.findById(comment.getTargetId());
               if (article) {
                 targetInfo = {
-                  title: article.getTitle(),
+                  title: article.getTitulo(), // ✅ CORRIGIDO: getTitulo() não getTitle()
                   url: `/articles/${article.getSlug()}`,
                 };
               }
@@ -107,8 +107,8 @@ export class FindPendingModerationUsecase implements Usecase<FindPendingModerati
           console.error(`Error fetching target info for ${comment.getTargetType()}:`, error);
         }
 
-        // Buscar informações do comentário pai se existir
-        let parentInfo = undefined;
+        // ✅ CORRIGIDO: Buscar informações do comentário pai se existir
+        let parentInfo: { id: string; content: string; authorName: string } | undefined = undefined;
         if (comment.getParentId()) {
           try {
             const parentCommentWithAuthor = await this.commentRepository.findByIdWithAuthor(
@@ -134,7 +134,7 @@ export class FindPendingModerationUsecase implements Usecase<FindPendingModerati
           targetId: comment.getTargetId(),
           targetType: comment.getTargetType(),
           targetInfo,
-          parentId: comment.getParentId(),
+          parentId: comment.getParentId() || undefined, // ✅ CORRIGIDO: null -> undefined
           parentInfo,
           createdAt: comment.getCreatedAt(),
           pendingDays,

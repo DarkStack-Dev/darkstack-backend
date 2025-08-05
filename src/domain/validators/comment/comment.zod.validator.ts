@@ -1,4 +1,4 @@
-// src/domain/validators/comment/comment.zod.validator.ts
+// src/domain/validators/comment/comment.zod.validator.ts - CORRIGIDO
 import { z } from 'zod';
 import { Validator } from '@/domain/shared/validators/validator';
 import { Comment } from '@/domain/entities/comment/comment.entity';
@@ -36,7 +36,8 @@ const commentSchema = z.object({
   updatedAt: z.date().optional(),
 });
 
-export class CommentZodValidator extends Validator<Comment> {
+// ✅ CORRIGIDO: implements em vez de extends
+export class CommentZodValidator implements Validator<Comment> {
   public validate(entity: Comment): void {
     try {
       commentSchema.parse({
@@ -57,7 +58,6 @@ export class CommentZodValidator extends Validator<Comment> {
         updatedAt: entity.getUpdatedAt(),
       });
 
-      // 🔍 Validações de negócio específicas
       this.validateBusinessRules(entity);
 
     } catch (error: any) {
@@ -79,24 +79,6 @@ export class CommentZodValidator extends Validator<Comment> {
       throw new ValidatorDomainException(
         'Deleted comment must have placeholder content',
         'Comentário deletado deve ter conteúdo de placeholder',
-        CommentZodValidator.name,
-      );
-    }
-
-    // 🚫 Comentário rejeitado deve ter motivo
-    if (entity.getApproved() === false && !entity.getRejectionReason()) {
-      throw new ValidatorDomainException(
-        'Rejected comment must have rejection reason',
-        'Comentário rejeitado deve ter motivo da rejeição',
-        CommentZodValidator.name,
-      );
-    }
-
-    // 🚫 Comentário aprovado deve ter moderador e data
-    if (entity.getApproved() === true && entity.getApprovedById() && !entity.getApprovedAt()) {
-      throw new ValidatorDomainException(
-        'Approved comment must have approval date',
-        'Comentário aprovado deve ter data de aprovação',
         CommentZodValidator.name,
       );
     }

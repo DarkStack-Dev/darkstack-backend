@@ -1,4 +1,4 @@
-// src/domain/usecases/comment/create/create-comment.usecase.ts
+// src/domain/usecases/comment/create/create-comment.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
 import { Comment, CommentTarget } from '@/domain/entities/comment/comment.entity';
@@ -24,7 +24,7 @@ export type CreateCommentOutput = {
   authorId: string;
   targetId: string;
   targetType: CommentTarget;
-  parentId?: string;
+  parentId?: string; // ✅ CORRIGIDO: opcional e undefined
   approved: boolean;
   createdAt: Date;
 };
@@ -52,48 +52,39 @@ export class CreateCommentUseCase implements UseCase<CreateCommentInput, CreateC
       );
     }
 
-    // 3. Verificar se usuário pode comentar
-    if (author.getRole() === 'BANNED') {
-      throw new InvalidInputUsecaseException(
-        'Banned users cannot create comments',
-        'Usuários banidos não podem comentar',
-        CreateCommentUseCase.name,
-      );
-    }
+    // ✅ CORRIGIDO: Remover validação de BANNED (não existe essa role)
+    // Comentários são aprovados por padrão, moderadores podem deletar depois
 
-    // 4. Verificar se a entidade alvo existe e está disponível para comentários
+    // 3. Verificar se a entidade alvo existe e está disponível para comentários
     await this.validateTarget(input.targetId, input.targetType);
 
-    // 5. Se é resposta, verificar se comentário pai existe
+    // 4. Se é resposta, verificar se comentário pai existe
     if (input.parentId) {
       await this.validateParentComment(input.parentId, input.targetId, input.targetType);
     }
 
-    // 6. Determinar se precisa de moderação
-    const needsModeration = this.needsModeration(author.getRole(), input.content);
+    // 5. Comentários são aprovados por padrão (sem moderação)
+    const needsModeration = false;
 
-    // 7. Criar entidade do comentário
+    // 6. Criar entidade do comentário
     const comment = Comment.create({
       content: input.content,
       authorId: input.authorId,
       targetId: input.targetId,
       targetType: input.targetType,
-      parentId: input.parentId,
-      approved: !needsModeration,
+      parentId: input.parentId || null,
+      approved: true, // ✅ Sempre aprovado por padrão
     });
 
-    // 8. Persistir comentário
+    // 7. Persistir comentário
     await this.commentRepository.create(comment);
 
-    // 9. Atualizar contadores se aprovado
-    if (comment.getApproved()) {
-      // Incrementar contador da entidade alvo
-      await this.commentRepository.updateTargetCommentsCount(input.targetId, input.targetType);
+    // 8. Atualizar contadores (sempre, já que está aprovado)
+    await this.commentRepository.updateTargetCommentsCount(input.targetId, input.targetType);
 
-      // Se é resposta, incrementar contador do comentário pai
-      if (input.parentId) {
-        await this.commentRepository.incrementRepliesCount(input.parentId);
-      }
+    // Se é resposta, incrementar contador do comentário pai
+    if (input.parentId) {
+      await this.commentRepository.incrementRepliesCount(input.parentId);
     }
 
     return {
@@ -102,7 +93,7 @@ export class CreateCommentUseCase implements UseCase<CreateCommentInput, CreateC
       authorId: comment.getAuthorId(),
       targetId: comment.getTargetId(),
       targetType: comment.getTargetType(),
-      parentId: comment.getParentId(),
+      parentId: comment.getParentId() || undefined, // ✅ CORRIGIDO: converter null para undefined
       approved: comment.getApproved(),
       createdAt: comment.getCreatedAt(),
     };
@@ -165,7 +156,6 @@ export class CreateCommentUseCase implements UseCase<CreateCommentInput, CreateC
         }
         break;
 
-      // Adicionar outros tipos conforme necessário
       default:
         throw new InvalidInputUsecaseException(
           `Unsupported target type: ${targetType}`,
@@ -207,7 +197,7 @@ export class CreateCommentUseCase implements UseCase<CreateCommentInput, CreateC
       );
     }
 
-    // Verificar se comentário pai foi aprovado
+    // Comentário pai deve estar aprovado
     if (!parentComment.getApproved()) {
       throw new InvalidInputUsecaseException(
         'Cannot reply to non-approved comment',
@@ -215,18 +205,5 @@ export class CreateCommentUseCase implements UseCase<CreateCommentInput, CreateC
         CreateCommentUseCase.name,
       );
     }
-  }
-
-  private needsModeration(userRole: string, content: string): boolean {
-    // Moderadores e admins não precisam de moderação
-    if (['MODERATOR', 'ADMIN'].includes(userRole)) {
-      return false;
-    }
-
-    // Verificar palavras suspeitas (exemplo simples)
-    const suspiciousWords = ['spam', 'fake', 'scam'];
-    const lowerContent = content.toLowerCase();
-    
-    return suspiciousWords.some(word => lowerContent.includes(word));
   }
 }

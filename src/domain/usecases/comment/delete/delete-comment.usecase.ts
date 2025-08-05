@@ -1,4 +1,4 @@
-// src/domain/usecases/comment/delete/delete-comment.usecase.ts
+// src/domain/usecases/comment/delete/delete-comment.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
 import { CommentGatewayRepository } from '@/domain/repositories/comment/comment.gateway.repository';
@@ -36,7 +36,7 @@ export class DeleteCommentUseCase implements UseCase<DeleteCommentInput, DeleteC
       );
     }
 
-    // 2. Buscar usuário para verificar role
+    // 2. Buscar usuário para verificar roles
     const user = await this.userRepository.findById(input.userId);
     if (!user) {
       throw new UserNotFoundUsecaseException(
@@ -46,8 +46,8 @@ export class DeleteCommentUseCase implements UseCase<DeleteCommentInput, DeleteC
       );
     }
 
-    // 3. Verificar permissões
-    if (!comment.canBeDeletedBy(input.userId, user.getRole())) {
+    // 3. ✅ CORRIGIDO: Verificar permissões usando getRoles()
+    if (!comment.canBeDeletedBy(input.userId, user.getRoles())) {
       throw new InvalidInputUsecaseException(
         'User cannot delete this comment',
         'Usuário não pode deletar este comentário',
@@ -68,8 +68,9 @@ export class DeleteCommentUseCase implements UseCase<DeleteCommentInput, DeleteC
     );
 
     // Se é resposta, decrementar contador do pai
-    if (comment.getParentId()) {
-      await this.commentRepository.decrementRepliesCount(comment.getParentId());
+    const parentId = comment.getParentId();
+    if (parentId) {
+      await this.commentRepository.decrementRepliesCount(parentId);
     }
 
     return {

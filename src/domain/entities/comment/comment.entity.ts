@@ -1,7 +1,6 @@
-// src/domain/entities/comment/comment.entity.ts
+// src/domain/entities/comment/comment.entity.ts - CORRIGIDO
 import { Entity } from '@/domain/shared/entities/entity';
 import { CommentValidatorFactory } from '@/domain/factories/comment/comment.validator.factory';
-// import { CommentValidatorFactory } from '@/domain/factories/comment/comment.validator.factory';
 
 export type CommentTarget = 'ARTICLE' | 'PROJECT' | 'ISSUE' | 'QA';
 
@@ -36,11 +35,16 @@ export class Comment extends Entity {
   private approvedById: string | null;
   private approvedAt: Date | null;
   private rejectionReason: string | null;
-  private createdAt: Date;
-  private updatedAt: Date;
 
   constructor(props: CommentProps) {
-    super(props.id);
+    // ✅ CORRIGIDO: Passar createdAt e updatedAt para Entity
+    super(
+      props.id ?? '', 
+      props.createdAt || new Date(), 
+      props.updatedAt || new Date(), 
+      true // isActive sempre true para comentários
+    );
+    
     this.content = props.content?.trim() || '';
     this.isEdited = props.isEdited || false;
     this.isDeleted = props.isDeleted || false;
@@ -49,12 +53,10 @@ export class Comment extends Entity {
     this.repliesCount = props.repliesCount || 0;
     this.targetId = props.targetId;
     this.targetType = props.targetType;
-    this.approved = props.approved !== undefined ? props.approved : true;
+    this.approved = props.approved !== undefined ? props.approved : true; // ✅ Por padrão aprovado
     this.approvedById = props.approvedById || null;
     this.approvedAt = props.approvedAt || null;
     this.rejectionReason = props.rejectionReason || null;
-    this.createdAt = props.createdAt || new Date();
-    this.updatedAt = props.updatedAt || new Date();
     
     this.validate();
   }
@@ -63,7 +65,7 @@ export class Comment extends Entity {
   public static create(props: Omit<CommentProps, 'id' | 'createdAt' | 'updatedAt'>): Comment {
     return new Comment({
       ...props,
-      id: undefined, // Será gerado automaticamente
+      id: undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -80,7 +82,7 @@ export class Comment extends Entity {
     }
     
     if (this.content.trim() === newContent.trim()) {
-      return; // Sem mudanças
+      return;
     }
 
     this.content = newContent.trim();
@@ -135,12 +137,12 @@ export class Comment extends Entity {
     return this.authorId === userId && !this.isDeleted;
   }
 
-  public canBeDeletedBy(userId: string, userRole: string): boolean {
-    return this.authorId === userId || ['MODERATOR', 'ADMIN'].includes(userRole);
+  public canBeDeletedBy(userId: string, userRoles: string[]): boolean {
+    return this.authorId === userId || userRoles.some(role => ['MODERATOR', 'ADMIN'].includes(role));
   }
 
-  public canBeModeratedBy(userRole: string): boolean {
-    return ['MODERATOR', 'ADMIN'].includes(userRole);
+  public canBeModeratedBy(userRoles: string[]): boolean {
+    return userRoles.some(role => ['MODERATOR', 'ADMIN'].includes(role));
   }
 
   // 🔍 Getters

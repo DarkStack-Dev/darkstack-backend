@@ -1,4 +1,4 @@
-// src/infra/websocket/notification.gateway.ts - CORRIGIDO
+// src/infra/websocket/notification.gateway.ts - CORRIGIDO COM WEBSOCKET PARA COMENTÁRIOS
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -11,7 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Injectable, Logger } from '@nestjs/common';
 import { UserGatewayRepository } from '@/domain/repositories/user/user.gateway.repository';
-import { JwtService } from '@/infra/services/jwt/jwt.service'; // ✅ CORRIGIDO: Usar o serviço customizado
+import { JwtService } from '@/infra/services/jwt/jwt.service';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -36,7 +36,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
   constructor(
     private readonly userRepository: UserGatewayRepository,
-    private readonly jwtService: JwtService, // ✅ CORRIGIDO: Usar o customizado
+    private readonly jwtService: JwtService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -49,7 +49,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         return;
       }
 
-      // ✅ CORRIGIDO: Verificar e decodificar token usando o serviço customizado
+      // Verificar e decodificar token usando o serviço customizado
       const payload = this.jwtService.verifyAuthToken(token);
       const userId = payload.userId;
 
@@ -137,7 +137,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     client.emit('joinedRoom', { room: data.room, timestamp: new Date().toISOString() });
   }
 
-  // ✅ MÉTODOS PRINCIPAIS PARA NOTIFICAÇÕES
+  // ✅ MÉTODOS PARA NOTIFICAÇÕES (CORRIGIDOS)
 
   /**
    * Envia notificação para um usuário específico
@@ -172,6 +172,13 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   /**
+   * ✅ NOVO: Método notifyUser para compatibilidade
+   */
+  notifyUser(userId: string, notification: any): boolean {
+    return this.sendNotificationToUser(userId, notification);
+  }
+
+  /**
    * Envia notificação para todos os moderadores conectados
    */
   sendNotificationToModerators(notification: any): number {
@@ -192,6 +199,116 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     }
 
     return moderatorCount;
+  }
+
+  /**
+   * ✅ NOVO: Método notifyModerators para compatibilidade
+   */
+  notifyModerators(notification: any): number {
+    return this.sendNotificationToModerators(notification);
+  }
+
+  // ✅ NOVOS MÉTODOS PARA COMENTÁRIOS EM TEMPO REAL
+
+  /**
+   * Broadcast novo comentário para usuários visualizando a entidade
+   */
+  broadcastNewComment(targetType: string, targetId: string, commentData: any): number {
+    const roomName = `${targetType.toLowerCase()}_${targetId}`;
+    const room = this.server.sockets.adapter.rooms.get(roomName);
+    const userCount = room?.size || 0;
+
+    if (userCount > 0) {
+      this.server.to(roomName).emit('newComment', {
+        type: 'NEW_COMMENT',
+        data: commentData,
+        timestamp: new Date().toISOString(),
+      });
+
+      this.logger.log(`Broadcast new comment to ${userCount} users viewing ${targetType} ${targetId}`);
+    }
+
+    return userCount;
+  }
+
+  /**
+   * Broadcast comentário editado
+   */
+  broadcastCommentUpdate(commentData: any): number {
+    const updateData = {
+      type: 'COMMENT_UPDATED',
+      data: commentData,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Broadcast para todos os usuários conectados
+    this.server.emit('commentUpdated', updateData);
+    
+    const totalConnections = this.getTotalConnections();
+    this.logger.log(`Broadcast comment update to ${totalConnections} connections`);
+    
+    return totalConnections;
+  }
+
+  /**
+   * Broadcast comentário deletado
+   */
+  broadcastCommentDelete(commentId: string): number {
+    const deleteData = {
+      type: 'COMMENT_DELETED',
+      data: { commentId },
+      timestamp: new Date().toISOString(),
+    };
+
+    // Broadcast para todos os usuários conectados
+    this.server.emit('commentDeleted', deleteData);
+    
+    const totalConnections = this.getTotalConnections();
+    this.logger.log(`Broadcast comment delete to ${totalConnections} connections`);
+    
+    return totalConnections;
+  }
+
+  /**
+   * Permitir usuários entrarem em rooms de entidades específicas
+   */
+  @SubscribeMessage('watchEntity')
+  handleWatchEntity(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { targetType: string; targetId: string }
+  ) {
+    const roomName = `${data.targetType.toLowerCase()}_${data.targetId}`;
+    client.join(roomName);
+    
+    client.emit('watchingEntity', { 
+      room: roomName, 
+      targetType: data.targetType,
+      targetId: data.targetId,
+      timestamp: new Date().toISOString() 
+    });
+
+    this.logger.log(`User ${client.userId} joined room ${roomName}`);
+  }
+
+  /**
+   * Permitir usuários saírem de rooms de entidades específicas
+   */
+  @SubscribeMessage('unwatchEntity')
+  handleUnwatchEntity(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { targetType: string; targetId: string }
+  ) {
+    const roomName = `${data.targetType.toLowerCase()}_${data.targetId}`;
+    client.leave(roomName);
+    
+    client.emit('unwatchingEntity', { 
+      room: roomName, 
+      targetType: data.targetType,
+      targetId: data.targetId,
+      timestamp: new Date().toISOString() 
+    });
+
+    this.logger.log(`User ${client.userId} left room ${roomName}`);
   }
 
   /**

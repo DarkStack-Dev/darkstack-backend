@@ -1,8 +1,8 @@
-// src/usecases/comment/update/update-comment.usecase.ts
+// src/usecases/comment/update/update-comment.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { Usecase } from '@/usecases/usecase';
 import { UpdateCommentUseCase as DomainUpdateCommentUseCase } from '@/domain/usecases/comment/update/update-comment.usecase';
-import { NotificationStreamService } from '@/infra/services/notification/notification-stream.service';
+import { NotificationGateway } from '@/infra/websocket/notification.gateway';
 import { CommentNotFoundUsecaseException } from '@/usecases/exceptions/comment/comment-not-found.usecase.exception';
 import { InvalidInputUsecaseException } from '@/usecases/exceptions/input/invalid-input.usecase.exception';
 
@@ -17,13 +17,14 @@ export type UpdateCommentOutput = {
   content: string;
   isEdited: boolean;
   updatedAt: Date;
+  realTimeBroadcast: boolean; // ✅ NOVO: Indica se foi enviado via WebSocket
 };
 
 @Injectable()
 export class UpdateCommentUsecase implements Usecase<UpdateCommentInput, UpdateCommentOutput> {
   constructor(
     private readonly domainUpdateCommentUseCase: DomainUpdateCommentUseCase,
-    private readonly notificationStreamService: NotificationStreamService,
+    private readonly notificationGateway: NotificationGateway, // ✅ CORRIGIDO: Usar NotificationGateway
   ) {}
 
   async execute(input: UpdateCommentInput): Promise<UpdateCommentOutput> {
@@ -31,10 +32,13 @@ export class UpdateCommentUsecase implements Usecase<UpdateCommentInput, UpdateC
       // 1. Delegar para Domain Use Case
       const output = await this.domainUpdateCommentUseCase.execute(input);
 
-      // 2. Broadcast update via SSE
-      await this.broadcastCommentUpdate(output);
+      // 2. ✅ CORRIGIDO: Broadcast update via WebSocket
+      const realTimeBroadcast = await this.broadcastCommentUpdate(output);
 
-      return output;
+      return {
+        ...output,
+        realTimeBroadcast,
+      };
 
     } catch (error) {
       this.handleDomainExceptions(error);
@@ -42,21 +46,24 @@ export class UpdateCommentUsecase implements Usecase<UpdateCommentInput, UpdateC
     }
   }
 
-  private async broadcastCommentUpdate(output: UpdateCommentOutput): Promise<void> {
+  private async broadcastCommentUpdate(output: UpdateCommentOutput): Promise<boolean> {
     try {
-      const streamData = {
-        type: 'COMMENT_UPDATED',
-        data: {
-          commentId: output.id,
-          content: output.content,
-          isEdited: output.isEdited,
-          updatedAt: output.updatedAt,
-        },
+      const updateData = {
+        commentId: output.id,
+        content: output.content,
+        isEdited: output.isEdited,
+        updatedAt: output.updatedAt,
       };
 
-      await this.notificationStreamService.broadcast(streamData);
+      // 🚀 BROADCAST VIA WEBSOCKET - Comentário atualizado em tempo real
+      const broadcastCount = this.notificationGateway.broadcastCommentUpdate(updateData);
+
+      console.log(`✅ [UpdateCommentUsecase] Broadcast comment update to ${broadcastCount} connections`);
+      return broadcastCount > 0;
+
     } catch (error) {
-      console.error('Error broadcasting comment update:', error);
+      console.error('❌ [UpdateCommentUsecase] Error broadcasting comment update:', error);
+      return false;
     }
   }
 

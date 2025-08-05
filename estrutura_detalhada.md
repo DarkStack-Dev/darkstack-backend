@@ -1,6 +1,6 @@
 # Estrutura Detalhada: darkstack
 
-**Gerado em:** 03/08/2025 22:14:37
+**Gerado em:** 05/08/2025 02:58:44
 
 ## 📁 .
 
@@ -13,7 +13,7 @@
 - **docker-compose.yml** (1.7KB)
 - **eslint.config.mjs** (869B)
 - **estrutura_detalhada.md** (0B)
-- **estrutura_projeto.md** (43.4KB)
+- **estrutura_projeto.md** (52.1KB)
 - **leitor_nestjs.py** (6.5KB)
 - **nest-cli.json** (201B)
 - **nginx.conf** (879B)
@@ -34,10 +34,10 @@
 - **default.d.ts** (23B)
 - **default.js** (125B)
 - **edge.d.ts** (25B)
-- **edge.js** (63.6KB)
-- **index-browser.js** (11.0KB)
-- **index.d.ts** (814.4KB)
-- **index.js** (64.5KB)
+- **edge.js** (74.6KB)
+- **index-browser.js** (11.6KB)
+- **index.d.ts** (972.3KB)
+- **index.js** (75.4KB)
 - **libquery_engine-linux-musl-openssl-3.0.x.so.node** (16.7MB)
 - **package.json** (4.1KB)
 - **query_engine-windows.dll.node** (20.1MB)
@@ -49,9 +49,9 @@
 - **query_engine-windows.dll.node.tmp34260** (20.1MB)
 - **query_engine-windows.dll.node.tmp36512** (20.1MB)
 - **query_engine-windows.dll.node.tmp36832** (20.1MB)
-- **schema.prisma** (11.0KB)
+- **schema.prisma** (13.2KB)
 - **wasm.d.ts** (23B)
-- **wasm.js** (11.0KB)
+- **wasm.js** (11.6KB)
 
 ## 📁 generated\prisma\runtime
 
@@ -67,7 +67,7 @@
 
 ## 📁 prisma
 
-- **schema.prisma** (11.5KB)
+- **schema.prisma** (14.0KB)
 
 ## 📁 public\uploads\projects
 
@@ -81,13 +81,17 @@
 
 - **app.controller.spec.ts** (639B)
 - **app.controller.ts** (286B)
-- **app.module.ts** (323B)
+- **app.module.ts** (409B)
 - **app.service.ts** (150B)
 - **main.ts** (1.2KB)
 
 ## 📁 src\domain\entities\article
 
 - **article.entity.ts** (11.5KB)
+
+## 📁 src\domain\entities\comment
+
+- **comment.entity.ts** (6.0KB)
 
 ## 📁 src\domain\entities\github-account
 
@@ -109,6 +113,10 @@
 
 - **user.entitty.ts** (5.9KB)
 
+## 📁 src\domain\factories\comment
+
+- **comment.validator.factory.ts** (288B)
+
 ## 📁 src\domain\factories\github-account
 
 - **github-account.validator.factory.ts** (502B)
@@ -129,6 +137,10 @@
 ## 📁 src\domain\repositories\article
 
 - **article.gateway.repository.ts** (4.1KB)
+
+## 📁 src\domain\repositories\comment
+
+- **comment.gateway.repository.ts** (5.0KB)
 
 ## 📁 src\domain\repositories\github-account
 
@@ -218,6 +230,26 @@
 
 - **article-stats.usecase.ts** (4.7KB)
 
+## 📁 src\domain\usecases\comment
+
+- **docs_v1.md** (7.4KB)
+
+## 📁 src\domain\usecases\comment\create
+
+- **create-comment.usecase.ts** (7.5KB)
+
+## 📁 src\domain\usecases\comment\delete
+
+- **delete-comment.usecase.ts** (2.8KB)
+
+## 📁 src\domain\usecases\comment\list
+
+- **list-comments.usecase.ts** (4.2KB)
+
+## 📁 src\domain\usecases\comment\update
+
+- **update-comment.usecase.ts** (2.4KB)
+
 ## 📁 src\domain\usecases\exceptions
 
 - **usecase.exception.ts** (463B)
@@ -229,6 +261,13 @@
 ## 📁 src\domain\usecases\exceptions\auth
 
 - **unauthorized.usecase.exception.ts** (354B)
+
+## 📁 src\domain\usecases\exceptions\comment
+
+- **comment-access-denied.usecase.exception.ts** (454B)
+- **comment-limit-reached.usecase.exception.ts** (454B)
+- **comment-moderation-required.usecase.exception.ts** (472B)
+- **comment-not-found.usecase.exception.ts** (442B)
 
 ## 📁 src\domain\usecases\exceptions\email
 
@@ -373,6 +412,10 @@
 - **article.validator.factory.ts** (426B)
 - **article.zod.validator.ts** (7.9KB)
 
+## 📁 src\domain\validators\comment
+
+- **comment.zod.validator.ts** (4.0KB)
+
 ## 📁 src\domain\validators\github-account
 
 - **github-account.zod.validator.ts** (2.5KB)
@@ -392,7 +435,7 @@
 
 ## 📁 src\infra\repositories
 
-- **database.module.ts** (1.4KB)
+- **database.module.ts** (1.7KB)
 
 ## 📁 src\infra\repositories\prisma
 
@@ -407,6 +450,16 @@
 
 - **article-entity-to-prisma-model.mapper.ts** (1.4KB)
 - **article-prisma-model-to-entity.mapper.ts** (2.0KB)
+
+## 📁 src\infra\repositories\prisma\comment
+
+- **comment.prisma.repository.provider.ts** (384B)
+- **comment.prisma.repository.ts** (18.3KB)
+
+## 📁 src\infra\repositories\prisma\comment\model\mappers
+
+- **comment-entity-to-prisma-model.mapper.ts** (900B)
+- **comment-prisma-model-to-entity.mapper.ts** (860B)
 
 ## 📁 src\infra\repositories\prisma\github-account
 
@@ -508,7 +561,7 @@
 
 ## 📁 src\infra\services\notification
 
-- **notification-stream.service.ts** (5.6KB)
+- **notification-stream.service.ts** (11.0KB)
 
 ## 📁 src\infra\services\storage
 
@@ -521,7 +574,7 @@
 
 ## 📁 src\infra\web
 
-- **web.module.ts** (8.0KB)
+- **web.module.ts** (10.0KB)
 
 ## 📁 src\infra\web\auth
 
@@ -558,6 +611,13 @@
 - **article-access-denied-usecase-exception.filter.ts** (1.4KB)
 - **article-limit-reached-usecase-exception.filter.ts** (1.4KB)
 - **article-not-found-usecase-exception.filter.ts** (1.1KB)
+
+## 📁 src\infra\web\filters\usecases\comment
+
+- **comment-access-denied-usecase-exception.filter.ts** (1.2KB)
+- **comment-limit-reached-usecase-exception.filter.ts** (1.2KB)
+- **comment-moderation-required-usecase-exception.filter.ts** (1.4KB)
+- **comment-not-found-usecase-exception.filter.ts** (1.1KB)
 
 ## 📁 src\infra\web\filters\usecases\projects
 
@@ -626,6 +686,60 @@
 ## 📁 src\infra\web\routes\auth\github-auth
 
 - **github-auth.route.ts** (2.2KB)
+
+## 📁 src\infra\web\routes\comment\count
+
+- **count-comments.dto.ts** (404B)
+- **count-comments.presenter.ts** (719B)
+- **count-comments.route.ts** (980B)
+
+## 📁 src\infra\web\routes\comment\create
+
+- **create-comment.dto.ts** (539B)
+- **create-comment.presenter.ts** (823B)
+- **create-comment.route.ts** (1.1KB)
+
+## 📁 src\infra\web\routes\comment\delete
+
+- **delete-comment.dto.ts** (181B)
+- **delete-comment.presenter.ts** (513B)
+- **delete-comment.route.ts** (1015B)
+
+## 📁 src\infra\web\routes\comment\find-replies
+
+- **find-replies.dto.ts** (907B)
+- **find-replies.presenter.ts** (1.0KB)
+- **find-replies.route.ts** (1.2KB)
+
+## 📁 src\infra\web\routes\comment\list
+
+- **list-comments.dto.ts** (1.3KB)
+- **list-comments.presenter.ts** (1.3KB)
+- **list-comments.route.ts** (1.5KB)
+
+## 📁 src\infra\web\routes\comment\moderate
+
+- **approve-comment.dto.ts** (208B)
+- **approve-comment.presenter.ts** (563B)
+- **approve-comment.route.ts** (1.0KB)
+- **find-pending-moderation.dto.ts** (1.1KB)
+- **find-pending-moderation.presenter.ts** (1.3KB)
+- **pending-moderation.route.ts** (1.1KB)
+- **reject-comment.dto.ts** (297B)
+- **reject-comment.presenter.ts** (604B)
+- **reject-comment.route.ts** (1.1KB)
+
+## 📁 src\infra\web\routes\comment\stats
+
+- **comment-stats.dto.ts** (836B)
+- **comment-stats.presenter.ts** (924B)
+- **comment-stats.route.ts** (931B)
+
+## 📁 src\infra\web\routes\comment\update
+
+- **update-comment.dto.ts** (264B)
+- **update-comment.presenter.ts** (547B)
+- **update-comment.route.ts** (1.1KB)
 
 ## 📁 src\infra\web\routes\github-auth\callback
 
@@ -798,7 +912,7 @@
 
 ## 📁 src\infra\websocket
 
-- **notification.gateway.ts** (8.3KB)
+- **notification.gateway.ts** (11.7KB)
 - **websocket.module.ts** (600B)
 
 ## 📁 src\shared\exceptions
@@ -814,7 +928,7 @@
 
 ## 📁 src\usecases
 
-- **usecase.module.ts** (10.2KB)
+- **usecase.module.ts** (12.5KB)
 - **usecase.ts** (87B)
 
 ## 📁 src\usecases\article\approve
@@ -865,6 +979,40 @@
 
 - **article-stats.usecase.ts** (2.4KB)
 
+## 📁 src\usecases\comment\count
+
+- **count-comments.usecase.ts** (2.0KB)
+
+## 📁 src\usecases\comment\create
+
+- **create-comment.usecase.ts** (11.3KB)
+
+## 📁 src\usecases\comment\delete
+
+- **delete-comment.usecase.ts** (3.3KB)
+
+## 📁 src\usecases\comment\find-replies
+
+- **find-replies.usecase.ts** (3.1KB)
+
+## 📁 src\usecases\comment\list
+
+- **list-comments.usecase.ts** (2.0KB)
+
+## 📁 src\usecases\comment\moderate
+
+- **approve-comment.usecase.ts** (2.9KB)
+- **find-pending-moderation.usecase.ts** (6.3KB)
+- **reject-comment.usecase.ts** (2.8KB)
+
+## 📁 src\usecases\comment\stats
+
+- **comment-stats.usecase.ts** (2.9KB)
+
+## 📁 src\usecases\comment\update
+
+- **update-comment.usecase.ts** (3.1KB)
+
 ## 📁 src\usecases\exceptions
 
 - **credentials-not-valid.usecase.exception.ts** (366B)
@@ -875,9 +1023,16 @@
 
 - **article-not-found.usecase.exception.ts** (436B)
 
+## 📁 src\usecases\exceptions\comment
+
+- **comment-access-denied.usecase.exception.ts** (442B)
+- **comment-limit-reached.usecase.exception.ts** (458B)
+- **comment-moderation-required.usecase.exception.ts** (461B)
+- **comment-not-found.usecase.exception.ts** (436B)
+
 ## 📁 src\usecases\exceptions\input
 
-- **invalid-input.usecase.exception.ts** (553B)
+- **invalid-input.usecase.exception.ts** (435B)
 
 ## 📁 src\usecases\exceptions\projects
 
@@ -888,7 +1043,7 @@
 
 ## 📁 src\usecases\exceptions\user
 
-- **user-not-found.usecase.exception.ts** (355B)
+- **user-not-found.usecase.exception.ts** (435B)
 
 ## 📁 src\usecases\moderation\find-pending-articles
 

@@ -1,4 +1,4 @@
-// src/infra/repositories/prisma/comment/comment.prisma.repository.ts
+// src/infra/repositories/prisma/comment/comment.prisma.repository.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { 
   CommentGatewayRepository, 
@@ -47,7 +47,7 @@ export class CommentPrismaRepository extends CommentGatewayRepository {
         id: model.author.id,
         name: model.author.name,
         email: model.author.email,
-        avatar: model.author.avatar,
+        avatar: model.author.avatar || undefined, // ✅ CORRIGIDO: null -> undefined
       }
     };
   }
@@ -141,13 +141,14 @@ export class CommentPrismaRepository extends CommentGatewayRepository {
     const page = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(total / limit);
 
+    // ✅ CORRIGIDO: Mapear avatar corretamente
     const result: CommentWithAuthor[] = comments.map(model => ({
       comment: CommentPrismaModelToEntityMapper.map(model),
       author: {
         id: model.author.id,
         name: model.author.name,
         email: model.author.email,
-        avatar: model.author.avatar,
+        avatar: model.author.avatar || undefined, // null -> undefined
       }
     }));
 
@@ -368,8 +369,9 @@ export class CommentPrismaRepository extends CommentGatewayRepository {
 
     // Atualizar contadores
     await this.updateTargetCommentsCount(comment.getTargetId(), comment.getTargetType());
-    if (comment.getParentId()) {
-      await this.incrementRepliesCount(comment.getParentId());
+    const parentId = comment.getParentId();
+    if (parentId) {
+      await this.incrementRepliesCount(parentId);
     }
   }
 
@@ -400,8 +402,9 @@ export class CommentPrismaRepository extends CommentGatewayRepository {
       const comment = await this.findById(commentId);
       if (comment) {
         await this.updateTargetCommentsCount(comment.getTargetId(), comment.getTargetType());
-        if (comment.getParentId()) {
-          await this.incrementRepliesCount(comment.getParentId());
+        const parentId = comment.getParentId();
+        if (parentId) {
+          await this.incrementRepliesCount(parentId);
         }
       }
     }
@@ -482,13 +485,13 @@ export class CommentPrismaRepository extends CommentGatewayRepository {
   }
 
   async canUserComment(userId: string, targetId: string, targetType: CommentTarget): Promise<boolean> {
-    // Verificar se usuário existe e não está banido
+    // Verificar se usuário existe e está ativo
     const user = await prismaClient.user.findUnique({
       where: { id: userId },
-      select: { role: true },
+      select: { roles: true, isActive: true }, // ✅ CORRIGIDO: roles não role
     });
 
-    if (!user || user.role === 'BANNED') {
+    if (!user || !user.isActive) {
       return false;
     }
 
@@ -610,9 +613,9 @@ export class CommentPrismaRepository extends CommentGatewayRepository {
       case 'ARTICLE':
         const articles = await prismaClient.article.findMany({
           where: { id: { in: targetIds } },
-          select: { id: true, title: true },
+          select: { id: true, titulo: true }, // ✅ CORRIGIDO: titulo não title
         });
-        targets = articles.map(a => ({ id: a.id, title: a.title }));
+        targets = articles.map(a => ({ id: a.id, title: a.titulo }));
         break;
 
       case 'PROJECT':

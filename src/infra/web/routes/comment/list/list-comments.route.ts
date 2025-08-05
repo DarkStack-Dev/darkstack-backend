@@ -1,4 +1,4 @@
-// src/infra/web/routes/comment/list/list-comments.route.ts
+// src/infra/web/routes/comment/list/list-comments.route.ts - CORRIGIDO
 import { Controller, Get, Query, Param, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { ListCommentsUsecase } from '@/usecases/comment/list/list-comments.usecase';
@@ -33,6 +33,7 @@ export class ListCommentsRoute {
       currentUserId,
     });
 
-    return ListCommentsPresenter.toHttp(output);
+    // ✅ CORRIGIDO: Passar todos os parâmetros necessários
+    return ListCommentsPresenter.toHttp(output, targetId, targetType.toUpperCase() as any);
   }
 }

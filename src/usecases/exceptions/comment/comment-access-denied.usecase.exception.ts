@@ -1,13 +1,13 @@
-// src/usecases/exceptions/comment/comment-access-denied.usecase.exception.ts
+// src/usecases/exceptions/comment/comment-not-found.usecase.exception.ts
+import { HttpStatus } from '@nestjs/common';
 import { UsecaseException } from '../usecase.exception';
 
-export class CommentAccessDeniedUsecaseException extends UsecaseException {
-  public constructor(
+export class CommentNotFoundUsecaseException extends UsecaseException {
+  constructor(
     internalMessage: string,
     externalMessage: string,
     context: string,
   ) {
-    super(internalMessage, externalMessage, context);
-    this.name = CommentAccessDeniedUsecaseException.name;
+    super(internalMessage, externalMessage, context, HttpStatus.NOT_FOUND);
   }
 }

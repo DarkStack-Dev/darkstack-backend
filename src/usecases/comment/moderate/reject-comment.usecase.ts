@@ -1,4 +1,4 @@
-// src/usecases/comment/moderate/reject-comment.usecase.ts
+// src/usecases/comment/moderate/reject-comment.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { Usecase } from '@/usecases/usecase';
 import { CommentGatewayRepository } from '@/domain/repositories/comment/comment.gateway.repository';
@@ -43,18 +43,33 @@ export class RejectCommentUsecase implements Usecase<RejectCommentInput, RejectC
     // Persistir mudanças
     await this.commentRepository.update(comment);
 
-    // Notificar autor do comentário rejeitado
-    await this.notificationGateway.notifyUser(comment.getAuthorId(), {
-      type: 'COMMENT_REJECTED',
-      title: 'Comentário rejeitado',
-      message: `Seu comentário foi rejeitado: ${input.reason}`,
-      data: {
-        commentId: comment.getId(),
-        targetId: comment.getTargetId(),
-        targetType: comment.getTargetType(),
+    // ✅ CORRIGIDO: Usar método correto do NotificationGateway
+    try {
+      this.notificationGateway.notifyUser(comment.getAuthorId(), {
+        type: 'COMMENT_REJECTED',
+        title: 'Comentário rejeitado',
+        message: `Seu comentário foi rejeitado: ${input.reason}`,
+        data: {
+          commentId: comment.getId(),
+          targetId: comment.getTargetId(),
+          targetType: comment.getTargetType(),
+          rejectionReason: input.reason,
+        },
+      });
+
+      // 🚀 BROADCAST EM TEMPO REAL - Comentário rejeitado é removido para todos
+      this.notificationGateway.broadcastCommentUpdate({
+        id: comment.getId(),
+        approved: false,
+        rejectedAt: comment.getApprovedAt(),
         rejectionReason: input.reason,
-      },
-    });
+        moderatedBy: input.moderatorId,
+      });
+
+    } catch (error) {
+      console.error('Error sending rejection notification:', error);
+      // Não falhar o use case por erro de notificação
+    }
 
     return {
       id: comment.getId(),

@@ -1,4 +1,4 @@
-// src/usecases/comment/moderate/approve-comment.usecase.ts
+// src/usecases/comment/moderate/approve-comment.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { Usecase } from '@/usecases/usecase';
 import { CommentGatewayRepository } from '@/domain/repositories/comment/comment.gateway.repository';
@@ -47,21 +47,37 @@ export class ApproveCommentUsecase implements Usecase<ApproveCommentInput, Appro
       comment.getTargetType()
     );
 
-    if (comment.getParentId()) {
-      await this.commentRepository.incrementRepliesCount(comment.getParentId());
+    // ✅ CORRIGIDO: Verificar se parentId existe antes de usar
+    const parentId = comment.getParentId();
+    if (parentId) {
+      await this.commentRepository.incrementRepliesCount(parentId);
     }
 
-    // Notificar autor do comentário aprovado
-    await this.notificationGateway.notifyUser(comment.getAuthorId(), {
-      type: 'COMMENT_APPROVED',
-      title: 'Comentário aprovado',
-      message: 'Seu comentário foi aprovado e está visível',
-      data: {
-        commentId: comment.getId(),
-        targetId: comment.getTargetId(),
-        targetType: comment.getTargetType(),
-      },
-    });
+    // ✅ CORRIGIDO: Usar método correto do NotificationGateway
+    try {
+      this.notificationGateway.notifyUser(comment.getAuthorId(), {
+        type: 'COMMENT_APPROVED',
+        title: 'Comentário aprovado',
+        message: 'Seu comentário foi aprovado e está visível',
+        data: {
+          commentId: comment.getId(),
+          targetId: comment.getTargetId(),
+          targetType: comment.getTargetType(),
+        },
+      });
+
+      // 🚀 BROADCAST EM TEMPO REAL - Comentário aprovado aparece para todos
+      this.notificationGateway.broadcastCommentUpdate({
+        id: comment.getId(),
+        approved: true,
+        approvedAt: comment.getApprovedAt(),
+        moderatedBy: input.moderatorId,
+      });
+
+    } catch (error) {
+      console.error('Error sending approval notification:', error);
+      // Não falhar o use case por erro de notificação
+    }
 
     return {
       id: comment.getId(),
