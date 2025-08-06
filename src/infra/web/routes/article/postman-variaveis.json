@@ -1,0 +1,122 @@
+{
+  "id": "darkstack-api-environment",
+  "name": "DarkStack API Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "enabled": true
+    },
+    {
+      "key": "wsUrl", 
+      "value": "ws://localhost:3001/notifications",
+      "enabled": true
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "regularUserId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "moderatorUserId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "moderatorToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testArticleId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testArticleSlug",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testCommentId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "testParentCommentId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "e2eArticleId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "e2eArticleSlug", 
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "realtimeTestArticleId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "currentTimestamp",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "requestCount",
+      "value": "0",
+      "enabled": true
+    },
+    {
+      "key": "successCount",
+      "value": "0",
+      "enabled": true
+    },
+    {
+      "key": "errorCount",
+      "value": "0",
+      "enabled": true
+    },
+    {
+      "key": "websocketAvailable",
+      "value": "false",
+      "enabled": true
+    },
+    {
+      "key": "lastArticleId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "lastCommentId",
+      "value": "",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}
