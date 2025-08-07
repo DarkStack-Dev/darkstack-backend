@@ -1,4 +1,4 @@
-// src/infra/websocket/notification.gateway.ts - CORRIGIDO COM WEBSOCKET PARA COMENTÁRIOS
+// src/infra/websocket/notification.gateway.ts - CORRIGIDO COM VERIFICAÇÕES
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -7,6 +7,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   MessageBody,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Injectable, Logger } from '@nestjs/common';
@@ -27,20 +28,35 @@ interface AuthenticatedSocket extends Socket {
   },
   namespace: '/notifications'
 })
-export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer()
   server: Server;
 
   private readonly logger = new Logger(NotificationGateway.name);
   private connectedUsers = new Map<string, AuthenticatedSocket[]>();
+  private isServerReady = false; // ✅ NOVO: Flag para verificar se servidor está pronto
 
   constructor(
     private readonly userRepository: UserGatewayRepository,
     private readonly jwtService: JwtService,
   ) {}
 
+  // ✅ NOVO: Implementar OnGatewayInit
+  afterInit(server: Server) {
+    this.isServerReady = true;
+    this.logger.log('🚀 WebSocket Server initialized successfully');
+    this.logger.log(`🔌 WebSocket available at: ws://localhost:3001/notifications`);
+  }
+
   async handleConnection(client: AuthenticatedSocket) {
     try {
+      // Verificar se server está pronto
+      if (!this.isServerReady) {
+        this.logger.warn(`Client ${client.id} trying to connect before server is ready`);
+        client.disconnect();
+        return;
+      }
+
       // Extrair token do handshake
       const token = this.extractToken(client);
       if (!token) {
@@ -83,10 +99,10 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       // Se for moderador/admin, juntar em room de moderadores
       if (user.isModerator() || user.isAdmin()) {
         client.join('moderators');
-        this.logger.log(`Moderator ${user.getName()} joined moderators room`);
+        this.logger.log(`🛡️ Moderator ${user.getName()} joined moderators room`);
       }
 
-      this.logger.log(`User ${user.getName()} (${userId}) connected via WebSocket. Total connections: ${this.getTotalConnections()}`);
+      this.logger.log(`✅ User ${user.getName()} (${userId}) connected via WebSocket. Total connections: ${this.getTotalConnections()}`);
 
       // Enviar confirmação de conexão
       client.emit('connected', {
@@ -97,7 +113,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       });
 
     } catch (error) {
-      this.logger.error(`Connection error for client ${client.id}:`, error);
+      this.logger.error(`❌ Connection error for client ${client.id}:`, error);
       client.emit('error', {
         message: 'Erro de autenticação',
         timestamp: new Date().toISOString(),
@@ -119,7 +135,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         }
       }
 
-      this.logger.log(`User ${client.userId} disconnected (${client.id}). Active connections: ${this.getTotalConnections()}`);
+      this.logger.log(`👋 User ${client.userId} disconnected (${client.id}). Active connections: ${this.getTotalConnections()}`);
     }
   }
 
@@ -137,12 +153,18 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     client.emit('joinedRoom', { room: data.room, timestamp: new Date().toISOString() });
   }
 
-  // ✅ MÉTODOS PARA NOTIFICAÇÕES (CORRIGIDOS)
+  // ✅ MÉTODOS PARA NOTIFICAÇÕES (COM VERIFICAÇÕES DE SEGURANÇA)
 
   /**
    * Envia notificação para um usuário específico
    */
   sendNotificationToUser(userId: string, notification: any): boolean {
+    // ✅ Verificação de segurança
+    if (!this.isServerReady || !this.server) {
+      this.logger.warn('WebSocket server not ready, cannot send notification to user');
+      return false;
+    }
+
     const userSockets = this.connectedUsers.get(userId);
     if (!userSockets || userSockets.length === 0) {
       this.logger.debug(`No active WebSocket connections for user ${userId}`);
@@ -167,106 +189,145 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       }
     });
 
-    this.logger.log(`Sent notification to user ${userId} (${sentCount}/${userSockets.length} connections)`);
+    this.logger.log(`📤 Sent notification to user ${userId} (${sentCount}/${userSockets.length} connections)`);
     return sentCount > 0;
   }
 
   /**
-   * ✅ NOVO: Método notifyUser para compatibilidade
-   */
-  notifyUser(userId: string, notification: any): boolean {
-    return this.sendNotificationToUser(userId, notification);
-  }
-
-  /**
-   * Envia notificação para todos os moderadores conectados
+   * ✅ CORRIGIDO: Envia notificação para todos os moderadores conectados
    */
   sendNotificationToModerators(notification: any): number {
+    // ✅ Verificações de segurança
+    if (!this.isServerReady || !this.server || !this.server.sockets || !this.server.sockets.adapter) {
+      this.logger.warn('WebSocket server not ready, cannot send notification to moderators');
+      return 0;
+    }
+
     const notificationData = {
       type: 'moderation',
       data: notification,
       timestamp: new Date().toISOString(),
     };
 
-    const moderatorsRoom = this.server.sockets.adapter.rooms.get('moderators');
-    const moderatorCount = moderatorsRoom?.size || 0;
+    try {
+      const moderatorsRoom = this.server.sockets.adapter.rooms.get('moderators');
+      const moderatorCount = moderatorsRoom?.size || 0;
 
-    if (moderatorCount > 0) {
-      this.server.to('moderators').emit('newModerationRequest', notificationData);
-      this.logger.log(`Sent moderation notification to ${moderatorCount} connected moderators`);
-    } else {
-      this.logger.debug('No moderators connected via WebSocket');
+      if (moderatorCount > 0) {
+        this.server.to('moderators').emit('newModerationRequest', notificationData);
+        this.logger.log(`🛡️ Sent moderation notification to ${moderatorCount} connected moderators`);
+      } else {
+        this.logger.debug('No moderators connected via WebSocket');
+      }
+
+      return moderatorCount;
+    } catch (error) {
+      this.logger.error('❌ Error sending notification to moderators:', error);
+      return 0;
     }
-
-    return moderatorCount;
   }
 
   /**
-   * ✅ NOVO: Método notifyModerators para compatibilidade
+   * ✅ Método notifyUser para compatibilidade
+   */
+  notifyUser(userId: string, notification: any): boolean {
+    return this.sendNotificationToUser(userId, notification);
+  }
+
+  /**
+   * ✅ Método notifyModerators para compatibilidade
    */
   notifyModerators(notification: any): number {
     return this.sendNotificationToModerators(notification);
   }
 
-  // ✅ NOVOS MÉTODOS PARA COMENTÁRIOS EM TEMPO REAL
+  // ✅ MÉTODOS PARA COMENTÁRIOS EM TEMPO REAL
 
   /**
    * Broadcast novo comentário para usuários visualizando a entidade
    */
   broadcastNewComment(targetType: string, targetId: string, commentData: any): number {
-    const roomName = `${targetType.toLowerCase()}_${targetId}`;
-    const room = this.server.sockets.adapter.rooms.get(roomName);
-    const userCount = room?.size || 0;
-
-    if (userCount > 0) {
-      this.server.to(roomName).emit('newComment', {
-        type: 'NEW_COMMENT',
-        data: commentData,
-        timestamp: new Date().toISOString(),
-      });
-
-      this.logger.log(`Broadcast new comment to ${userCount} users viewing ${targetType} ${targetId}`);
+    if (!this.isServerReady || !this.server) {
+      this.logger.warn('WebSocket server not ready, cannot broadcast comment');
+      return 0;
     }
 
-    return userCount;
+    try {
+      const roomName = `${targetType.toLowerCase()}_${targetId}`;
+      const room = this.server.sockets.adapter.rooms.get(roomName);
+      const userCount = room?.size || 0;
+
+      if (userCount > 0) {
+        this.server.to(roomName).emit('newComment', {
+          type: 'NEW_COMMENT',
+          data: commentData,
+          timestamp: new Date().toISOString(),
+        });
+
+        this.logger.log(`💬 Broadcast new comment to ${userCount} users viewing ${targetType} ${targetId}`);
+      }
+
+      return userCount;
+    } catch (error) {
+      this.logger.error('❌ Error broadcasting new comment:', error);
+      return 0;
+    }
   }
 
   /**
    * Broadcast comentário editado
    */
   broadcastCommentUpdate(commentData: any): number {
-    const updateData = {
-      type: 'COMMENT_UPDATED',
-      data: commentData,
-      timestamp: new Date().toISOString(),
-    };
+    if (!this.isServerReady || !this.server) {
+      this.logger.warn('WebSocket server not ready, cannot broadcast comment update');
+      return 0;
+    }
 
-    // Broadcast para todos os usuários conectados
-    this.server.emit('commentUpdated', updateData);
-    
-    const totalConnections = this.getTotalConnections();
-    this.logger.log(`Broadcast comment update to ${totalConnections} connections`);
-    
-    return totalConnections;
+    try {
+      const updateData = {
+        type: 'COMMENT_UPDATED',
+        data: commentData,
+        timestamp: new Date().toISOString(),
+      };
+
+      this.server.emit('commentUpdated', updateData);
+      
+      const totalConnections = this.getTotalConnections();
+      this.logger.log(`✏️ Broadcast comment update to ${totalConnections} connections`);
+      
+      return totalConnections;
+    } catch (error) {
+      this.logger.error('❌ Error broadcasting comment update:', error);
+      return 0;
+    }
   }
 
   /**
    * Broadcast comentário deletado
    */
   broadcastCommentDelete(commentId: string): number {
-    const deleteData = {
-      type: 'COMMENT_DELETED',
-      data: { commentId },
-      timestamp: new Date().toISOString(),
-    };
+    if (!this.isServerReady || !this.server) {
+      this.logger.warn('WebSocket server not ready, cannot broadcast comment delete');
+      return 0;
+    }
 
-    // Broadcast para todos os usuários conectados
-    this.server.emit('commentDeleted', deleteData);
-    
-    const totalConnections = this.getTotalConnections();
-    this.logger.log(`Broadcast comment delete to ${totalConnections} connections`);
-    
-    return totalConnections;
+    try {
+      const deleteData = {
+        type: 'COMMENT_DELETED',
+        data: { commentId },
+        timestamp: new Date().toISOString(),
+      };
+
+      this.server.emit('commentDeleted', deleteData);
+      
+      const totalConnections = this.getTotalConnections();
+      this.logger.log(`🗑️ Broadcast comment delete to ${totalConnections} connections`);
+      
+      return totalConnections;
+    } catch (error) {
+      this.logger.error('❌ Error broadcasting comment delete:', error);
+      return 0;
+    }
   }
 
   /**
@@ -287,7 +348,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       timestamp: new Date().toISOString() 
     });
 
-    this.logger.log(`User ${client.userId} joined room ${roomName}`);
+    this.logger.log(`👀 User ${client.userId} joined room ${roomName}`);
   }
 
   /**
@@ -308,23 +369,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       timestamp: new Date().toISOString() 
     });
 
-    this.logger.log(`User ${client.userId} left room ${roomName}`);
-  }
-
-  /**
-   * Envia broadcast para todos os usuários conectados
-   */
-  broadcastToAll(message: any): number {
-    const totalConnections = this.getTotalConnections();
-    
-    this.server.emit('broadcast', {
-      type: 'broadcast',
-      data: message,
-      timestamp: new Date().toISOString(),
-    });
-
-    this.logger.log(`Broadcast sent to ${totalConnections} connections`);
-    return totalConnections;
+    this.logger.log(`👋 User ${client.userId} left room ${roomName}`);
   }
 
   // ✅ MÉTODOS UTILITÁRIOS
@@ -350,12 +395,22 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   getModeratorsConnectedCount(): number {
-    return this.server.sockets.adapter.rooms.get('moderators')?.size || 0;
+    if (!this.isServerReady || !this.server || !this.server.sockets || !this.server.sockets.adapter) {
+      return 0;
+    }
+    
+    try {
+      return this.server.sockets.adapter.rooms.get('moderators')?.size || 0;
+    } catch (error) {
+      this.logger.error('Error getting moderators count:', error);
+      return 0;
+    }
   }
 
-  // Status para debugging e monitoramento
+  // ✅ Status para debugging e monitoramento
   getConnectionStatus() {
     const status: any = {
+      serverReady: this.isServerReady,
       totalUsers: this.connectedUsers.size,
       totalConnections: this.getTotalConnections(),
       moderatorsConnected: this.getModeratorsConnectedCount(),

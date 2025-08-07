@@ -89,11 +89,13 @@ import { CommentAccessDeniedUsecaseExceptionFilterProvider } from './filters/use
 import { CommentLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/comment/comment-limit-reached-usecase-exception.filter';
 import { CommentModerationRequiredUsecaseExceptionFilterProvider } from './filters/usecases/comment/comment-moderation-required-usecase-exception.filter';
 
-//
+
+
 @Module({
   imports: [
     ServiceModule, 
     UsecaseModule,
+    WebSocketModule,
   ],
   controllers: [
     // User routes
@@ -158,6 +160,8 @@ import { CommentModerationRequiredUsecaseExceptionFilterProvider } from './filte
     RejectCommentRoute,
     FindPendingModerationRoute,
     CommentStatsRoute,
+
+    WebSocketStatusRoute,
   ],
   providers: [
     AuthGuardProvider,

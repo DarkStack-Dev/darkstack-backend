@@ -2,7 +2,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { UsecaseException } from '../usecase.exception';
 
-export class CommentNotFoundUsecaseException extends UsecaseException {
+export class CommentAccessDeniedUsecaseException  extends UsecaseException {
   constructor(
     internalMessage: string,
     externalMessage: string,

@@ -1,4 +1,4 @@
-// src/domain/usecases/comment/list/list-comments.usecase.ts
+// src/domain/usecases/comment/list/list-comments.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
 import { CommentGatewayRepository, CommentWithAuthor, PaginatedCommentResult } from '@/domain/repositories/comment/comment.gateway.repository';
@@ -12,7 +12,7 @@ export type ListCommentsInput = {
   orderBy?: 'createdAt' | 'repliesCount';
   orderDirection?: 'asc' | 'desc';
   includeReplies?: boolean;
-  currentUserId?: string; // Para verificar permissões
+  currentUserId?: string;
 };
 
 export type ListCommentsOutput = {
@@ -28,14 +28,28 @@ export type ListCommentsOutput = {
       email: string;
       avatar?: string;
     };
-    parentId?: string;
+    parentId?: string; // ✅ CORRIGIDO: undefined em vez de string | null
     repliesCount: number;
     approved: boolean;
     createdAt: Date;
     updatedAt: Date;
     canEdit: boolean;
     canDelete: boolean;
-    replies?: Array<any>; // Primeiras respostas se includeReplies = true
+    replies?: Array<{  // ✅ CORRIGIDO: Tipo específico em vez de any[]
+      id: string;
+      content: string;
+      isEdited: boolean;
+      authorId: string;
+      author: {
+        id: string;
+        name: string;
+        email: string;
+        avatar?: string;
+      };
+      createdAt: Date;
+      canEdit: boolean;
+      canDelete: boolean;
+    }>;
   }>;
   pagination: {
     total: number;
@@ -55,7 +69,7 @@ export class ListCommentsUseCase implements UseCase<ListCommentsInput, ListComme
 
   async execute(input: ListCommentsInput): Promise<ListCommentsOutput> {
     const page = input.page || 1;
-    const pageSize = Math.min(input.pageSize || 20, 100); // Máximo de 100 por página
+    const pageSize = Math.min(input.pageSize || 20, 100);
     const offset = (page - 1) * pageSize;
 
     // Buscar apenas comentários raiz (sem parentId)
@@ -74,7 +88,23 @@ export class ListCommentsUseCase implements UseCase<ListCommentsInput, ListComme
     const comments = await Promise.all(
       result.comments.map(async (item) => {
         const comment = item.comment;
-        let replies = [];
+        
+        // ✅ CORRIGIDO: Inicializar como array vazio com tipo específico
+        let replies: Array<{
+          id: string;
+          content: string;
+          isEdited: boolean;
+          authorId: string;
+          author: {
+            id: string;
+            name: string;
+            email: string;
+            avatar?: string;
+          };
+          createdAt: Date;
+          canEdit: boolean;
+          canDelete: boolean;
+        }> = [];
 
         // Se solicitado, buscar primeiras respostas (preview)
         if (input.includeReplies && comment.getRepliesCount() > 0) {
@@ -84,6 +114,7 @@ export class ListCommentsUseCase implements UseCase<ListCommentsInput, ListComme
             orderDirection: 'asc',
           });
           
+          // ✅ CORRIGIDO: Mapear com tipo específico
           replies = repliesResult.comments.map(replyItem => ({
             id: replyItem.comment.getId(),
             content: replyItem.comment.getContent(),
@@ -103,14 +134,14 @@ export class ListCommentsUseCase implements UseCase<ListCommentsInput, ListComme
           isDeleted: comment.getIsDeleted(),
           authorId: comment.getAuthorId(),
           author: item.author,
-          parentId: comment.getParentId(),
+          parentId: comment.getParentId() || undefined, // ✅ CORRIGIDO: null -> undefined
           repliesCount: comment.getRepliesCount(),
           approved: comment.getApproved(),
           createdAt: comment.getCreatedAt(),
           updatedAt: comment.getUpdatedAt(),
           canEdit: input.currentUserId ? comment.canBeEditedBy(input.currentUserId) : false,
           canDelete: false, // Será determinado pelo role do usuário
-          replies: input.includeReplies ? replies : undefined,
+          replies: input.includeReplies && replies.length > 0 ? replies : undefined, // ✅ CORRIGIDO: Só incluir se tiver respostas
         };
       })
     );
