@@ -8,6 +8,17 @@ export class WebSocketStatusRoute {
     private readonly notificationGateway: NotificationGateway,
   ) {}
 
+  // ✅ NOVO: Endpoint para debug de moderadores
+  @Get('moderators')
+  getModeratorsStatus() {
+    return {
+      moderatorsConnected: this.notificationGateway.getModeratorsConnectedCount(),
+      totalConnections: this.notificationGateway.getTotalConnections(),
+      connectionDetails: this.notificationGateway.getConnectionStatus(),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   @Get('status')
   async getStatus() {
     const status = this.notificationGateway.getConnectionStatus();
