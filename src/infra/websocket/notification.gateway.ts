@@ -400,4 +400,96 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
     return typeof token === 'string' ? token : null;
   }
+
+  // ✅ NOVOS MÉTODOS PARA COMENTÁRIOS
+  // broadcastNewComment(targetType: string, targetId: string, commentData: any): number {
+  //   if (!this.isServerReady || !this.server) {
+  //     this.logger.warn('WebSocket server not ready, cannot broadcast comment');
+  //     return 0;
+  //   }
+
+  //   try {
+  //     const roomName = `${targetType.toLowerCase()}_${targetId}`;
+  //     const room = this.server.sockets.adapter?.rooms?.get(roomName);
+  //     const userCount = room?.size || 0;
+
+  //     if (userCount > 0) {
+  //       this.server.to(roomName).emit('newComment', {
+  //         type: 'NEW_COMMENT',
+  //         data: commentData,
+  //         timestamp: new Date().toISOString(),
+  //       });
+
+  //       this.logger.log(`💬 Broadcast new comment to ${userCount} users viewing ${targetType} ${targetId}`);
+  //     }
+
+  //     return userCount;
+  //   } catch (error) {
+  //     this.logger.error('❌ Error broadcasting new comment:', error);
+  //     return 0;
+  //   }
+  // }
+
+  /**
+   * ✅ NOVO: Broadcast quando comentário é atualizado
+   */
+  broadcastCommentUpdate(updateData: any): number {
+    if (!this.isServerReady || !this.server) {
+      this.logger.warn('WebSocket server not ready, cannot broadcast comment update');
+      return 0;
+    }
+
+    try {
+      // Broadcast para todos os usuários conectados
+      const totalConnections = this.getTotalConnections();
+      
+      if (totalConnections > 0) {
+        this.server.emit('commentUpdated', {
+          type: 'COMMENT_UPDATED',
+          data: updateData,
+          timestamp: new Date().toISOString(),
+        });
+
+        this.logger.log(`🔄 Broadcast comment update to ${totalConnections} connected users`);
+      }
+
+      return totalConnections;
+    } catch (error) {
+      this.logger.error('❌ Error broadcasting comment update:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * ✅ NOVO: Broadcast quando comentário é deletado
+   */
+  broadcastCommentDelete(commentId: string): number {
+    if (!this.isServerReady || !this.server) {
+      this.logger.warn('WebSocket server not ready, cannot broadcast comment deletion');
+      return 0;
+    }
+
+    try {
+      // Broadcast para todos os usuários conectados
+      const totalConnections = this.getTotalConnections();
+      
+      if (totalConnections > 0) {
+        this.server.emit('commentDeleted', {
+          type: 'COMMENT_DELETED',
+          data: {
+            commentId,
+            deletedAt: new Date().toISOString(),
+          },
+          timestamp: new Date().toISOString(),
+        });
+
+        this.logger.log(`🗑️ Broadcast comment deletion to ${totalConnections} connected users`);
+      }
+
+      return totalConnections;
+    } catch (error) {
+      this.logger.error('❌ Error broadcasting comment deletion:', error);
+      return 0;
+    }
+  }
 }
