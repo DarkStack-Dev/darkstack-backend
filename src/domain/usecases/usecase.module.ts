@@ -6,6 +6,11 @@ import { RefreshAuthTokenUserUsecase } from './user/refresh-auth-token/refresh-a
 import { DatabaseModule } from 'src/infra/repositories/database.module';
 import { ServiceModule } from 'src/infra/services/service.module';
 
+// ✅ ADICIONAR - Like Domain Use Cases
+import { ToggleLikeUseCase } from './like/toggle/toggle-like.usecase';
+import { GetLikesUseCase } from './like/get-likes/get-likes.usecase';
+import { GetLikeCountsUseCase } from './like/get-like-counts/get-like-counts.usecase';
+
 @Module({
   imports: [DatabaseModule, ServiceModule],
   providers: [
@@ -13,12 +18,22 @@ import { ServiceModule } from 'src/infra/services/service.module';
     FindUserUseCase,
     SigninUserUseCase,
     RefreshAuthTokenUserUsecase,
+
+    // ✅ ADICIONAR - Like Domain Use Cases
+    ToggleLikeUseCase,
+    GetLikesUseCase,
+    GetLikeCountsUseCase,
   ],
   exports: [
     CreateUserUseCase,
     FindUserUseCase,
     SigninUserUseCase,
     RefreshAuthTokenUserUsecase,
+
+    // ✅ ADICIONAR - Export Like Domain Use Cases
+    ToggleLikeUseCase,
+    GetLikesUseCase,
+    GetLikeCountsUseCase,
   ],
 })
 export class UsecaseModule {}

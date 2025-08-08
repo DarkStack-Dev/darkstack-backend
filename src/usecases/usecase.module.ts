@@ -88,6 +88,16 @@ import { RejectCommentUsecase } from '@/usecases/comment/moderate/reject-comment
 import { FindPendingModerationUsecase } from '@/usecases/comment/moderate/find-pending-moderation.usecase';
 import { CommentStatsUsecase } from '@/usecases/comment/stats/comment-stats.usecase';
 
+// ✅ ADICIONAR - Like Domain Use Cases
+import { ToggleLikeUseCase } from '@/domain/usecases/like/toggle/toggle-like.usecase';
+import { GetLikesUseCase } from '@/domain/usecases/like/get-likes/get-likes.usecase';
+import { GetLikeCountsUseCase } from '@/domain/usecases/like/get-like-counts/get-like-counts.usecase';
+
+// ✅ ADICIONAR - Like Application Use Cases
+import { ToggleLikeUsecase } from '@/usecases/like/toggle/toggle-like.usecase';
+import { GetLikesUsecase } from '@/usecases/like/get-likes/get-likes.usecase';
+import { GetLikeCountsUsecase } from '@/usecases/like/get-counts/get-like-counts.usecase';
+
 @Module({
   imports: [
     DatabaseModule, 
@@ -184,6 +194,16 @@ import { CommentStatsUsecase } from '@/usecases/comment/stats/comment-stats.usec
     RejectCommentUsecase,
     FindPendingModerationUsecase,
     CommentStatsUsecase,
+
+    // ✅ ADICIONAR - Like Domain Use Cases
+    ToggleLikeUseCase,
+    GetLikesUseCase,
+    GetLikeCountsUseCase,
+
+    // ✅ ADICIONAR - Like Application Use Cases
+    ToggleLikeUsecase,
+    GetLikesUsecase,
+    GetLikeCountsUsecase,
   ],
   exports: [
     // User use cases
@@ -275,6 +295,16 @@ import { CommentStatsUsecase } from '@/usecases/comment/stats/comment-stats.usec
     RejectCommentUsecase,
     FindPendingModerationUsecase,
     CommentStatsUsecase,
+
+    // ✅ ADICIONAR - Export Like Domain Use Cases
+    ToggleLikeUseCase,
+    GetLikesUseCase,
+    GetLikeCountsUseCase,
+
+    // ✅ ADICIONAR - Export Like Application Use Cases
+    ToggleLikeUsecase,
+    GetLikesUsecase,
+    GetLikeCountsUsecase,
   ],
 })
 export class UsecaseModule {}

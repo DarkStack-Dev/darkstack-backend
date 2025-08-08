@@ -126,6 +126,12 @@ model ArticleImage {
   // Ordenação
   order     Int      @default(0) // Para ordenar as imagens
   isMain    Boolean  @default(false) // Imagem principal do artigo
+
+  // ✅ CORRIGIDO - Contadores de comentários E likes
+  commentsCount    Int       @default(0)
+  // ✅ NOVOS CAMPOS - Contadores de likes
+  likesCount      Int       @default(0)
+  dislikesCount   Int       @default(0)
   
   // Timestamps
   createdAt DateTime @default(now())
@@ -160,6 +166,9 @@ model User {
   // Relacionamentos com participantes
   participations    ProjectParticipant[] @relation("UserParticipant")
   addedParticipants ProjectParticipant[] @relation("ParticipantAdder")
+
+  // ✅ NOVO RELACIONAMENTO - Likes dados pelo usuário
+  givenLikes      Like[]    @relation("UserLikes")
 
   // ✅ ADICIONAR: Relacionamentos com artigos
   authoredArticles  Article[] @relation("ArticleAuthor")
@@ -197,6 +206,10 @@ model Project {
   // Participantes do projeto
   participants ProjectParticipant[]
   images       ProjectImage[]
+
+  // ✅ NOVOS CAMPOS - Contadores de likes  
+  likesCount      Int       @default(0)
+  dislikesCount   Int       @default(0)
 
   // ✅ NOVOS CAMPOS - Contadores de comentários
   commentsCount    Int       @default(0)
@@ -406,6 +419,10 @@ model Comment {
   approvedAt       DateTime?
   rejectionReason  String?        @db.Text
   
+  // ✅ NOVOS CAMPOS - Contadores de likes
+  likesCount      Int       @default(0)
+  dislikesCount   Int       @default(0)
+
   article  Article? @relation("ArticleComments", fields: [targetId], references: [id], map: "fk_comment_article")
   project  Project? @relation("ProjectComments", fields: [targetId], references: [id], map: "fk_comment_project")
 
@@ -421,6 +438,39 @@ model Comment {
 enum CommentTarget {
   ARTICLE
   PROJECT
+  ISSUE
+  QA
+}
+
+// ✅ ADICIONAR AO FINAL DO prisma/schema.prisma
+
+// 👍 SISTEMA DE LIKES GENÉRICO
+model Like {
+  id          String         @id @default(uuid())
+  userId      String         // Quem deu o like
+  targetId    String         // ID da entidade (article, project, comment, etc.)
+  targetType  LikeTarget     // Tipo da entidade
+  isLike      Boolean        @default(true) // true = like, false = dislike
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  // 🔗 Relacionamentos
+  user        User           @relation("UserLikes", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 🚫 CONSTRAINT: Um usuário só pode dar um like por entidade
+  @@unique([userId, targetId, targetType], name: "unique_user_like")
+  @@map("likes")
+  @@index([targetType, targetId]) // Index para buscar likes por entidade
+  @@index([userId])               // Index para buscar likes por usuário
+  @@index([createdAt])           // Index para ordenação temporal
+}
+
+// 🎯 Enum para tipos de likes
+enum LikeTarget {
+  ARTICLE
+  PROJECT
+  COMMENT
+  USER_PROFILE
   ISSUE
   QA
 }
