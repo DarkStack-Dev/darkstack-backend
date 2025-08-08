@@ -492,4 +492,153 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       return 0;
     }
   }
+
+  // ✅ ADICIONAR ESTES MÉTODOS ao src/infra/websocket/notification.gateway.ts
+
+/**
+ * ✅ NOVO: Broadcast quando like/dislike é criado, atualizado ou removido
+ */
+broadcastLikeUpdate(targetType: string, targetId: string, likeData: any): number {
+  if (!this.isServerReady || !this.server) {
+    this.logger.warn('WebSocket server not ready, cannot broadcast like update');
+    return 0;
+  }
+
+  try {
+    const roomName = `${targetType.toLowerCase()}_${targetId}`;
+    const room = this.server.sockets.adapter?.rooms?.get(roomName);
+    const userCount = room?.size || 0;
+
+    if (userCount > 0) {
+      this.server.to(roomName).emit('likeUpdate', {
+        type: 'LIKE_UPDATE',
+        data: likeData,
+        timestamp: new Date().toISOString(),
+      });
+
+      this.logger.log(`👍 Broadcast like update to ${userCount} users viewing ${targetType} ${targetId}`);
+    }
+
+    // 📊 TAMBÉM BROADCAST PARA TODOS (para atualizar contadores em listas)
+    this.server.emit('globalLikeUpdate', {
+      type: 'GLOBAL_LIKE_UPDATE',
+      targetType,
+      targetId,
+      likeCounts: likeData.likeCounts,
+      action: likeData.action,
+      timestamp: new Date().toISOString(),
+    });
+
+    return userCount;
+  } catch (error) {
+    this.logger.error('❌ Error broadcasting like update:', error);
+    return 0;
+  }
+}
+
+/**
+ * ✅ NOVO: Evento WebSocket para assistir likes de uma entidade específica
+ */
+@SubscribeMessage('watchLikes')
+handleWatchLikes(
+  @ConnectedSocket() client: AuthenticatedSocket,
+  @MessageBody() data: { targetType: string; targetId: string }
+) {
+  const roomName = `likes_${data.targetType.toLowerCase()}_${data.targetId}`;
+  client.join(roomName);
+  
+  client.emit('watchingLikes', { 
+    room: roomName, 
+    targetType: data.targetType,
+    targetId: data.targetId,
+    timestamp: new Date().toISOString() 
+  });
+
+  this.logger.log(`👀 User ${client.userId} joined likes room ${roomName}`);
+}
+
+/**
+ * ✅ NOVO: Broadcast para sala específica de likes
+ */
+broadcastToLikesRoom(targetType: string, targetId: string, data: any): number {
+  if (!this.isServerReady || !this.server) {
+    this.logger.warn('WebSocket server not ready, cannot broadcast to likes room');
+    return 0;
+  }
+
+  try {
+    const roomName = `likes_${targetType.toLowerCase()}_${targetId}`;
+    const room = this.server.sockets.adapter?.rooms?.get(roomName);
+    const userCount = room?.size || 0;
+
+    if (userCount > 0) {
+      this.server.to(roomName).emit('likesRoomUpdate', {
+        type: 'LIKES_ROOM_UPDATE',
+        data,
+        timestamp: new Date().toISOString(),
+      });
+
+      this.logger.log(`📊 Broadcast to likes room ${roomName}: ${userCount} users`);
+    }
+
+    return userCount;
+  } catch (error) {
+    this.logger.error('❌ Error broadcasting to likes room:', error);
+    return 0;
+  }
+}
+
+/**
+ * ✅ NOVO: Notificar usuário quando recebe like em seu conteúdo
+ */
+notifyUserLikeReceived(userId: string, likeData: any): boolean {
+  if (!this.isServerReady || !this.server) {
+    this.logger.warn('WebSocket server not ready, cannot send like notification');
+    return false;
+  }
+
+  const userSockets = this.connectedUsers.get(userId);
+  if (!userSockets || userSockets.length === 0) {
+    this.logger.debug(`No active WebSocket connections for user ${userId}`);
+    return false;
+  }
+
+  const notificationData = {
+    type: 'like_received',
+    data: {
+      ...likeData,
+      message: likeData.isLike 
+        ? `${likeData.user?.name} curtiu seu ${likeData.targetType.toLowerCase()}`
+        : `${likeData.user?.name} descurtiu seu ${likeData.targetType.toLowerCase()}`,
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  let sentCount = 0;
+  userSockets.forEach(socket => {
+    try {
+      if (!socket.disconnected) {
+        socket.emit('likeNotification', notificationData);
+        sentCount++;
+      }
+    } catch (error) {
+      this.logger.error(`Error sending like notification to socket ${socket.id}:`, error);
+    }
+  });
+
+  this.logger.log(`👍 Sent like notification to user ${userId} (${sentCount}/${userSockets.length} connections)`);
+  return sentCount > 0;
+}
+
+/**
+ * ✅ NOVO: Teste de ping específico para likes
+ */
+@SubscribeMessage('pingLikes')
+handlePingLikes(@ConnectedSocket() client: AuthenticatedSocket) {
+  client.emit('pongLikes', { 
+    timestamp: new Date().toISOString(),
+    userId: client.userId,
+    message: 'Like system WebSocket is working!'
+  });
+}
 }

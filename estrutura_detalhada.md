@@ -1,6 +1,6 @@
 # Estrutura Detalhada: darkstack
 
-**Gerado em:** 05/08/2025 02:58:44
+**Gerado em:** 07/08/2025 22:09:20
 
 ## 📁 .
 
@@ -13,11 +13,11 @@
 - **docker-compose.yml** (1.7KB)
 - **eslint.config.mjs** (869B)
 - **estrutura_detalhada.md** (0B)
-- **estrutura_projeto.md** (52.1KB)
+- **estrutura_projeto.md** (52.3KB)
 - **leitor_nestjs.py** (6.5KB)
 - **nest-cli.json** (201B)
 - **nginx.conf** (879B)
-- **package-lock.json** (449.0KB)
+- **package-lock.json** (465.5KB)
 - **package.json** (2.9KB)
 - **railway.toml** (203B)
 - **tsconfig.build.json** (99B)
@@ -67,7 +67,7 @@
 
 ## 📁 prisma
 
-- **schema.prisma** (14.0KB)
+- **schema.prisma** (14.4KB)
 
 ## 📁 public\uploads\projects
 
@@ -83,7 +83,7 @@
 - **app.controller.ts** (286B)
 - **app.module.ts** (409B)
 - **app.service.ts** (150B)
-- **main.ts** (1.2KB)
+- **main.ts** (1.4KB)
 
 ## 📁 src\domain\entities\article
 
@@ -196,7 +196,7 @@
 
 ## 📁 src\domain\usecases\article\create
 
-- **create-article.usecase.ts** (6.1KB)
+- **create-article.usecase.ts** (6.5KB)
 
 ## 📁 src\domain\usecases\article\find-by-id
 
@@ -244,7 +244,7 @@
 
 ## 📁 src\domain\usecases\comment\list
 
-- **list-comments.usecase.ts** (4.2KB)
+- **list-comments.usecase.ts** (5.1KB)
 
 ## 📁 src\domain\usecases\comment\update
 
@@ -574,7 +574,7 @@
 
 ## 📁 src\infra\web
 
-- **web.module.ts** (10.0KB)
+- **web.module.ts** (10.1KB)
 
 ## 📁 src\infra\web\auth
 
@@ -628,6 +628,12 @@
 ## 📁 src\infra\web\middleware
 
 - **article-rate-limit.middleware.ts** (1.9KB)
+
+## 📁 src\infra\web\routes\article
+
+- **doc-collection.MD** (9.0KB)
+- **postman-collection.json** (84.2KB)
+- **postman-variaveis.json** (2.2KB)
 
 ## 📁 src\infra\web\routes\article\create
 
@@ -801,7 +807,7 @@
 
 ## 📁 src\infra\web\routes\notification\websocket-status
 
-- **websocket-status.route.ts** (1.1KB)
+- **websocket-status.route.ts** (3.1KB)
 
 ## 📁 src\infra\web\routes\projects\approve
 
@@ -912,7 +918,7 @@
 
 ## 📁 src\infra\websocket
 
-- **notification.gateway.ts** (11.7KB)
+- **notification.gateway.ts** (16.3KB)
 - **websocket.module.ts** (600B)
 
 ## 📁 src\shared\exceptions
@@ -989,7 +995,7 @@
 
 ## 📁 src\usecases\comment\delete
 
-- **delete-comment.usecase.ts** (3.3KB)
+- **delete-comment.usecase.ts** (3.5KB)
 
 ## 📁 src\usecases\comment\find-replies
 
@@ -1011,7 +1017,7 @@
 
 ## 📁 src\usecases\comment\update
 
-- **update-comment.usecase.ts** (3.1KB)
+- **update-comment.usecase.ts** (3.4KB)
 
 ## 📁 src\usecases\exceptions
 
@@ -1025,7 +1031,7 @@
 
 ## 📁 src\usecases\exceptions\comment
 
-- **comment-access-denied.usecase.exception.ts** (442B)
+- **comment-access-denied.usecase.exception.ts** (447B)
 - **comment-limit-reached.usecase.exception.ts** (458B)
 - **comment-moderation-required.usecase.exception.ts** (461B)
 - **comment-not-found.usecase.exception.ts** (436B)

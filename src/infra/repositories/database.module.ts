@@ -8,6 +8,8 @@ import { githubAccountPrismaRepositoryProvider } from './prisma/github-account/g
 import { googleAccountPrismaRepositoryProvider } from './prisma/google-account/google-account.prisma.repository.provider';
 // ✅ ADICIONAR - Comment Repository Provider
 import { commentPrismaRepositoryProvider } from './prisma/comment/comment.prisma.repository.provider';
+// ✅ ADICIONAR: Like Repository Provider
+import { likePrismaRepositoryProvider } from './prisma/like/like.prisma.repository.provider';
 
 @Module({
   providers: [
@@ -20,6 +22,8 @@ import { commentPrismaRepositoryProvider } from './prisma/comment/comment.prisma
     googleAccountPrismaRepositoryProvider,
     // ✅ ADICIONAR - Comment Repository
     commentPrismaRepositoryProvider,
+    // ✅ ADICIONAR: Like Repository
+    likePrismaRepositoryProvider,
   ],
   exports: [
     // Existing exports
@@ -31,6 +35,8 @@ import { commentPrismaRepositoryProvider } from './prisma/comment/comment.prisma
     googleAccountPrismaRepositoryProvider,
     // ✅ ADICIONAR - Export Comment Repository
     commentPrismaRepositoryProvider,
+    // ✅ ADICIONAR: Export Like Repository
+    likePrismaRepositoryProvider,
   ],
 })
 export class DatabaseModule {}

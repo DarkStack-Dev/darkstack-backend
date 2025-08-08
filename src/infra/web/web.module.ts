@@ -89,7 +89,18 @@ import { CommentAccessDeniedUsecaseExceptionFilterProvider } from './filters/use
 import { CommentLimitReachedUsecaseExceptionFilterProvider } from './filters/usecases/comment/comment-limit-reached-usecase-exception.filter';
 import { CommentModerationRequiredUsecaseExceptionFilterProvider } from './filters/usecases/comment/comment-moderation-required-usecase-exception.filter';
 
+// ✅ ADICIONAR - Like Routes
+import { ToggleLikeRoute } from './routes/like/toggle/toggle-like.route';
+import { GetLikesRoute } from './routes/like/get-likes/get-likes.route';
+import { GetLikeCountsRoute } from './routes/like/get-counts/get-like-counts.route';
+import { LikeRoute } from './routes/like/specific-actions/like.route';
+import { MyLikesRoute } from './routes/like/my-likes/my-likes.route';
 
+// ✅ ADICIONAR - Like Exception Filters
+import { LikeNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/like/like-not-found-usecase-exception.filter';
+import { LikeAccessDeniedUsecaseExceptionFilterProvider } from './filters/usecases/like/like-access-denied-usecase-exception.filter';
+import { LikeAlreadyExistsUsecaseExceptionFilterProvider } from './filters/usecases/like/like-already-exists-usecase-exception.filter';
+import { TargetNotFoundUsecaseExceptionFilterProvider } from './filters/usecases/like/target-not-found-usecase-exception.filter';
 
 @Module({
   imports: [
@@ -162,6 +173,13 @@ import { CommentModerationRequiredUsecaseExceptionFilterProvider } from './filte
     CommentStatsRoute,
 
     WebSocketStatusRoute,
+
+    // ✅ ADICIONAR - Like Controllers
+    ToggleLikeRoute,
+    GetLikesRoute,
+    GetLikeCountsRoute,
+    LikeRoute,
+    MyLikesRoute,
   ],
   providers: [
     AuthGuardProvider,
@@ -197,6 +215,12 @@ import { CommentModerationRequiredUsecaseExceptionFilterProvider } from './filte
     // Service exception filters
     ServiceExceptionFilterProvider,
     RefreshTokenNotValidServiceExceptionFilterProvider,
+
+    // ✅ ADICIONAR - Like Exception Filters
+    LikeNotFoundUsecaseExceptionFilterProvider,
+    LikeAccessDeniedUsecaseExceptionFilterProvider,
+    LikeAlreadyExistsUsecaseExceptionFilterProvider,
+    TargetNotFoundUsecaseExceptionFilterProvider,
   ],
 })
 export class WebModule {}

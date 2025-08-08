@@ -1,10 +1,10 @@
 # Estrutura do Projeto: darkstack
 
-**Data de geração:** 05/08/2025 02:58:44
+**Data de geração:** 07/08/2025 22:09:20
 
 **Estatísticas:**
 - 📁 Diretórios: 270
-- 📄 Arquivos: 415
+- 📄 Arquivos: 418
 
 ## 🌳 Estrutura de Arquivos
 
@@ -219,6 +219,7 @@ src\infra\web\middleware\article-rate-limit.middleware.ts
 src\infra\web\routes\article\create\create-article.dto.ts
 src\infra\web\routes\article\create\create-article.presenter.ts
 src\infra\web\routes\article\create\create-article.route.ts
+src\infra\web\routes\article\doc-collection.MD
 src\infra\web\routes\article\find-by-id\find-article-by-id.dto.ts
 src\infra\web\routes\article\find-by-id\find-article-by-id.presenter.ts
 src\infra\web\routes\article\find-by-id\find-article-by-id.route.ts
@@ -237,6 +238,8 @@ src\infra\web\routes\article\my-articles\my-articles.presenter.ts
 src\infra\web\routes\article\my-articles\my-articles.route.ts
 src\infra\web\routes\article\pending-moderation\pending-moderation.presenter.ts
 src\infra\web\routes\article\pending-moderation\pending-moderation.route.ts
+src\infra\web\routes\article\postman-collection.json
+src\infra\web\routes\article\postman-variaveis.json
 src\infra\web\routes\article\search\search-articles.route.ts
 src\infra\web\routes\article\stats\article-stats.route.ts
 src\infra\web\routes\article\tags\popular-tags.route.ts
@@ -837,6 +840,8 @@ tsconfig.json
 - `nest-cli.json`
 - `package-lock.json`
 - `package.json`
+- `src\infra\web\routes\article\postman-collection.json`
+- `src\infra\web\routes\article\postman-variaveis.json`
 - `test\jest-e2e.json`
 - `tsconfig.build.json`
 - `tsconfig.json`
