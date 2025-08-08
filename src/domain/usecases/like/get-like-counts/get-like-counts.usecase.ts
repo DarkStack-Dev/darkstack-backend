@@ -1,4 +1,4 @@
-// src/domain/usecases/like/get-like-counts/get-like-counts.usecase.ts
+// src/domain/usecases/like/get-like-counts/get-like-counts.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
 import { LikeGatewayRepository, LikeCounts } from '@/domain/repositories/like/like.gateway.repository';
@@ -16,7 +16,7 @@ export type GetLikeCountsOutput = {
   likesCount: number;
   dislikesCount: number;
   netLikes: number;
-  currentUserLike: 'LIKE' | 'DISLIKE' | null;
+  currentUserLike: 'LIKE' | 'DISLIKE' | null; // ✅ CORRIGIDO: removido undefined
 };
 
 @Injectable()
@@ -38,7 +38,7 @@ export class GetLikeCountsUseCase implements UseCase<GetLikeCountsInput, GetLike
       likesCount: likeCounts.likesCount,
       dislikesCount: likeCounts.dislikesCount,
       netLikes: likeCounts.netLikes,
-      currentUserLike: likeCounts.currentUserLike,
+      currentUserLike: likeCounts.currentUserLike || null, // ✅ CORRIGIDO: garantir que não seja undefined
     };
   }
 }

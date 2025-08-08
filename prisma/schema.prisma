@@ -127,6 +127,8 @@ model ArticleImage {
   order     Int      @default(0) // Para ordenar as imagens
   isMain    Boolean  @default(false) // Imagem principal do artigo
 
+  // ✅ CORRIGIDO - Contadores de comentários E likes
+  commentsCount    Int       @default(0)
   // ✅ NOVOS CAMPOS - Contadores de likes
   likesCount      Int       @default(0)
   dislikesCount   Int       @default(0)

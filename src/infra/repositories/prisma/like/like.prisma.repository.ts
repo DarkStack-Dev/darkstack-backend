@@ -322,16 +322,19 @@ export class LikePrismaRepository extends LikeGatewayRepository {
     return false;
   }
 
-  async updateTargetLikeCounts(targetId: string, targetType: LikeTarget): Promise<void> {
-    const likeCounts = await this.getLikeCounts(targetId, targetType);
+  // ✅ SUBSTITUIR O MÉTODO updateTargetLikeCounts (linha ~320)
+async updateTargetLikeCounts(targetId: string, targetType: LikeTarget): Promise<void> {
+  const likeCounts = await this.getLikeCounts(targetId, targetType);
 
+  try {
     switch (targetType) {
       case 'ARTICLE':
         await prismaClient.article.update({
           where: { id: targetId },
           data: {
-            likesCount: likeCounts.likesCount,
-            dislikesCount: likeCounts.dislikesCount,
+            likesCount: likeCounts.likesCount,        // ✅ CORRIGIDO
+            dislikesCount: likeCounts.dislikesCount,  // ✅ CORRIGIDO
+            updatedAt: new Date(),
           },
         });
         break;
@@ -342,6 +345,7 @@ export class LikePrismaRepository extends LikeGatewayRepository {
           data: {
             likesCount: likeCounts.likesCount,
             dislikesCount: likeCounts.dislikesCount,
+            updatedAt: new Date(),
           },
         });
         break;
@@ -352,11 +356,37 @@ export class LikePrismaRepository extends LikeGatewayRepository {
           data: {
             likesCount: likeCounts.likesCount,
             dislikesCount: likeCounts.dislikesCount,
+            updatedAt: new Date(),
           },
         });
         break;
+
+      case 'USER_PROFILE':
+        // ✅ NOVO: Para likes em perfil de usuário (futuro)
+        console.log(`[LikePrismaRepository] USER_PROFILE likes not implemented for targetId: ${targetId}`);
+        break;
+
+      default:
+        console.warn(`[LikePrismaRepository] Unsupported targetType for like count update: ${targetType}`);
+        break;
     }
+
+    console.log(`✅ [LikePrismaRepository] Updated ${targetType} ${targetId} like counts: ${likeCounts.likesCount}👍 ${likeCounts.dislikesCount}👎`);
+    
+  } catch (error) {
+    console.error(`❌ [LikePrismaRepository] Error updating ${targetType} ${targetId} like counts:`, error);
+    
+    // ✅ ADICIONAR: Log mais detalhado do erro
+    if (error.code === 'P2025') {
+      console.error(`❌ [LikePrismaRepository] Target ${targetType} with id ${targetId} not found`);
+    } else if (error.code === 'P2002') {
+      console.error(`❌ [LikePrismaRepository] Unique constraint violation for ${targetType} ${targetId}`);
+    }
+    
+    throw error;
   }
+}
+
 
   async exists(
     userId: string,
@@ -423,12 +453,14 @@ export class LikePrismaRepository extends LikeGatewayRepository {
     }
   }
 
+  // ✅ CORRIGIDO: Método getMostLikedTargets com targetType
   async getMostLikedTargets(
     targetType: LikeTarget,
     limit: number,
     timeRange?: { start: Date; end: Date }
   ): Promise<Array<{
     targetId: string;
+    targetType: LikeTarget; // ✅ ADICIONADO
     targetTitle: string;
     likesCount: number;
     dislikesCount: number;
@@ -464,6 +496,7 @@ export class LikePrismaRepository extends LikeGatewayRepository {
 
         return {
           targetId: result.targetId,
+          targetType, // ✅ ADICIONADO: incluir targetType no retorno
           targetTitle,
           likesCount: result._count.id,
           dislikesCount,
@@ -473,102 +506,6 @@ export class LikePrismaRepository extends LikeGatewayRepository {
     );
 
     return enrichedResults;
-  }
-
-  async getMostActiveLikers(
-    limit: number,
-    targetType?: LikeTarget,
-    timeRange?: { start: Date; end: Date }
-  ): Promise<Array<{
-    userId: string;
-    userName: string;
-    totalGiven: number;
-    likesGiven: number;
-    dislikesGiven: number;
-  }>> {
-    const where: any = {};
-
-    if (targetType) where.targetType = targetType;
-    if (timeRange) {
-      where.createdAt = {
-        gte: timeRange.start,
-        lte: timeRange.end,
-      };
-    }
-
-    const results = await prismaClient.like.groupBy({
-      by: ['userId'],
-      where,
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
-      take: limit,
-    });
-
-    // Buscar nomes dos usuários e estatísticas detalhadas
-    const enrichedResults = await Promise.all(
-      results.map(async (result) => {
-        const [user, likesGiven, dislikesGiven] = await Promise.all([
-          prismaClient.user.findUnique({
-            where: { id: result.userId },
-            select: { name: true },
-          }),
-          this.countByUser(result.userId, true),
-          this.countByUser(result.userId, false),
-        ]);
-
-        return {
-          userId: result.userId,
-          userName: user?.name || 'Unknown',
-          totalGiven: result._count.id,
-          likesGiven,
-          dislikesGiven,
-        };
-      })
-    );
-
-    return enrichedResults;
-  }
-
-  async getLikesByDateRange(
-    startDate: Date,
-    endDate: Date,
-    targetId?: string,
-    targetType?: LikeTarget
-  ): Promise<Array<{ date: string; likes: number; dislikes: number }>> {
-    const where: any = {
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
-      },
-    };
-
-    if (targetId) where.targetId = targetId;
-    if (targetType) where.targetType = targetType;
-
-    const likes = await prismaClient.like.findMany({
-      where,
-      select: { createdAt: true, isLike: true },
-    });
-
-    // Agrupar por data
-    const groupedByDate = likes.reduce((acc, like) => {
-      const date = like.createdAt.toISOString().split('T')[0];
-      if (!acc[date]) {
-        acc[date] = { likes: 0, dislikes: 0 };
-      }
-      if (like.isLike) {
-        acc[date].likes++;
-      } else {
-        acc[date].dislikes++;
-      }
-      return acc;
-    }, {} as Record<string, { likes: number; dislikes: number }>);
-
-    return Object.entries(groupedByDate).map(([date, counts]) => ({
-      date,
-      likes: counts.likes,
-      dislikes: counts.dislikes,
-    }));
   }
 
   // Métodos auxiliares privados
