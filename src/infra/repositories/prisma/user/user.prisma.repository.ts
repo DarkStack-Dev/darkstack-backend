@@ -235,9 +235,12 @@ export class UserPrismaRepository extends UserGatewayRepository {
     const models = await prismaClient.user.findMany({
       where: {
         roles: { has: role },
+        isActive: true,
       },
       include: {
         emailAuth: true,
+        githubAccount: true,
+        googleAccount: true,
       },
     });
 

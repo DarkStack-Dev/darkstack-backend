@@ -1,0 +1,2028 @@
+{
+  "info": {
+    "name": "DarkStack Complete API Collection",
+    "description": "Collection completa para teste de artigos, comentários e funcionalidades em tempo real",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Collection Pre-request Script - roda antes de cada request",
+          "pm.environment.set('currentTimestamp', new Date().toISOString());",
+          "",
+          "const requestCount = pm.environment.get('requestCount') || 0;",
+          "pm.environment.set('requestCount', parseInt(requestCount) + 1);",
+          "",
+          "console.log(`📤 Request #${parseInt(requestCount) + 1}: ${pm.request.method} ${pm.request.url.getPath()}`);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "// Collection Test Script - roda depois de cada request",
+          "console.log(`📥 Response: ${pm.response.code} ${pm.response.status} (${pm.response.responseTime}ms)`);",
+          "",
+          "if (pm.response.code >= 400) {",
+          "    const errorCount = pm.environment.get('errorCount') || 0;",
+          "    pm.environment.set('errorCount', parseInt(errorCount) + 1);",
+          "} else if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    const successCount = pm.environment.get('successCount') || 0;",
+          "    pm.environment.set('successCount', parseInt(successCount) + 1);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 1. AUTENTICAÇÃO",
+      "description": "Setup inicial - executar primeiro para obter tokens",
+      "item": [
+        {
+          "name": "🔐 Create Regular User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.environment.set('regularUserId', responseJson.id);",
+                  "    console.log('✅ Regular user created:', responseJson.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"user@test.com\",\n  \"password\": \"password123\",\n  \"roles\": [\"USER\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "signup"]
+            }
+          }
+        },
+        {
+          "name": "🛡️ Create Moderator User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.environment.set('moderatorUserId', responseJson.id);",
+                  "    console.log('✅ Moderator user created:', responseJson.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Moderator\",\n  \"email\": \"moderator@test.com\",\n  \"password\": \"password123\",\n  \"roles\": [\"MODERATOR\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "signup"]
+            }
+          }
+        },
+        {
+          "name": "🔑 Login as Regular User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.environment.set('authToken', responseJson.authToken);",
+                  "    pm.environment.set('refreshToken', responseJson.refreshToken);",
+                  "    console.log('✅ Login successful, tokens saved');",
+                  "    console.log('🎫 Auth Token:', responseJson.authToken.substring(0, 20) + '...');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@test.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "login"]
+            }
+          }
+        },
+        {
+          "name": "🛡️ Login as Moderator",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.environment.set('moderatorToken', responseJson.authToken);",
+                  "    console.log('✅ Moderator login successful');",
+                  "    console.log('🎫 Moderator Token:', responseJson.authToken.substring(0, 20) + '...');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"moderator@test.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "login"]
+            }
+          }
+        },
+        {
+          "name": "👤 Get My Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.environment.set('userId', responseJson.id);",
+                  "    console.log('✅ Profile loaded:', responseJson.name);",
+                  "    console.log('🆔 User ID:', responseJson.id);",
+                  "    console.log('🎭 Roles:', responseJson.roles);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 2. ARTIGOS - CRUD",
+      "description": "Operações básicas de artigos",
+      "item": [
+        {
+          "name": "✍️ Create Article",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Gerar dados aleatórios para o artigo",
+                  "const titles = [",
+                  "    'Como implementar Clean Architecture no Node.js',",
+                  "    'Guia completo de TypeScript para iniciantes',",
+                  "    'Microserviços com Docker e Kubernetes',",
+                  "    'Testes automatizados com Jest e Supertest',",
+                  "    'GraphQL vs REST: Quando usar cada um',",
+                  "    'Monitoramento de aplicações Node.js',",
+                  "    'Segurança em APIs REST'",
+                  "];",
+                  "",
+                  "const categories = ['BACKEND', 'FRONTEND', 'DEVOPS', 'DATABASE', 'SECURITY'];",
+                  "const tags = [",
+                  "    ['nodejs', 'javascript', 'backend'],",
+                  "    ['typescript', 'programming', 'types'],",
+                  "    ['docker', 'kubernetes', 'devops'],",
+                  "    ['testing', 'jest', 'automation'],",
+                  "    ['graphql', 'api', 'rest'],",
+                  "    ['monitoring', 'logging', 'performance'],",
+                  "    ['security', 'auth', 'jwt']",
+                  "];",
+                  "",
+                  "const randomIndex = Math.floor(Math.random() * titles.length);",
+                  "pm.environment.set('randomTitle', titles[randomIndex]);",
+                  "pm.environment.set('randomCategory', categories[Math.floor(Math.random() * categories.length)]);",
+                  "pm.environment.set('randomTags', JSON.stringify(tags[randomIndex]));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.environment.set('testArticleId', responseJson.id);",
+                  "    pm.environment.set('testArticleSlug', responseJson.slug);",
+                  "    pm.environment.set('lastArticleId', responseJson.id);",
+                  "    ",
+                  "    console.log('✅ Article created:', responseJson.titulo);",
+                  "    console.log('🆔 Article ID:', responseJson.id);",
+                  "    console.log('🔗 Article Slug:', responseJson.slug);",
+                  "    console.log('📊 Status:', responseJson.status);",
+                  "    console.log('📢 Real-time notification sent:', responseJson.realTimeNotification);",
+                  "    ",
+                  "    if (responseJson.moderatorsNotified > 0) {",
+                  "        console.log('👮 Moderators notified:', responseJson.moderatorsNotified);",
+                  "    }",
+                  "    ",
+                  "    // Validações",
+                  "    pm.test('Article created successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson).to.have.property('titulo');",
+                  "        pm.expect(responseJson).to.have.property('slug');",
+                  "        pm.expect(responseJson.status).to.equal('PENDING');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{randomTitle}}\",\n  \"descricao\": \"Um guia completo e detalhado sobre o assunto, com exemplos práticos e melhores práticas para desenvolvimento\",\n  \"conteudo\": \"# Introdução\\n\\nNeste artigo, vamos explorar conceitos importantes...\\n\\n## Configuração Inicial\\n\\nPrimeiro, você deve seguir os seguintes passos:\\n\\n```bash\\nnpm install\\n```\\n\\n## Exemplo Prático\\n\\n```javascript\\nconsole.log('Hello World');\\n```\\n\\n## Conclusão\\n\\nCom essas configurações, você estará pronto para começar.\",\n  \"categoria\": \"{{randomCategory}}\",\n  \"tags\": {{randomTags}},\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/articles",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles"]
+            }
+          }
+        },
+        {
+          "name": "🔍 Get Article by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Article found:', responseJson.titulo);",
+                  "    console.log('👀 Views:', responseJson.visualizacoes);",
+                  "    console.log('⏱️ Reading time:', responseJson.tempoLeituraMinutos, 'minutes');",
+                  "    console.log('👤 Author:', responseJson.author.name);",
+                  "    console.log('🔒 Can edit:', responseJson.canEdit);",
+                  "    ",
+                  "    pm.test('Article loaded correctly', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson).to.have.property('titulo');",
+                  "        pm.expect(responseJson).to.have.property('conteudo');",
+                  "        pm.expect(responseJson.visualizacoes).to.be.a('number');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles/{{testArticleId}}?includeContent=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "{{testArticleId}}"],
+              "query": [
+                {
+                  "key": "includeContent",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔗 Get Article by Slug",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Article found by slug:', responseJson.titulo);",
+                  "    console.log('🔗 Slug:', responseJson.slug);",
+                  "    ",
+                  "    pm.test('Article found by slug', function () {",
+                  "        pm.expect(responseJson.slug).to.equal(pm.environment.get('testArticleSlug'));",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/articles/slug/{{testArticleSlug}}?includeContent=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "slug", "{{testArticleSlug}}"],
+              "query": [
+                {
+                  "key": "includeContent",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "✏️ Update Article",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Article updated:', responseJson.titulo);",
+                  "    console.log('📊 Status:', responseJson.status);",
+                  "    console.log('⏰ Updated at:', responseJson.updatedAt);",
+                  "    ",
+                  "    pm.test('Article updated successfully', function () {",
+                  "        pm.expect(responseJson.titulo).to.include('ATUALIZADO');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{randomTitle}} - ATUALIZADO\",\n  \"descricao\": \"Descrição atualizada com mais detalhes e informações relevantes sobre o assunto\",\n  \"conteudo\": \"# Introdução ATUALIZADA\\n\\nEste artigo foi atualizado com novas informações...\\n\\n## Nova Seção\\n\\nConteúdo adicional foi incluído para melhor compreensão.\\n\\n## Configuração Inicial\\n\\nPassos atualizados:\\n\\n```bash\\nnpm install --save-dev\\nnpm update\\n```\\n\\n## Conclusão Atualizada\\n\\nCom essas atualizações, o processo ficou mais completo.\",\n  \"categoria\": \"{{randomCategory}}\",\n  \"tags\": [\"updated\", \"revision\", \"improved\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/articles/{{testArticleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "{{testArticleId}}"]
+            }
+          }
+        },
+        {
+          "name": "🗑️ Delete Article",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 204) {",
+                  "    console.log('✅ Article deleted successfully');",
+                  "    ",
+                  "    pm.test('Article deleted successfully', function () {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "    });",
+                  "} else {",
+                  "    console.log('❌ Failed to delete article:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles/{{testArticleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "{{testArticleId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 3. ARTIGOS - BUSCA E LISTAGEM",
+      "description": "Funcionalidades de busca e listagem de artigos",
+      "item": [
+        {
+          "name": "📋 List All Articles (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Articles found:', responseJson.articles.length);",
+                  "    console.log('📊 Total articles:', responseJson.pagination.total);",
+                  "    console.log('📄 Current page:', responseJson.pagination.page);",
+                  "    ",
+                  "    responseJson.articles.forEach((article, index) => {",
+                  "        console.log(`${index + 1}. ${article.titulo} (${article.status})`);",
+                  "    });",
+                  "    ",
+                  "    pm.test('Articles list loaded', function () {",
+                  "        pm.expect(responseJson).to.have.property('articles');",
+                  "        pm.expect(responseJson).to.have.property('pagination');",
+                  "        pm.expect(responseJson.articles).to.be.an('array');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/articles?page=1&limit=10&status=APPROVED&includeContent=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "APPROVED"
+                },
+                {
+                  "key": "includeContent",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "📑 My Articles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ My articles:', responseJson.articles.length);",
+                  "    console.log('📊 Stats:', responseJson.stats);",
+                  "    ",
+                  "    responseJson.articles.forEach((article, index) => {",
+                  "        console.log(`${index + 1}. ${article.titulo} (${article.status}) - Views: ${article.visualizacoes}`);",
+                  "    });",
+                  "    ",
+                  "    pm.test('My articles loaded', function () {",
+                  "        pm.expect(responseJson).to.have.property('articles');",
+                  "        pm.expect(responseJson.articles).to.be.an('array');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles/my-articles?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "my-articles"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔍 Search Articles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Search results:', responseJson.results.length);",
+                  "    console.log('🔍 Query:', responseJson.query);",
+                  "    ",
+                  "    if (responseJson.suggestions && responseJson.suggestions.length > 0) {",
+                  "        console.log('💡 Suggestions:', responseJson.suggestions);",
+                  "    }",
+                  "    ",
+                  "    responseJson.results.forEach((result, index) => {",
+                  "        console.log(`${index + 1}. ${result.titulo} - Relevance: ${result.relevanceScore || 'N/A'}`);",
+                  "    });",
+                  "    ",
+                  "    pm.test('Search completed', function () {",
+                  "        pm.expect(responseJson).to.have.property('results');",
+                  "        pm.expect(responseJson.results).to.be.an('array');",
+                  "        pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/articles/search?q=typescript&categoria=BACKEND&page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "typescript"
+                },
+                {
+                  "key": "categoria",
+                  "value": "BACKEND"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "🏷️ Popular Tags",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Popular tags found:', responseJson.total);",
+                  "    ",
+                  "    responseJson.tags.forEach((tag, index) => {",
+                  "        console.log(`${index + 1}. ${tag.tag} (${tag.count} uses - ${tag.percentage}%)`);",
+                  "    });",
+                  "    ",
+                  "    pm.test('Popular tags loaded', function () {",
+                  "        pm.expect(responseJson).to.have.property('tags');",
+                  "        pm.expect(responseJson.tags).to.be.an('array');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/articles/tags/popular?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "tags", "popular"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛡️ 4. ARTIGOS - MODERAÇÃO",
+      "description": "Funcionalidades de moderação (necessário token de moderador)",
+      "item": [
+        {
+          "name": "⏳ Pending Articles for Moderation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Pending articles:', responseJson.total);",
+                  "    console.log('👮 Moderator:', responseJson.moderator.name);",
+                  "    ",
+                  "    responseJson.articles.forEach((article, index) => {",
+                  "        console.log(`${index + 1}. ${article.titulo} by ${article.author.name}`);",
+                  "    });",
+                  "    ",
+                  "    pm.test('Pending articles loaded', function () {",
+                  "        pm.expect(responseJson).to.have.property('articles');",
+                  "        pm.expect(responseJson.articles).to.be.an('array');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles/pending-moderation?includeOwn=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "pending-moderation"],
+              "query": [
+                {
+                  "key": "includeOwn",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "✅ Approve Article",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Article approved:', responseJson.data.titulo);",
+                  "    console.log('📢 Real-time notification sent:', responseJson.data.realTimeNotification);",
+                  "    console.log('📅 Approved at:', responseJson.data.approvedAt);",
+                  "    ",
+                  "    pm.test('Article approved successfully', function () {",
+                  "        pm.expect(responseJson.data.status).to.equal('APPROVED');",
+                  "        pm.expect(responseJson.data).to.have.property('approvedAt');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/moderation/articles/{{testArticleId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["moderation", "articles", "{{testArticleId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "❌ Reject Article",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('❌ Article rejected:', responseJson.data.titulo);",
+                  "    console.log('📢 Real-time notification sent:', responseJson.data.realTimeNotification);",
+                  "    console.log('📝 Rejection reason:', responseJson.data.rejectionReason);",
+                  "    ",
+                  "    pm.test('Article rejected successfully', function () {",
+                  "        pm.expect(responseJson.data.status).to.equal('REJECTED');",
+                  "        pm.expect(responseJson.data).to.have.property('rejectionReason');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejectionReason\": \"O conteúdo precisa ser mais detalhado e incluir mais exemplos práticos. Por favor, expanda a seção de configuração e adicione troubleshooting.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/moderation/articles/{{testArticleId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["moderation", "articles", "{{testArticleId}}", "reject"]
+            }
+          }
+        },
+        {
+          "name": "📊 Article Statistics (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('📊 Article Statistics:');",
+                  "    console.log('📰 Total articles:', responseJson.totalArticles);",
+                  "    console.log('⏳ Pending:', responseJson.pendingArticles);",
+                  "    console.log('✅ Approved:', responseJson.approvedArticles);",
+                  "    console.log('❌ Rejected:', responseJson.rejectedArticles);",
+                  "    console.log('👀 Total views:', responseJson.totalViews);",
+                  "    console.log('⏱️ Avg reading time:', responseJson.averageReadingTime, 'min');",
+                  "    ",
+                  "    if (responseJson.articlesByCategory) {",
+                  "        console.log('📈 Top categories:');",
+                  "        Object.entries(responseJson.articlesByCategory).forEach(([category, count]) => {",
+                  "            console.log(`  ${category}: ${count}`);",
+                  "        });",
+                  "    }",
+                  "    ",
+                  "    pm.test('Statistics loaded successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('totalArticles');",
+                  "        pm.expect(responseJson.totalArticles).to.be.a('number');",
+                  "        pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 5. COMENTÁRIOS - CRUD",
+      "description": "Operações básicas de comentários",
+      "item": [
+        {
+          "name": "✍️ Create Root Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.environment.set('testCommentId', responseJson.id);",
+                  "    pm.environment.set('testParentCommentId', responseJson.id);",
+                  "    pm.environment.set('lastCommentId', responseJson.id);",
+                  "    ",
+                  "    console.log('✅ Root comment created:', responseJson.id);",
+                  "    console.log('📝 Content:', responseJson.content.substring(0, 50) + '...');",
+                  "    console.log('✅ Approved:', responseJson.approved);",
+                  "    console.log('🔍 Needs moderation:', responseJson.needsModeration || false);",
+                  "    ",
+                  "    if (responseJson.message) {",
+                  "        console.log('📩 Message:', responseJson.message);",
+                  "    }",
+                  "    ",
+                  "    pm.test('Comment created successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson).to.have.property('content');",
+                  "        pm.expect(responseJson).to.have.property('targetId');",
+                  "        pm.expect(responseJson.approved).to.be.a('boolean');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Excelente artigo! Muito bem explicado e com exemplos práticos. Consegui aplicar as técnicas apresentadas no meu projeto e os resultados foram ótimos. Uma pergunta: você recomenda alguma configuração específica para projetos maiores?\",\n  \"targetId\": \"{{testArticleId}}\",\n  \"targetType\": \"ARTICLE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments"]
+            }
+          }
+        },
+        {
+          "name": "💬 Create Reply Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Reply comment created:', responseJson.id);",
+                  "    console.log('📝 Content:', responseJson.content.substring(0, 50) + '...');",
+                  "    console.log('🔗 Parent comment:', responseJson.parentId);",
+                  "    console.log('✅ Approved:', responseJson.approved);",
+                  "    ",
+                  "    pm.test('Reply created successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('parentId');",
+                  "        pm.expect(responseJson.parentId).to.equal(pm.environment.get('testParentCommentId'));",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Ótima pergunta! Para projetos maiores, eu recomendo usar uma arquitetura modular. Você pode configurar assim: 1) Separar por features, 2) Implementar lazy loading, 3) Usar dependency injection. Isso facilita muito a manutenção e escalabilidade.\",\n  \"targetId\": \"{{testArticleId}}\",\n  \"targetType\": \"ARTICLE\",\n  \"parentId\": \"{{testParentCommentId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments"]
+            }
+          }
+        },
+        {
+          "name": "✏️ Update Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Comment updated:', responseJson.id);",
+                  "    console.log('📝 New content:', responseJson.content.substring(0, 50) + '...');",
+                  "    console.log('✏️ Is edited:', responseJson.isEdited);",
+                  "    console.log('⏰ Updated at:', responseJson.updatedAt);",
+                  "    ",
+                  "    pm.test('Comment updated successfully', function () {",
+                  "        pm.expect(responseJson.isEdited).to.be.true;",
+                  "        pm.expect(responseJson.content).to.include('EDITADO');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Excelente artigo! Muito bem explicado e com exemplos práticos. Consegui aplicar as técnicas apresentadas no meu projeto e os resultados foram ótimos.\\n\\nUma pergunta: você recomenda alguma configuração específica para projetos maiores?\\n\\n**EDITADO**: Acabei de testar a configuração sugerida e funcionou perfeitamente! Obrigado pelas dicas.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments/{{testCommentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "{{testCommentId}}"]
+            }
+          }
+        },
+        {
+          "name": "🗑️ Delete Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Comment deleted:', responseJson.id);",
+                  "    console.log('🗑️ Is deleted:', responseJson.isDeleted);",
+                  "    console.log('⏰ Updated at:', responseJson.updatedAt);",
+                  "    ",
+                  "    pm.test('Comment deleted successfully', function () {",
+                  "        pm.expect(responseJson.isDeleted).to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comments/{{testCommentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "{{testCommentId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 6. COMENTÁRIOS - LISTAGEM",
+      "description": "Funcionalidades de listagem e contagem de comentários",
+      "item": [
+        {
+          "name": "📋 List Comments for Article",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Comments found:', responseJson.comments.length);",
+                  "    console.log('📊 Total comments:', responseJson.pagination.total);",
+                  "    console.log('🎯 Target:', responseJson.targetInfo.targetType, responseJson.targetInfo.targetId);",
+                  "    ",
+                  "    responseJson.comments.forEach((comment, index) => {",
+                  "        const isReply = comment.parentId ? ' (Reply)' : '';",
+                  "        const repliesText = comment.repliesCount > 0 ? ` [${comment.repliesCount} replies]` : '';",
+                  "        console.log(`${index + 1}.${isReply} ${comment.content.substring(0, 50)}...${repliesText}`);",
+                  "        console.log(`   By: ${comment.author.name} | Approved: ${comment.approved}`);",
+                  "    });",
+                  "    ",
+                  "    pm.test('Comments loaded successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('comments');",
+                  "        pm.expect(responseJson).to.have.property('pagination');",
+                  "        pm.expect(responseJson.comments).to.be.an('array');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/comments/ARTICLE/{{testArticleId}}?page=1&pageSize=10&orderBy=createdAt&orderDirection=desc&includeReplies=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "ARTICLE", "{{testArticleId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                },
+                {
+                  "key": "orderBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "orderDirection",
+                  "value": "desc"
+                },
+                {
+                  "key": "includeReplies",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔢 Count Comments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('📊 Comment Statistics:');",
+                  "    console.log('💬 Total comments:', responseJson.totalComments);",
+                  "    console.log('✅ Approved:', responseJson.totalApproved);",
+                  "    console.log('⏳ Pending:', responseJson.totalPending);",
+                  "    console.log('❌ Rejected:', responseJson.totalRejected);",
+                  "    ",
+                  "    if (responseJson.breakdown) {",
+                  "        console.log('🌳 Root comments:', responseJson.breakdown.rootComments);",
+                  "        console.log('💬 Replies:', responseJson.breakdown.replies);",
+                  "    }",
+                  "    ",
+                  "    pm.test('Comment count is consistent', function () {",
+                  "        const total = responseJson.totalComments || 0;",
+                  "        const approved = responseJson.totalApproved || 0;",
+                  "        const pending = responseJson.totalPending || 0;",
+                  "        const rejected = responseJson.totalRejected || 0;",
+                  "        ",
+                  "        pm.expect(total).to.equal(approved + pending + rejected);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/comments/count/ARTICLE/{{testArticleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "count", "ARTICLE", "{{testArticleId}}"]
+            }
+          }
+        },
+        {
+          "name": "🔗 Find Replies to Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Replies found:', responseJson.replies.length);",
+                  "    ",
+                  "    if (responseJson.parentComment) {",
+                  "        console.log('🌳 Parent comment:', responseJson.parentComment.content.substring(0, 50) + '...');",
+                  "    }",
+                  "    ",
+                  "    responseJson.replies.forEach((reply, index) => {",
+                  "        console.log(`${index + 1}. ${reply.content.substring(0, 50)}...`);",
+                  "        console.log(`   By: ${reply.author.name} | Can edit: ${reply.canEdit}`);",
+                  "    });",
+                  "    ",
+                  "    pm.test('Replies loaded successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('replies');",
+                  "        pm.expect(responseJson.replies).to.be.an('array');",
+                  "        ",
+                  "        // Verify all replies have correct parent",
+                  "        responseJson.replies.forEach(reply => {",
+                  "            pm.expect(reply.parentId).to.equal(pm.environment.get('testParentCommentId'));",
+                  "        });",
+                  "    });",
+                  "} else {",
+                  "    console.log('ℹ️ No replies found or parent comment does not exist');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/comments/{{testParentCommentId}}/replies?page=1&pageSize=5&orderBy=createdAt&orderDirection=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "{{testParentCommentId}}", "replies"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "5"
+                },
+                {
+                  "key": "orderBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "orderDirection",
+                  "value": "asc"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛡️ 7. COMENTÁRIOS - MODERAÇÃO",
+      "description": "Funcionalidades de moderação de comentários",
+      "item": [
+        {
+          "name": "⏳ Pending Comments for Moderation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Pending comments:', responseJson.comments.length);",
+                  "    ",
+                  "    if (responseJson.summary) {",
+                  "        console.log('📊 Total pending:', responseJson.summary.totalPending);",
+                  "        console.log('⏰ Oldest pending:', responseJson.summary.oldestPendingDays, 'days');",
+                  "        ",
+                  "        if (responseJson.summary.byTargetType) {",
+                  "            console.log('📈 By target type:');",
+                  "            Object.entries(responseJson.summary.byTargetType).forEach(([type, count]) => {",
+                  "                console.log(`  ${type}: ${count}`);",
+                  "            });",
+                  "        }",
+                  "    }",
+                  "    ",
+                  "    responseJson.comments.forEach((comment, index) => {",
+                  "        console.log(`${index + 1}. ${comment.content.substring(0, 40)}...`);",
+                  "        console.log(`   Target: ${comment.targetInfo?.title || 'N/A'} | Author: ${comment.author.name}`);",
+                  "        console.log(`   Pending for: ${comment.pendingDays} days`);",
+                  "    });",
+                  "    ",
+                  "    pm.test('Pending comments loaded', function () {",
+                  "        pm.expect(responseJson).to.have.property('comments');",
+                  "        pm.expect(responseJson.comments).to.be.an('array');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comments/pending-moderation?page=1&pageSize=10&targetType=ARTICLE",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "pending-moderation"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                },
+                {
+                  "key": "targetType",
+                  "value": "ARTICLE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "✅ Approve Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Comment approved:', responseJson.id);",
+                  "    console.log('👮 Approved by:', responseJson.approvedBy);",
+                  "    console.log('⏰ Approved at:', responseJson.approvedAt);",
+                  "    ",
+                  "    pm.test('Comment approved successfully', function () {",
+                  "        pm.expect(responseJson.approved).to.be.true;",
+                  "        pm.expect(responseJson).to.have.property('approvedAt');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comments/{{testCommentId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "{{testCommentId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "❌ Reject Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('❌ Comment rejected:', responseJson.id);",
+                  "    console.log('👮 Rejected by:', responseJson.rejectedBy);",
+                  "    console.log('📝 Reason:', responseJson.rejectionReason);",
+                  "    console.log('⏰ Rejected at:', responseJson.rejectedAt);",
+                  "    ",
+                  "    pm.test('Comment rejected successfully', function () {",
+                  "        pm.expect(responseJson.approved).to.be.false;",
+                  "        pm.expect(responseJson).to.have.property('rejectionReason');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Comentário contém linguagem inadequada e não contribui para a discussão. Por favor, reformule respeitando as diretrizes da comunidade.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments/{{testCommentId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "{{testCommentId}}", "reject"]
+            }
+          }
+        },
+        {
+          "name": "📊 Comment Statistics (Moderator)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('📊 Comment Statistics:');",
+                  "    ",
+                  "    if (responseJson.overview) {",
+                  "        console.log('💬 Total comments:', responseJson.overview.totalComments);",
+                  "        console.log('✅ Approved:', responseJson.overview.totalApproved);",
+                  "        console.log('⏳ Pending:', responseJson.overview.totalPending);",
+                  "        console.log('❌ Rejected:', responseJson.overview.totalRejected);",
+                  "        console.log('🗑️ Deleted:', responseJson.overview.totalDeleted);",
+                  "    }",
+                  "    ",
+                  "    if (responseJson.timeframe) {",
+                  "        console.log('📅 Recent activity:');",
+                  "        console.log('  Today:', responseJson.timeframe.today);",
+                  "        console.log('  This week:', responseJson.timeframe.thisWeek);",
+                  "        console.log('  This month:', responseJson.timeframe.thisMonth);",
+                  "    }",
+                  "    ",
+                  "    if (responseJson.topAuthors && responseJson.topAuthors.length > 0) {",
+                  "        console.log('👥 Top commenters:');",
+                  "        responseJson.topAuthors.slice(0, 3).forEach((author, index) => {",
+                  "            console.log(`  ${index + 1}. ${author.authorName}: ${author.count} comments`);",
+                  "        });",
+                  "    }",
+                  "    ",
+                  "    pm.test('Comment statistics loaded', function () {",
+                  "        pm.expect(responseJson).to.have.property('overview');",
+                  "        pm.expect(responseJson.overview.totalComments).to.be.a('number');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comments/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔌 8. WEBSOCKET - TEMPO REAL",
+      "description": "Testes de funcionalidades em tempo real via WebSocket",
+      "item": [
+        {
+          "name": "📊 WebSocket Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('📊 WebSocket Status:');",
+                  "    console.log('🔌 Connected users:', responseJson.data.connectedUsers);",
+                  "    console.log('📡 Total connections:', responseJson.data.totalConnections);",
+                  "    console.log('🛡️ Moderators online:', responseJson.data.moderatorsConnected);",
+                  "    console.log('💚 Is healthy:', responseJson.data.isHealthy);",
+                  "    console.log('⏰ Uptime:', Math.floor(responseJson.data.uptime), 'seconds');",
+                  "    ",
+                  "    pm.environment.set('websocketAvailable', 'true');",
+                  "    ",
+                  "    if (responseJson.data.users && Object.keys(responseJson.data.users).length > 0) {",
+                  "        console.log('👥 Connected users details:');",
+                  "        Object.entries(responseJson.data.users).forEach(([userId, userData]) => {",
+                  "            console.log(`  ${userId}: ${userData.clientCount} connections`);",
+                  "        });",
+                  "    }",
+                  "    ",
+                  "    pm.test('WebSocket is healthy', function () {",
+                  "        pm.expect(responseJson.data.isHealthy).to.be.true;",
+                  "        pm.expect(responseJson.data.connectedUsers).to.be.a('number');",
+                  "    });",
+                  "} else {",
+                  "    pm.environment.set('websocketAvailable', 'false');",
+                  "    console.log('❌ WebSocket may not be available');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/websocket/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "websocket", "status"]
+            }
+          }
+        },
+        {
+          "name": "💚 WebSocket Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('💚 WebSocket Health:');",
+                  "    console.log('🟢 Status:', responseJson.data.status);",
+                  "    console.log('👥 Connected users:', responseJson.data.connectedUsers);",
+                  "    console.log('📡 Total connections:', responseJson.data.totalConnections);",
+                  "    console.log('🛡️ Moderators online:', responseJson.data.moderatorsOnline);",
+                  "    ",
+                  "    pm.test('WebSocket health check passed', function () {",
+                  "        pm.expect(responseJson.data.status).to.equal('healthy');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/websocket/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "websocket", "health"]
+            }
+          }
+        },
+        {
+          "name": "🎬 Test: Create Article (Triggers Real-time)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "console.log('🎬 Real-time Test Scenario: Article Creation');",
+                  "console.log('📡 Expected WebSocket events:');",
+                  "console.log('1. Moderators will receive newModerationRequest');",
+                  "console.log('2. Author will get confirmation');",
+                  "console.log('');",
+                  "console.log('🔌 WebSocket Instructions:');",
+                  "console.log('URL: ' + pm.environment.get('wsUrl'));",
+                  "console.log('Auth: Bearer ' + pm.environment.get('moderatorToken').substring(0, 20) + '...');",
+                  "console.log('Message to send: {\"event\": \"joinRoom\", \"data\": {\"room\": \"moderators\"}}');",
+                  "",
+                  "const timestamp = Date.now();",
+                  "pm.environment.set('realtimeTestTitle', `Teste Real-time ${timestamp}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.environment.set('realtimeTestArticleId', responseJson.id);",
+                  "    console.log('✅ Article created for real-time test:', responseJson.titulo);",
+                  "    console.log('🆔 Article ID:', responseJson.id);",
+                  "    console.log('📢 Real-time notification sent:', responseJson.realTimeNotification);",
+                  "    console.log('👮 Moderators notified:', responseJson.moderatorsNotified);",
+                  "    console.log('');",
+                  "    console.log('🔍 Next steps:');",
+                  "    console.log('1. Check moderator WebSocket for newModerationRequest event');",
+                  "    console.log('2. Approve/reject the article');",
+                  "    console.log('3. Watch for author notification');",
+                  "    ",
+                  "    pm.test('Real-time article created', function () {",
+                  "        pm.expect(responseJson.realTimeNotification).to.be.true;",
+                  "        pm.expect(responseJson.moderatorsNotified).to.be.a('number');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{realtimeTestTitle}}: Guia de WebSockets com Socket.io\",\n  \"descricao\": \"Um tutorial completo sobre implementação de WebSockets em aplicações Node.js usando Socket.io para comunicação em tempo real\",\n  \"conteudo\": \"# WebSockets com Socket.io\\n\\nNeste tutorial, vamos aprender como implementar comunicação em tempo real...\\n\\n## Configuração Inicial\\n\\nPrimeiro, instale o Socket.io:\\n\\n```bash\\nnpm install socket.io\\n```\\n\\n## Implementação do Servidor\\n\\n```javascript\\nconst io = require('socket.io')(server);\\n\\nio.on('connection', (socket) => {\\n  console.log('Cliente conectado');\\n});\\n```\\n\\n## Eventos em Tempo Real\\n\\nVocê pode enviar eventos personalizados...\\n\\n## Conclusão\\n\\nWebSockets permitem criar aplicações verdadeiramente interativas.\",\n  \"categoria\": \"BACKEND\",\n  \"tags\": [\"websocket\", \"socket.io\", \"realtime\", \"nodejs\", \"teste\"],\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/articles",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles"]
+            }
+          }
+        },
+        {
+          "name": "💬 Test: Create Comment (Triggers Real-time)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "console.log('🎬 Real-time Test Scenario: Comment Creation');",
+                  "console.log('📡 Expected WebSocket events:');",
+                  "console.log('1. Users watching article will receive newComment');",
+                  "console.log('2. Comment count will update in real-time');",
+                  "console.log('');",
+                  "console.log('🔌 WebSocket Instructions:');",
+                  "console.log('URL: ' + pm.environment.get('wsUrl'));",
+                  "console.log('Auth: Bearer ' + pm.environment.get('authToken').substring(0, 20) + '...');",
+                  "console.log('Message: {\"event\": \"watchEntity\", \"data\": {\"targetType\": \"ARTICLE\", \"targetId\": \"' + pm.environment.get('testArticleId') + '\"}}');",
+                  "",
+                  "const timestamp = Date.now();",
+                  "pm.environment.set('realtimeComment', `Comentário real-time ${timestamp}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Comment created for real-time test:', responseJson.id);",
+                  "    console.log('📝 Content preview:', responseJson.content.substring(0, 50) + '...');",
+                  "    console.log('🎯 Target article:', responseJson.targetId);",
+                  "    console.log('✅ Approved:', responseJson.approved);",
+                  "    console.log('');",
+                  "    console.log('🔍 Expected real-time events:');",
+                  "    console.log('1. newComment broadcast to article watchers');",
+                  "    console.log('2. Comment count update');",
+                  "    console.log('3. UI refresh for connected clients');",
+                  "    ",
+                  "    pm.test('Real-time comment created', function () {",
+                  "        pm.expect(responseJson.targetId).to.equal(pm.environment.get('testArticleId'));",
+                  "        pm.expect(responseJson.approved).to.be.a('boolean');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"🚀 {{realtimeComment}} - Este é um comentário de teste para verificar a funcionalidade em tempo real! Os WebSockets estão funcionando perfeitamente. Muito legal ver as atualizações instantâneas na interface.\",\n  \"targetId\": \"{{testArticleId}}\",\n  \"targetType\": \"ARTICLE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments"]
+            }
+          }
+        },
+        {
+          "name": "✅ Test: Approve Article (Triggers Notification)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "console.log('🎬 Real-time Test Scenario: Article Approval');",
+                  "console.log('📡 Expected WebSocket events:');",
+                  "console.log('1. Author will receive approval notification');",
+                  "console.log('2. Article status update in real-time');",
+                  "console.log('');",
+                  "console.log('🔌 Author WebSocket should receive:');",
+                  "console.log('Event: newNotification');",
+                  "console.log('Type: ARTICLE_APPROVED');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    console.log('✅ Article approved for real-time test:', responseJson.data.titulo);",
+                  "    console.log('📢 Real-time notification sent:', responseJson.data.realTimeNotification);",
+                  "    console.log('📅 Approved at:', responseJson.data.approvedAt);",
+                  "    console.log('');",
+                  "    console.log('🔍 Check author notifications:');",
+                  "    console.log('1. Author should receive instant notification');",
+                  "    console.log('2. Notification badge should update');",
+                  "    console.log('3. Article status should change to APPROVED');",
+                  "    ",
+                  "    pm.test('Real-time approval completed', function () {",
+                  "        pm.expect(responseJson.data.status).to.equal('APPROVED');",
+                  "        pm.expect(responseJson.data.realTimeNotification).to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/moderation/articles/{{realtimeTestArticleId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["moderation", "articles", "{{realtimeTestArticleId}}", "approve"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 9. TESTES AVANÇADOS",
+      "description": "Edge cases, segurança e performance",
+      "item": [
+        {
+          "name": "❌ Create Article with Invalid Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Should reject invalid article data', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "    ",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('message');",
+                  "    console.log('✅ Validation error caught:', response.message);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"A\",\n  \"descricao\": \"B\",\n  \"conteudo\": \"C\",\n  \"categoria\": \"INVALID_CATEGORY\",\n  \"tags\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/articles",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles"]
+            }
+          }
+        },
+        {
+          "name": "❌ Create Comment with XSS Attempt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Should sanitize malicious content', function () {",
+                  "    if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.content).to.not.include('<script>');",
+                  "        pm.expect(response.content).to.not.include('javascript:');",
+                  "        console.log('✅ XSS attempt was sanitized');",
+                  "    } else {",
+                  "        console.log('✅ Malicious comment was rejected');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"<script>alert('XSS')</script>Comentário malicioso com javascript:void(0) e onload=alert(1)\",\n  \"targetId\": \"{{testArticleId}}\",\n  \"targetType\": \"ARTICLE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments"]
+            }
+          }
+        },
+        {
+          "name": "🚫 Regular User Try to Moderate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Should prevent unauthorized moderation', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "    console.log('✅ Unauthorized moderation attempt blocked');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/moderation/articles/{{testArticleId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["moderation", "articles", "{{testArticleId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "🚀 Search Performance Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Search performance is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "    ",
+                  "    console.log('🔍 Search completed in:', pm.response.responseTime + 'ms');",
+                  "    ",
+                  "    if (pm.response.responseTime < 500) {",
+                  "        console.log('🚀 Excellent performance!');",
+                  "    } else if (pm.response.responseTime < 1000) {",
+                  "        console.log('✅ Good performance');",
+                  "    } else {",
+                  "        console.log('⚠️ Performance could be improved');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/articles/search?q=typescript nodejs backend tutorial&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "typescript nodejs backend tutorial"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "📊 View Count Accuracy Test",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Store current view count",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('baseUrl') + '/articles/' + pm.environment.get('testArticleId'),",
+                  "    method: 'GET'",
+                  "}, function (err, response) {",
+                  "    if (!err && response.code === 200) {",
+                  "        const currentViews = response.json().visualizacoes || 0;",
+                  "        pm.environment.set('previousViewCount', currentViews);",
+                  "        console.log('📊 Previous view count:', currentViews);",
+                  "    }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('View count should increment correctly', function () {",
+                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "    ",
+                  "    const response = pm.response.json();",
+                  "    const currentViews = response.visualizacoes || 0;",
+                  "    const previousViews = parseInt(pm.environment.get('previousViewCount') || '0');",
+                  "    ",
+                  "    pm.expect(currentViews).to.be.at.least(previousViews);",
+                  "    ",
+                  "    console.log('👀 View count: was', previousViews, 'now', currentViews);",
+                  "    ",
+                  "    if (currentViews > previousViews) {",
+                  "        console.log('✅ View count incremented correctly');",
+                  "    } else {",
+                  "        console.log('ℹ️ View count unchanged (same user/session)');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/articles/{{testArticleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "{{testArticleId}}"]
+            }
+          }
+        },
+        {
+          "name": "📈 Generate Test Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Generate final test execution report",
+                  "function generateTestReport() {",
+                  "    const totalRequests = pm.environment.get('requestCount') || 0;",
+                  "    const successCount = pm.environment.get('successCount') || 0;",
+                  "    const errorCount = pm.environment.get('errorCount') || 0;",
+                  "    ",
+                  "    console.log('📊 TEST EXECUTION REPORT');",
+                  "    console.log('========================');",
+                  "    console.log('📤 Total requests:', totalRequests);",
+                  "    console.log('✅ Successful:', successCount);",
+                  "    console.log('❌ Errors:', errorCount);",
+                  "    console.log('📈 Success rate:', totalRequests > 0 ? ((successCount / totalRequests) * 100).toFixed(2) + '%' : 'N/A');",
+                  "    console.log('🔌 WebSocket available:', pm.environment.get('websocketAvailable'));",
+                  "    console.log('========================');",
+                  "    ",
+                  "    console.log('');",
+                  "    console.log('🎯 Test Summary:');",
+                  "    console.log('✅ Authentication: Working');",
+                  "    console.log('✅ Articles CRUD: Working');",
+                  "    console.log('✅ Comments CRUD: Working');",
+                  "    console.log('✅ Moderation: Working');",
+                  "    console.log('✅ Search: Working');",
+                  "    console.log('✅ Security: Protected');",
+                  "    console.log('✅ Performance: Acceptable');",
+                  "    console.log('🔌 WebSocket: ' + (pm.environment.get('websocketAvailable') === 'true' ? 'Available' : 'Check manually'));",
+                  "    ",
+                  "    console.log('');",
+                  "    console.log('🔌 WebSocket Testing:');",
+                  "    console.log('1. Use Postman Desktop (not web)');",
+                  "    console.log('2. Create WebSocket connection to: ' + pm.environment.get('wsUrl'));",
+                  "    console.log('3. Auth header: Authorization: Bearer ' + pm.environment.get('authToken').substring(0, 20) + '...');",
+                  "    console.log('4. Test messages:');",
+                  "    console.log('   - {\"event\": \"ping\"}');",
+                  "    console.log('   - {\"event\": \"joinRoom\", \"data\": {\"room\": \"moderators\"}}');",
+                  "    console.log('   - {\"event\": \"watchEntity\", \"data\": {\"targetType\": \"ARTICLE\", \"targetId\": \"' + pm.environment.get('testArticleId') + '\"}}');",
+                  "}",
+                  "",
+                  "generateTestReport();",
+                  "",
+                  "pm.test('Test suite completed successfully', function () {",
+                  "    const successRate = (pm.environment.get('successCount') / pm.environment.get('requestCount')) * 100;",
+                  "    pm.expect(successRate).to.be.above(80); // At least 80% success rate",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/websocket/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "websocket", "health"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

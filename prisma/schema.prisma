@@ -69,6 +69,8 @@ model Article {
   categoria   ArticleCategory
   tags        String[]       // Array de tags
   status      ArticleStatus  @default(PENDING)
+  // ✅ NOVOS CAMPOS - Contadores de comentários
+  commentsCount    Int       @default(0)
   
   // Métricas do artigo
   visualizacoes         Int      @default(0)
@@ -92,6 +94,9 @@ model Article {
   
   // Imagens do artigo
   images       ArticleImage[]
+
+  // 🔗 Relacionamento com comentários
+  comments         Comment[] @relation("ArticleComments")
   
   @@map("articles")
   @@index([status])
@@ -163,6 +168,10 @@ model User {
   receivedNotifications  Notification[] @relation()
   createdNotifications   Notification[] @relation("NotificationCreator")
 
+  // 🔗 Relacionamentos com comentários
+  comments         Comment[] @relation("CommentAuthor")
+  moderatedComments Comment[] @relation("CommentModerator")
+
   @@map("users")
 }
 
@@ -188,6 +197,12 @@ model Project {
   // Participantes do projeto
   participants ProjectParticipant[]
   images       ProjectImage[]
+
+  // ✅ NOVOS CAMPOS - Contadores de comentários
+  commentsCount    Int       @default(0)
+  
+  // 🔗 Relacionamento com comentários
+  comments         Comment[] @relation("ProjectComments")
 
   @@map("projects")
 }
@@ -359,4 +374,53 @@ model Notification {
   @@index([type])
   @@index([isRead])
   @@index([createdAt])
+}
+
+// 📝 MODELO PRINCIPAL DE COMENTÁRIOS
+model Comment {
+  id               String         @id @default(uuid())
+  content          String         @db.Text
+  isEdited         Boolean        @default(false)
+  isDeleted        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  // 🔗 Relacionamentos base
+  authorId         String
+  author           User           @relation("CommentAuthor", fields: [authorId], references: [id])
+  
+  // 🔁 Sistema de threads (comentários encadeados)
+  parentId         String?
+  parent           Comment?       @relation("CommentThread", fields: [parentId], references: [id])
+  replies          Comment[]      @relation("CommentThread")
+  repliesCount     Int            @default(0) // Contador de respostas diretas
+  
+  // 📎 Entidade relacionada (polimórfico)
+  targetId         String         // ID do item (article, project, etc.)
+  targetType       CommentTarget  // Tipo do item
+  
+  // ✅ Sistema de moderação
+  approved         Boolean        @default(true)
+  approvedById     String?
+  approvedBy       User?          @relation("CommentModerator", fields: [approvedById], references: [id])
+  approvedAt       DateTime?
+  rejectionReason  String?        @db.Text
+  
+  article  Article? @relation("ArticleComments", fields: [targetId], references: [id], map: "fk_comment_article")
+  project  Project? @relation("ProjectComments", fields: [targetId], references: [id], map: "fk_comment_project")
+
+  @@map("comments")
+  @@index([targetType, targetId]) // Index composto para buscar por entidade
+  @@index([authorId])             // Index para buscar por autor
+  @@index([parentId])             // Index para threads
+  @@index([createdAt])            // Index para ordenação temporal
+  @@index([approved])             // Index para moderação
+}
+
+// 🎯 Enum para tipos de comentários
+enum CommentTarget {
+  ARTICLE
+  PROJECT
+  ISSUE
+  QA
 }

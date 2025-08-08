@@ -8,7 +8,13 @@ async function bootstrap() {
 
   // Configurar CORS se necessário
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+      'http://localhost:3000',    // Frontend principal
+      'http://127.0.0.1:5500',   // Live Server
+      'http://localhost:5500',   // Live Server alternativo
+      'http://127.0.0.1:3000', 
+      process.env.FRONTEND_URL  // Variação do frontend
+    ],
     credentials: true,
   });
 

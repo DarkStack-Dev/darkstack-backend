@@ -1,4 +1,4 @@
-// src/domain/usecases/article/create/create-article.usecase.ts - MODIFICADO PARA INCLUIR NOTIFICAÇÕES
+// src/domain/usecases/article/create/create-article.usecase.ts - CORRIGIDO
 import { Injectable } from '@nestjs/common';
 import { UseCase } from '../../usecase';
 import { ArticleGatewayRepository } from '@/domain/repositories/article/article.gateway.repository';
@@ -20,13 +20,16 @@ export type CreateArticleInput = {
   userId: string;
 };
 
+// ✅ CORRIGIDO: Adicionar propriedades que estavam faltando
 export type CreateArticleOutput = {
   id: string;
   titulo: string;
   slug: string;
   status: string;
   createdAt: Date;
-  notificationsSent: number; // Quantas notificações foram enviadas
+  moderatorsNotified: number; // ✅ ADICIONAR
+  realTimeNotificationSent: boolean; // ✅ ADICIONAR
+  message?: string; // ✅ ADICIONAR para compatibilidade
 };
 
 @Injectable()
@@ -34,7 +37,7 @@ export class CreateArticleUseCase implements UseCase<CreateArticleInput, CreateA
   constructor(
     private readonly articleRepository: ArticleGatewayRepository,
     private readonly userRepository: UserGatewayRepository,
-    private readonly notifyModeratorsUseCase: NotifyModeratorsUseCase, // ✅ NOVA DEPENDÊNCIA
+    private readonly notifyModeratorsUseCase: NotifyModeratorsUseCase,
   ) {}
 
   async execute({ titulo, descricao, conteudo, categoria, tags, images, userId }: CreateArticleInput): Promise<CreateArticleOutput> {
@@ -96,8 +99,10 @@ export class CreateArticleUseCase implements UseCase<CreateArticleInput, CreateA
     // Persistir artigo
     await this.articleRepository.create(finalArticle);
 
-    // ✅ NOVO: Notificar moderadores sobre novo artigo pendente
-    let notificationsSent = 0;
+    // ✅ NOTIFICAR MODERADORES SOBRE NOVO ARTIGO PENDENTE
+    let moderatorsNotified = 0;
+    let realTimeNotificationSent = false;
+    
     try {
       const notificationResult = await this.notifyModeratorsUseCase.execute({
         type: NotificationType.ARTICLE_PENDING,
@@ -106,20 +111,24 @@ export class CreateArticleUseCase implements UseCase<CreateArticleInput, CreateA
         itemName: finalArticle.getTitulo(),
       });
       
-      notificationsSent = notificationResult.notifiedCount;
-      console.log(`✅ [CreateArticleUseCase] Notified ${notificationsSent} moderators about new article ${finalArticle.getId()}`);
+      moderatorsNotified = notificationResult.notifiedCount;
+      realTimeNotificationSent = notificationResult.realTimeSent > 0; // ✅ CORRIGIDO: converter para boolean
+      
+      console.log(`✅ [CreateArticleUseCase] Notified ${moderatorsNotified} moderators about new article ${finalArticle.getId()}`);
     } catch (error) {
-      // Log error but don't fail the article creation
       console.error(`❌ [CreateArticleUseCase] Failed to notify moderators about article ${finalArticle.getId()}:`, error);
     }
 
+    // ✅ CORRIGIDO: Incluir todas as propriedades do output
     return {
       id: finalArticle.getId(),
       titulo: finalArticle.getTitulo(),
       slug: finalArticle.getSlug(),
       status: finalArticle.getStatus(),
       createdAt: finalArticle.getCreatedAt(),
-      notificationsSent, // ✅ NOVO: Informar quantas notificações foram enviadas
+      moderatorsNotified, // ✅ INCLUIR
+      realTimeNotificationSent, // ✅ INCLUIR
+      message: `Artigo criado com sucesso! ${moderatorsNotified} moderadores foram notificados.`, // ✅ OPCIONAL
     };
   }
 

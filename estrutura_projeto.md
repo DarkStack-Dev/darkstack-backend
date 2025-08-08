@@ -1,10 +1,10 @@
 # Estrutura do Projeto: darkstack
 
-**Data de geração:** 02/08/2025 11:34:02
+**Data de geração:** 05/08/2025 02:58:44
 
 **Estatísticas:**
-- 📁 Diretórios: 237
-- 📄 Arquivos: 350
+- 📁 Diretórios: 270
+- 📄 Arquivos: 415
 
 ## 🌳 Estrutura de Arquivos
 
@@ -43,17 +43,20 @@ src\app.controller.ts
 src\app.module.ts
 src\app.service.ts
 src\domain\entities\article\article.entity.ts
+src\domain\entities\comment\comment.entity.ts
 src\domain\entities\github-account\github-account.entity.ts
 src\domain\entities\google-account\google-account.entity.ts
 src\domain\entities\notification\notification.entity.ts
 src\domain\entities\projects\projects.entity.ts
 src\domain\entities\user\user.entitty.ts
+src\domain\factories\comment\comment.validator.factory.ts
 src\domain\factories\github-account\github-account.validator.factory.ts
 src\domain\factories\notification\notification.validator.factory.ts
 src\domain\factories\projects\projects.validator.factory.ts
 src\domain\factories\user\user-password.validator.factory.ts
 src\domain\factories\user\user.validator.factory.ts
 src\domain\repositories\article\article.gateway.repository.ts
+src\domain\repositories\comment\comment.gateway.repository.ts
 src\domain\repositories\github-account\github-account.gateway.repository.ts
 src\domain\repositories\google-account\google-account.gateway.repository.ts
 src\domain\repositories\notification\notification.gateway.repository.ts
@@ -80,8 +83,17 @@ src\domain\usecases\article\reject\reject-article.usecase.ts
 src\domain\usecases\article\search\search-articles.usecase.ts
 src\domain\usecases\article\stats\article-stats.usecase.ts
 src\domain\usecases\article\usePostman.md
+src\domain\usecases\comment\create\create-comment.usecase.ts
+src\domain\usecases\comment\delete\delete-comment.usecase.ts
+src\domain\usecases\comment\docs_v1.md
+src\domain\usecases\comment\list\list-comments.usecase.ts
+src\domain\usecases\comment\update\update-comment.usecase.ts
 src\domain\usecases\exceptions\article\article-not-found.usecase.exception.ts
 src\domain\usecases\exceptions\auth\unauthorized.usecase.exception.ts
+src\domain\usecases\exceptions\comment\comment-access-denied.usecase.exception.ts
+src\domain\usecases\exceptions\comment\comment-limit-reached.usecase.exception.ts
+src\domain\usecases\exceptions\comment\comment-moderation-required.usecase.exception.ts
+src\domain\usecases\exceptions\comment\comment-not-found.usecase.exception.ts
 src\domain\usecases\exceptions\email\email-already-exists.usecase.exception.ts
 src\domain\usecases\exceptions\input\invalid-input.usecase.exception.ts
 src\domain\usecases\exceptions\notification\notification-not-found.usecase.exception.ts
@@ -123,6 +135,7 @@ src\domain\usecases\user\signin\signin-user.usecase.ts
 src\domain\usecases\user\update-profile\update-user-profile.usecase.ts
 src\domain\validators\article\article.validator.factory.ts
 src\domain\validators\article\article.zod.validator.ts
+src\domain\validators\comment\comment.zod.validator.ts
 src\domain\validators\github-account\github-account.zod.validator.ts
 src\domain\validators\notification\notification.zod.validator.ts
 src\domain\validators\projects\projects.zod.validator.ts
@@ -134,6 +147,10 @@ src\infra\repositories\prisma\article\article.prisma.repository.ts
 src\infra\repositories\prisma\article\model\mappers\article-entity-to-prisma-model.mapper.ts
 src\infra\repositories\prisma\article\model\mappers\article-prisma-model-to-entity.mapper.ts
 src\infra\repositories\prisma\client.prisma.ts
+src\infra\repositories\prisma\comment\comment.prisma.repository.provider.ts
+src\infra\repositories\prisma\comment\comment.prisma.repository.ts
+src\infra\repositories\prisma\comment\model\mappers\comment-entity-to-prisma-model.mapper.ts
+src\infra\repositories\prisma\comment\model\mappers\comment-prisma-model-to-entity.mapper.ts
 src\infra\repositories\prisma\github-account\github-account.prisma.repository.provider.ts
 src\infra\repositories\prisma\github-account\github-account.prisma.repository.ts
 src\infra\repositories\prisma\github-account\model\github-account.prisma.model.ts
@@ -187,6 +204,10 @@ src\infra\web\filters\multer-exception.filter.ts
 src\infra\web\filters\usecases\article\article-access-denied-usecase-exception.filter.ts
 src\infra\web\filters\usecases\article\article-limit-reached-usecase-exception.filter.ts
 src\infra\web\filters\usecases\article\article-not-found-usecase-exception.filter.ts
+src\infra\web\filters\usecases\comment\comment-access-denied-usecase-exception.filter.ts
+src\infra\web\filters\usecases\comment\comment-limit-reached-usecase-exception.filter.ts
+src\infra\web\filters\usecases\comment\comment-moderation-required-usecase-exception.filter.ts
+src\infra\web\filters\usecases\comment\comment-not-found-usecase-exception.filter.ts
 src\infra\web\filters\usecases\credentials-not-valid-usecase-exception.filter.ts
 src\infra\web\filters\usecases\email-already-exists-usecase-exception.filter.ts
 src\infra\web\filters\usecases\projects\project-access-denied-usecase-exception.filter.ts
@@ -220,6 +241,36 @@ src\infra\web\routes\article\search\search-articles.route.ts
 src\infra\web\routes\article\stats\article-stats.route.ts
 src\infra\web\routes\article\tags\popular-tags.route.ts
 src\infra\web\routes\auth\github-auth\github-auth.route.ts
+src\infra\web\routes\comment\count\count-comments.dto.ts
+src\infra\web\routes\comment\count\count-comments.presenter.ts
+src\infra\web\routes\comment\count\count-comments.route.ts
+src\infra\web\routes\comment\create\create-comment.dto.ts
+src\infra\web\routes\comment\create\create-comment.presenter.ts
+src\infra\web\routes\comment\create\create-comment.route.ts
+src\infra\web\routes\comment\delete\delete-comment.dto.ts
+src\infra\web\routes\comment\delete\delete-comment.presenter.ts
+src\infra\web\routes\comment\delete\delete-comment.route.ts
+src\infra\web\routes\comment\find-replies\find-replies.dto.ts
+src\infra\web\routes\comment\find-replies\find-replies.presenter.ts
+src\infra\web\routes\comment\find-replies\find-replies.route.ts
+src\infra\web\routes\comment\list\list-comments.dto.ts
+src\infra\web\routes\comment\list\list-comments.presenter.ts
+src\infra\web\routes\comment\list\list-comments.route.ts
+src\infra\web\routes\comment\moderate\approve-comment.dto.ts
+src\infra\web\routes\comment\moderate\approve-comment.presenter.ts
+src\infra\web\routes\comment\moderate\approve-comment.route.ts
+src\infra\web\routes\comment\moderate\find-pending-moderation.dto.ts
+src\infra\web\routes\comment\moderate\find-pending-moderation.presenter.ts
+src\infra\web\routes\comment\moderate\pending-moderation.route.ts
+src\infra\web\routes\comment\moderate\reject-comment.dto.ts
+src\infra\web\routes\comment\moderate\reject-comment.presenter.ts
+src\infra\web\routes\comment\moderate\reject-comment.route.ts
+src\infra\web\routes\comment\stats\comment-stats.dto.ts
+src\infra\web\routes\comment\stats\comment-stats.presenter.ts
+src\infra\web\routes\comment\stats\comment-stats.route.ts
+src\infra\web\routes\comment\update\update-comment.dto.ts
+src\infra\web\routes\comment\update\update-comment.presenter.ts
+src\infra\web\routes\comment\update\update-comment.route.ts
 src\infra\web\routes\github-auth\callback\github-callback.dto.ts
 src\infra\web\routes\github-auth\callback\github-callback.presenter.ts
 src\infra\web\routes\github-auth\callback\github-callback.route.ts
@@ -320,7 +371,21 @@ src\usecases\article\popular-tags\popular-tags.usecase.ts
 src\usecases\article\reject\reject-article.usecase.ts
 src\usecases\article\search\search-articles.usecase.ts
 src\usecases\article\stats\article-stats.usecase.ts
+src\usecases\comment\count\count-comments.usecase.ts
+src\usecases\comment\create\create-comment.usecase.ts
+src\usecases\comment\delete\delete-comment.usecase.ts
+src\usecases\comment\find-replies\find-replies.usecase.ts
+src\usecases\comment\list\list-comments.usecase.ts
+src\usecases\comment\moderate\approve-comment.usecase.ts
+src\usecases\comment\moderate\find-pending-moderation.usecase.ts
+src\usecases\comment\moderate\reject-comment.usecase.ts
+src\usecases\comment\stats\comment-stats.usecase.ts
+src\usecases\comment\update\update-comment.usecase.ts
 src\usecases\exceptions\article\article-not-found.usecase.exception.ts
+src\usecases\exceptions\comment\comment-access-denied.usecase.exception.ts
+src\usecases\exceptions\comment\comment-limit-reached.usecase.exception.ts
+src\usecases\exceptions\comment\comment-moderation-required.usecase.exception.ts
+src\usecases\exceptions\comment\comment-not-found.usecase.exception.ts
 src\usecases\exceptions\credentials-not-valid.usecase.exception.ts
 src\usecases\exceptions\email-already-exists.usecase.exception.ts
 src\usecases\exceptions\input\invalid-input.usecase.exception.ts
@@ -378,17 +443,20 @@ tsconfig.json
 - `src\app.module.ts`
 - `src\app.service.ts`
 - `src\domain\entities\article\article.entity.ts`
+- `src\domain\entities\comment\comment.entity.ts`
 - `src\domain\entities\github-account\github-account.entity.ts`
 - `src\domain\entities\google-account\google-account.entity.ts`
 - `src\domain\entities\notification\notification.entity.ts`
 - `src\domain\entities\projects\projects.entity.ts`
 - `src\domain\entities\user\user.entitty.ts`
+- `src\domain\factories\comment\comment.validator.factory.ts`
 - `src\domain\factories\github-account\github-account.validator.factory.ts`
 - `src\domain\factories\notification\notification.validator.factory.ts`
 - `src\domain\factories\projects\projects.validator.factory.ts`
 - `src\domain\factories\user\user-password.validator.factory.ts`
 - `src\domain\factories\user\user.validator.factory.ts`
 - `src\domain\repositories\article\article.gateway.repository.ts`
+- `src\domain\repositories\comment\comment.gateway.repository.ts`
 - `src\domain\repositories\github-account\github-account.gateway.repository.ts`
 - `src\domain\repositories\google-account\google-account.gateway.repository.ts`
 - `src\domain\repositories\notification\notification.gateway.repository.ts`
@@ -408,8 +476,16 @@ tsconfig.json
 - `src\domain\usecases\article\reject\reject-article.usecase.ts`
 - `src\domain\usecases\article\search\search-articles.usecase.ts`
 - `src\domain\usecases\article\stats\article-stats.usecase.ts`
+- `src\domain\usecases\comment\create\create-comment.usecase.ts`
+- `src\domain\usecases\comment\delete\delete-comment.usecase.ts`
+- `src\domain\usecases\comment\list\list-comments.usecase.ts`
+- `src\domain\usecases\comment\update\update-comment.usecase.ts`
 - `src\domain\usecases\exceptions\article\article-not-found.usecase.exception.ts`
 - `src\domain\usecases\exceptions\auth\unauthorized.usecase.exception.ts`
+- `src\domain\usecases\exceptions\comment\comment-access-denied.usecase.exception.ts`
+- `src\domain\usecases\exceptions\comment\comment-limit-reached.usecase.exception.ts`
+- `src\domain\usecases\exceptions\comment\comment-moderation-required.usecase.exception.ts`
+- `src\domain\usecases\exceptions\comment\comment-not-found.usecase.exception.ts`
 - `src\domain\usecases\exceptions\email\email-already-exists.usecase.exception.ts`
 - `src\domain\usecases\exceptions\input\invalid-input.usecase.exception.ts`
 - `src\domain\usecases\exceptions\notification\notification-not-found.usecase.exception.ts`
@@ -449,6 +525,7 @@ tsconfig.json
 - `src\domain\usecases\user\update-profile\update-user-profile.usecase.ts`
 - `src\domain\validators\article\article.validator.factory.ts`
 - `src\domain\validators\article\article.zod.validator.ts`
+- `src\domain\validators\comment\comment.zod.validator.ts`
 - `src\domain\validators\github-account\github-account.zod.validator.ts`
 - `src\domain\validators\notification\notification.zod.validator.ts`
 - `src\domain\validators\projects\projects.zod.validator.ts`
@@ -460,6 +537,10 @@ tsconfig.json
 - `src\infra\repositories\prisma\article\model\mappers\article-entity-to-prisma-model.mapper.ts`
 - `src\infra\repositories\prisma\article\model\mappers\article-prisma-model-to-entity.mapper.ts`
 - `src\infra\repositories\prisma\client.prisma.ts`
+- `src\infra\repositories\prisma\comment\comment.prisma.repository.provider.ts`
+- `src\infra\repositories\prisma\comment\comment.prisma.repository.ts`
+- `src\infra\repositories\prisma\comment\model\mappers\comment-entity-to-prisma-model.mapper.ts`
+- `src\infra\repositories\prisma\comment\model\mappers\comment-prisma-model-to-entity.mapper.ts`
 - `src\infra\repositories\prisma\github-account\github-account.prisma.repository.provider.ts`
 - `src\infra\repositories\prisma\github-account\github-account.prisma.repository.ts`
 - `src\infra\repositories\prisma\github-account\model\github-account.prisma.model.ts`
@@ -513,6 +594,10 @@ tsconfig.json
 - `src\infra\web\filters\usecases\article\article-access-denied-usecase-exception.filter.ts`
 - `src\infra\web\filters\usecases\article\article-limit-reached-usecase-exception.filter.ts`
 - `src\infra\web\filters\usecases\article\article-not-found-usecase-exception.filter.ts`
+- `src\infra\web\filters\usecases\comment\comment-access-denied-usecase-exception.filter.ts`
+- `src\infra\web\filters\usecases\comment\comment-limit-reached-usecase-exception.filter.ts`
+- `src\infra\web\filters\usecases\comment\comment-moderation-required-usecase-exception.filter.ts`
+- `src\infra\web\filters\usecases\comment\comment-not-found-usecase-exception.filter.ts`
 - `src\infra\web\filters\usecases\credentials-not-valid-usecase-exception.filter.ts`
 - `src\infra\web\filters\usecases\email-already-exists-usecase-exception.filter.ts`
 - `src\infra\web\filters\usecases\projects\project-access-denied-usecase-exception.filter.ts`
@@ -546,6 +631,36 @@ tsconfig.json
 - `src\infra\web\routes\article\stats\article-stats.route.ts`
 - `src\infra\web\routes\article\tags\popular-tags.route.ts`
 - `src\infra\web\routes\auth\github-auth\github-auth.route.ts`
+- `src\infra\web\routes\comment\count\count-comments.dto.ts`
+- `src\infra\web\routes\comment\count\count-comments.presenter.ts`
+- `src\infra\web\routes\comment\count\count-comments.route.ts`
+- `src\infra\web\routes\comment\create\create-comment.dto.ts`
+- `src\infra\web\routes\comment\create\create-comment.presenter.ts`
+- `src\infra\web\routes\comment\create\create-comment.route.ts`
+- `src\infra\web\routes\comment\delete\delete-comment.dto.ts`
+- `src\infra\web\routes\comment\delete\delete-comment.presenter.ts`
+- `src\infra\web\routes\comment\delete\delete-comment.route.ts`
+- `src\infra\web\routes\comment\find-replies\find-replies.dto.ts`
+- `src\infra\web\routes\comment\find-replies\find-replies.presenter.ts`
+- `src\infra\web\routes\comment\find-replies\find-replies.route.ts`
+- `src\infra\web\routes\comment\list\list-comments.dto.ts`
+- `src\infra\web\routes\comment\list\list-comments.presenter.ts`
+- `src\infra\web\routes\comment\list\list-comments.route.ts`
+- `src\infra\web\routes\comment\moderate\approve-comment.dto.ts`
+- `src\infra\web\routes\comment\moderate\approve-comment.presenter.ts`
+- `src\infra\web\routes\comment\moderate\approve-comment.route.ts`
+- `src\infra\web\routes\comment\moderate\find-pending-moderation.dto.ts`
+- `src\infra\web\routes\comment\moderate\find-pending-moderation.presenter.ts`
+- `src\infra\web\routes\comment\moderate\pending-moderation.route.ts`
+- `src\infra\web\routes\comment\moderate\reject-comment.dto.ts`
+- `src\infra\web\routes\comment\moderate\reject-comment.presenter.ts`
+- `src\infra\web\routes\comment\moderate\reject-comment.route.ts`
+- `src\infra\web\routes\comment\stats\comment-stats.dto.ts`
+- `src\infra\web\routes\comment\stats\comment-stats.presenter.ts`
+- `src\infra\web\routes\comment\stats\comment-stats.route.ts`
+- `src\infra\web\routes\comment\update\update-comment.dto.ts`
+- `src\infra\web\routes\comment\update\update-comment.presenter.ts`
+- `src\infra\web\routes\comment\update\update-comment.route.ts`
 - `src\infra\web\routes\github-auth\callback\github-callback.dto.ts`
 - `src\infra\web\routes\github-auth\callback\github-callback.presenter.ts`
 - `src\infra\web\routes\github-auth\callback\github-callback.route.ts`
@@ -646,7 +761,21 @@ tsconfig.json
 - `src\usecases\article\reject\reject-article.usecase.ts`
 - `src\usecases\article\search\search-articles.usecase.ts`
 - `src\usecases\article\stats\article-stats.usecase.ts`
+- `src\usecases\comment\count\count-comments.usecase.ts`
+- `src\usecases\comment\create\create-comment.usecase.ts`
+- `src\usecases\comment\delete\delete-comment.usecase.ts`
+- `src\usecases\comment\find-replies\find-replies.usecase.ts`
+- `src\usecases\comment\list\list-comments.usecase.ts`
+- `src\usecases\comment\moderate\approve-comment.usecase.ts`
+- `src\usecases\comment\moderate\find-pending-moderation.usecase.ts`
+- `src\usecases\comment\moderate\reject-comment.usecase.ts`
+- `src\usecases\comment\stats\comment-stats.usecase.ts`
+- `src\usecases\comment\update\update-comment.usecase.ts`
 - `src\usecases\exceptions\article\article-not-found.usecase.exception.ts`
+- `src\usecases\exceptions\comment\comment-access-denied.usecase.exception.ts`
+- `src\usecases\exceptions\comment\comment-limit-reached.usecase.exception.ts`
+- `src\usecases\exceptions\comment\comment-moderation-required.usecase.exception.ts`
+- `src\usecases\exceptions\comment\comment-not-found.usecase.exception.ts`
 - `src\usecases\exceptions\credentials-not-valid.usecase.exception.ts`
 - `src\usecases\exceptions\email-already-exists.usecase.exception.ts`
 - `src\usecases\exceptions\input\invalid-input.usecase.exception.ts`
@@ -722,6 +851,7 @@ tsconfig.json
 - `src\domain\usecases\article\comandos.md`
 - `src\domain\usecases\article\docs.md`
 - `src\domain\usecases\article\usePostman.md`
+- `src\domain\usecases\comment\docs_v1.md`
 
 ### Docker
 

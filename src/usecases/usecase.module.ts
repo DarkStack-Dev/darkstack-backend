@@ -70,6 +70,24 @@ import { MarkNotificationAsReadUsecase } from './notification/mark-as-read/mark-
 import { GetUnreadNotificationsCountUsecase } from './notification/get-unread-count/get-unread-notifications-count.usecase';
 import { MarkAllNotificationsAsReadUsecase } from './notification/mark-all-read/mark-all-notifications-as-read.usecase';
 
+// ✅ ADICIONAR - Comment Domain Use Cases
+import { CreateCommentUseCase } from '@/domain/usecases/comment/create/create-comment.usecase';
+import { ListCommentsUseCase } from '@/domain/usecases/comment/list/list-comments.usecase';
+import { UpdateCommentUseCase } from '@/domain/usecases/comment/update/update-comment.usecase';
+import { DeleteCommentUseCase } from '@/domain/usecases/comment/delete/delete-comment.usecase';
+
+// ✅ ADICIONAR - Comment Application Use Cases
+import { CreateCommentUsecase } from '@/usecases/comment/create/create-comment.usecase';
+import { ListCommentsUsecase } from '@/usecases/comment/list/list-comments.usecase';
+import { UpdateCommentUsecase } from '@/usecases/comment/update/update-comment.usecase';
+import { DeleteCommentUsecase } from '@/usecases/comment/delete/delete-comment.usecase';
+import { FindRepliesUsecase } from '@/usecases/comment/find-replies/find-replies.usecase';
+import { CountCommentsUsecase } from '@/usecases/comment/count/count-comments.usecase';
+import { ApproveCommentUsecase } from '@/usecases/comment/moderate/approve-comment.usecase';
+import { RejectCommentUsecase } from '@/usecases/comment/moderate/reject-comment.usecase';
+import { FindPendingModerationUsecase } from '@/usecases/comment/moderate/find-pending-moderation.usecase';
+import { CommentStatsUsecase } from '@/usecases/comment/stats/comment-stats.usecase';
+
 @Module({
   imports: [
     DatabaseModule, 
@@ -148,6 +166,24 @@ import { MarkAllNotificationsAsReadUsecase } from './notification/mark-all-read/
     MarkNotificationAsReadUsecase,
     GetUnreadNotificationsCountUsecase,
     MarkAllNotificationsAsReadUsecase,
+
+    // ✅ ADICIONAR - Comment Domain Use Cases
+    CreateCommentUseCase,
+    ListCommentsUseCase,
+    UpdateCommentUseCase,
+    DeleteCommentUseCase,
+
+    // ✅ ADICIONAR - Comment Application Use Cases
+    CreateCommentUsecase,
+    ListCommentsUsecase,
+    UpdateCommentUsecase,
+    DeleteCommentUsecase,
+    FindRepliesUsecase,
+    CountCommentsUsecase,
+    ApproveCommentUsecase,
+    RejectCommentUsecase,
+    FindPendingModerationUsecase,
+    CommentStatsUsecase,
   ],
   exports: [
     // User use cases
@@ -221,6 +257,24 @@ import { MarkAllNotificationsAsReadUsecase } from './notification/mark-all-read/
     MarkNotificationAsReadUsecase,
     GetUnreadNotificationsCountUsecase,
     MarkAllNotificationsAsReadUsecase,
+
+    // ✅ ADICIONAR - Export Comment Domain Use Cases
+    CreateCommentUseCase,
+    ListCommentsUseCase,
+    UpdateCommentUseCase,
+    DeleteCommentUseCase,
+
+    // ✅ ADICIONAR - Export Comment Application Use Cases
+    CreateCommentUsecase,
+    ListCommentsUsecase,
+    UpdateCommentUsecase,
+    DeleteCommentUsecase,
+    FindRepliesUsecase,
+    CountCommentsUsecase,
+    ApproveCommentUsecase,
+    RejectCommentUsecase,
+    FindPendingModerationUsecase,
+    CommentStatsUsecase,
   ],
 })
 export class UsecaseModule {}

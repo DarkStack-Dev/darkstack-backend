@@ -1,15 +1,13 @@
-// src/usecases/exceptions/input/invalid-input.usecase.exception.ts (se não existir)
-import { UsecaseException } from '../usecase.exception';
+// src/usecases/exceptions/input/invalid-input.usecase.exception.ts
 import { HttpStatus } from '@nestjs/common';
+import { UsecaseException } from '../usecase.exception';
 
 export class InvalidInputUsecaseException extends UsecaseException {
-  public constructor(
+  constructor(
     internalMessage: string,
     externalMessage: string,
     context: string,
-    statusCode: HttpStatus = HttpStatus.BAD_REQUEST
   ) {
-    super(internalMessage, externalMessage, context, statusCode);
-    this.name = InvalidInputUsecaseException.name;
+    super(internalMessage, externalMessage, context, HttpStatus.BAD_REQUEST);
   }
 }
